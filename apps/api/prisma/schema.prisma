@@ -1,0 +1,551 @@
+// Estio platform content + CRM. DATABASE_URL from prisma.config.ts (Prisma 7+)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Marketing / CMS enums ---
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ServiceCategory {
+  WEB_DESIGN_DEVELOPMENT
+  CONTENT_CAMPAIGNS
+  AI_CREATIVE
+  ENTERPRISE_AI
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum InquiryType {
+  GENERAL
+  ENTERPRISE
+  CONSULTATION
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+}
+
+enum NavigationLocation {
+  HEADER
+  FOOTER
+}
+
+enum SiteLocale {
+  en
+  ar
+}
+
+// --- CRM enums (stable values; UI localizes) ---
+
+/// Primary service line for routing and intake.
+enum CrmServiceType {
+  WEB
+  CONTENT
+  CAMPAIGNS
+  AI_CREATIVE
+  ENTERPRISE_AI
+  AUTOMATION
+  GENERAL
+}
+
+enum CrmLeadSource {
+  HOMEPAGE
+  CONTACT
+  SERVICE_PAGE
+  INTAKE
+  REFERRAL
+  PARTNER
+  OTHER
+}
+
+enum CrmPriority {
+  LOW
+  MEDIUM
+  HIGH
+  STRATEGIC
+}
+
+enum CrmLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  NURTURE
+  WON
+  LOST
+  ON_HOLD
+}
+
+enum CrmPipelineStage {
+  INBOX
+  DISCOVERY
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum CrmBudgetRange {
+  UNSPECIFIED
+  UNDER_5K
+  RANGE_5K_25K
+  RANGE_25K_75K
+  RANGE_75K_200K
+  OVER_200K
+}
+
+enum CrmTimeline {
+  UNSPECIFIED
+  IMMEDIATE
+  WEEKS_1_4
+  MONTHS_1_3
+  MONTHS_3_6
+  MONTHS_6_PLUS
+}
+
+enum CrmBusinessType {
+  UNSPECIFIED
+  STARTUP
+  SMB
+  MID_MARKET
+  ENTERPRISE
+  NONPROFIT
+  AGENCY
+  OTHER
+}
+
+enum CrmTeamSize {
+  UNSPECIFIED
+  SOLO
+  SIZE_2_10
+  SIZE_11_50
+  SIZE_51_PLUS
+}
+
+enum CrmLostReason {
+  UNSPECIFIED
+  TIMING
+  BUDGET
+  COMPETITOR
+  NO_FIT
+  GHOSTED
+  OTHER
+}
+
+enum LeadActivityType {
+  CREATED
+  FIELD_UPDATED
+  NOTE_ADDED
+  TASK_CREATED
+  TASK_COMPLETED
+  STAGE_CHANGED
+  STATUS_CHANGED
+  INTAKE_COMPLETED
+  AUTOMATION
+  EMAIL
+  CALL
+  MEETING
+  PROPOSAL
+}
+
+enum LeadTaskStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+enum AutomationRunType {
+  NEW_LEAD_ACK
+  ASSIGNMENT
+  FOLLOWUP_DUE
+  STALE_LEAD
+  PROPOSAL_FOLLOWUP
+  LOST_REASON_ENFORCE
+}
+
+enum AutomationRunStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+  LINKEDIN
+  OTHER
+}
+
+// --- CMS models ---
+
+model Page {
+  id              String     @id @default(cuid())
+  slug            String
+  locale          SiteLocale @default(en)
+  title           String
+  metaTitle       String?
+  metaDescription String?    @db.Text
+  status          PageStatus @default(DRAFT)
+  sections        Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([slug, locale])
+  @@index([status, locale])
+}
+
+model Service {
+  id               String          @id @default(cuid())
+  slug             String
+  locale           SiteLocale      @default(en)
+  title            String
+  shortDescription String
+  longDescription  String          @db.Text
+  category         ServiceCategory
+  status           ContentStatus   @default(DRAFT)
+  featured         Boolean         @default(false)
+  detailBlocks     Json?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([slug, locale])
+  @@index([category, status])
+  @@index([featured])
+}
+
+/// Sales-centric lead (CRM). Public website and intake write here with enums only.
+model Lead {
+  id               String           @id @default(cuid())
+  fullName         String
+  email            String
+  phone            String?
+  whatsapp         String?
+  company          String?
+  jobTitle         String?
+  country          String?
+  city             String?
+  serviceType      CrmServiceType   @default(GENERAL)
+  subServiceType   String?          @db.VarChar(128)
+  businessType     CrmBusinessType  @default(UNSPECIFIED)
+  teamSize         CrmTeamSize      @default(UNSPECIFIED)
+  budgetRange      CrmBudgetRange   @default(UNSPECIFIED)
+  timeline         CrmTimeline      @default(UNSPECIFIED)
+  projectScope     String?          @db.Text
+  message          String?          @db.Text
+  status           CrmLeadStatus    @default(NEW)
+  stage            CrmPipelineStage @default(INBOX)
+  score            Int              @default(0)
+  scoreBreakdown   Json?
+  priority         CrmPriority      @default(MEDIUM)
+  ownerUserId      String?
+  lastContactedAt  DateTime?
+  nextFollowUpAt   DateTime?
+  lostReason       CrmLostReason    @default(UNSPECIFIED)
+  wonValue         Decimal?         @db.Decimal(14, 2)
+  source           CrmLeadSource
+  locale           SiteLocale?
+  referrer         String?          @db.Text
+  landingPage      String?          @db.Text
+  campaignSource   String?          @db.VarChar(128)
+  campaignMedium   String?          @db.VarChar(128)
+  campaignName     String?          @db.VarChar(256)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  answers      LeadAnswer[]
+  notes        LeadNote[]
+  activities   LeadActivity[]
+  tasks        LeadTask[]
+  assignments  LeadAssignment[]
+  proposals    ProposalRecord[]
+  automations   AutomationRun[]
+  intakeSession IntakeSession?
+
+  @@index([status, createdAt])
+  @@index([stage, createdAt])
+  @@index([source, createdAt])
+  @@index([ownerUserId])
+  @@index([nextFollowUpAt])
+  @@index([email])
+}
+
+/// Internal assignee directory for CRM ownership (not auth; admin auth remains JWT).
+model CrmUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  teamMemberships CrmTeamMember[]
+
+  @@index([isActive])
+}
+
+model CrmTeam {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  members   CrmTeamMember[]
+}
+
+model CrmTeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+
+  team CrmTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user CrmUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model LeadAnswer {
+  id          String   @id @default(cuid())
+  leadId      String
+  questionKey String   @db.VarChar(160)
+  /// Normalized answer payload (string, string[], number, bool).
+  valueJson   Json
+  createdAt   DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([questionKey])
+}
+
+model LeadNote {
+  id           String   @id @default(cuid())
+  leadId       String
+  body         String   @db.Text
+  authorLabel  String?  @db.VarChar(120)
+  createdAt    DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+}
+
+model LeadActivity {
+  id        String           @id @default(cuid())
+  leadId    String
+  type      LeadActivityType
+  payload   Json?
+  createdAt DateTime         @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+}
+
+model LeadTask {
+  id          String         @id @default(cuid())
+  leadId      String
+  title       String
+  dueAt       DateTime?
+  status      LeadTaskStatus @default(OPEN)
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  lead      Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  runLinks  AutomationRun[]   @relation("TaskAutomation")
+
+  @@index([leadId, status])
+  @@index([dueAt])
+}
+
+model LeadAssignment {
+  id             String    @id @default(cuid())
+  leadId         String
+  assigneeUserId String?
+  assignedBy     String?
+  assignedAt     DateTime  @default(now())
+  unassignedAt   DateTime?
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([assigneeUserId])
+}
+
+model AutomationRun {
+  id        String              @id @default(cuid())
+  leadId    String?
+  taskId    String?
+  type      AutomationRunType
+  status    AutomationRunStatus
+  message   String?             @db.Text
+  payload   Json?
+  createdAt DateTime            @default(now())
+
+  lead Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  task LeadTask? @relation("TaskAutomation", fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([leadId, createdAt])
+  @@index([type, createdAt])
+}
+
+model ProposalRecord {
+  id          String          @id @default(cuid())
+  leadId      String
+  reference   String          @db.VarChar(160)
+  valueAmount Decimal?        @db.Decimal(14, 2)
+  sentAt      DateTime?
+  acceptedAt  DateTime?
+  status      String          @default("DRAFT") @db.VarChar(32)
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+/// Singleton-style row (ensure one via service); JSON for rule weights.
+model SalesSettings {
+  id                      String   @id @default("default")
+  scoringRules            Json?
+  automationRules         Json?
+  defaultOwnerUserId      String?
+  staleLeadDays           Int      @default(14)
+  followUpReminderHours   Int      @default(48)
+  proposalFollowUpDays    Int      @default(7)
+  lostReasonWhenLostRequired Boolean @default(true)
+  updatedAt               DateTime @updatedAt
+}
+
+model IntakeSession {
+  id          String         @id @default(cuid())
+  branch      CrmServiceType @default(GENERAL)
+  stepKey     String         @default("start") @db.VarChar(120)
+  answersJson Json           @default("{}")
+  leadId      String?        @unique
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+}
+
+model MessageTemplate {
+  id        String          @id @default(cuid())
+  name      String
+  channel   MessageChannel
+  subject   String?         @db.VarChar(500)
+  body      String          @db.Text
+  locale    SiteLocale?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model Inquiry {
+  id        String         @id @default(cuid())
+  type      InquiryType
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  message   String         @db.Text
+  status    InquiryStatus  @default(NEW)
+  createdAt DateTime       @default(now())
+
+  @@index([type, status])
+}
+
+model Settings {
+  id             String   @id @default(cuid())
+  businessName   String
+  brandName      String
+  website        String?  @db.VarChar(300)
+  businessNameAr String?
+  brandNameAr    String?
+  phone          String?
+  email          String?
+  /// WhatsApp click-to-chat URL or wa.me link (site contact blocks).
+  whatsapp       String?  @db.VarChar(500)
+  address        String?
+  city           String?
+  country        String?
+  footerText     String?  @db.Text
+  footerTextAr   String?  @db.Text
+  socialLinks    Json?
+  /// Global CTA labels, nav hints, etc. i18n-ready: { en: { primaryCta: "..." }, ar: { ... } }.
+  globalLabels   Json?
+  updatedAt      DateTime @updatedAt
+}
+
+model NavigationItem {
+  id         String             @id @default(cuid())
+  label      String
+  href       String
+  orderIndex Int                @default(0)
+  location   NavigationLocation
+  locale     SiteLocale         @default(en)
+  isActive   Boolean            @default(true)
+
+  @@index([location, locale, orderIndex])
+}
+
+model SeoMetadata {
+  id           String     @id @default(cuid())
+  route        String
+  locale       SiteLocale @default(en)
+  title        String
+  description  String     @db.Text
+  ogImage      String?
+  canonicalUrl String?
+
+  @@unique([route, locale])
+}
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  altText      String?
+  category     String?
+  publicUrl    String?  @db.Text
+  uploadedAt   DateTime @default(now())
+  placements   MediaPlacement[]
+
+  @@index([category])
+}
+
+/// Where a media asset appears on the marketing site (synced from page sections).
+model MediaPlacement {
+  id           String     @id @default(cuid())
+  mediaAssetId String
+  pageSlug     String     @db.VarChar(120)
+  locale       SiteLocale
+  sectionKey   String     @db.VarChar(160)
+  fieldKey     String     @db.VarChar(160)
+  createdAt    DateTime   @default(now())
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaAssetId, pageSlug, locale, sectionKey, fieldKey])
+  @@index([mediaAssetId])
+  @@index([pageSlug, locale])
+}

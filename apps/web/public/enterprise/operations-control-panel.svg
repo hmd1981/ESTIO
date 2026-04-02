@@ -1,0 +1,120 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="140" y1="90" x2="1260" y2="820" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#07111F"/>
+    <stop offset="1" stop-color="#020617"/>
+  </linearGradient>
+  <linearGradient id="panel" x1="160" y1="110" x2="1240" y2="790" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#0D1830"/>
+    <stop offset="1" stop-color="#08111D"/>
+  </linearGradient>
+  <linearGradient id="accent" x1="470" y1="440" x2="935" y2="650" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#22D3EE"/>
+    <stop offset="1" stop-color="#0EA5E9"/>
+  </linearGradient>
+  <filter id="shadow" x="120" y="80" width="1160" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#020617" flood-opacity="0.45"/>
+  </filter>
+</defs>
+
+<rect width="1400" height="900" rx="40" fill="url(#bg)"/>
+<circle cx="1130" cy="180" r="170" fill="#22D3EE" fill-opacity="0.08"/>
+<circle cx="220" cy="760" r="210" fill="#0EA5E9" fill-opacity="0.07"/>
+
+<g opacity="0.1" stroke="#94A3B8">
+  <path d="M110 150H1290"/>
+  <path d="M110 230H1290"/>
+  <path d="M110 310H1290"/>
+  <path d="M110 390H1290"/>
+  <path d="M110 470H1290"/>
+  <path d="M110 550H1290"/>
+  <path d="M110 630H1290"/>
+  <path d="M110 710H1290"/>
+  <path d="M220 100V800"/>
+  <path d="M380 100V800"/>
+  <path d="M540 100V800"/>
+  <path d="M700 100V800"/>
+  <path d="M860 100V800"/>
+  <path d="M1020 100V800"/>
+  <path d="M1180 100V800"/>
+</g>
+
+<g filter="url(#shadow)">
+  <rect x="160" y="110" width="1080" height="680" rx="30" fill="url(#panel)" stroke="#1E293B"/>
+
+  <text x="214" y="178" fill="#E2E8F0" font-size="34" font-family="Arial, sans-serif" font-weight="700">Operations control panel</text>
+  <text x="214" y="214" fill="#67E8F9" font-size="16" font-family="Arial, sans-serif">cross-team visibility  "  governed automation  "  live exception handling</text>
+
+  <rect x="214" y="252" width="970" height="164" rx="26" fill="#091221" stroke="#1F2C42"/>
+  <text x="248" y="298" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Executive snapshot</text>
+  <text x="248" y="328" fill="#64748B" font-size="15" font-family="Arial, sans-serif">What is automated, what is delayed, and where leaders intervene</text>
+
+  <rect x="248" y="352" width="190" height="36" rx="18" fill="#0E1B32"/>
+  <rect x="474" y="352" width="190" height="36" rx="18" fill="#0E1B32"/>
+  <rect x="700" y="352" width="190" height="36" rx="18" fill="#0E1B32"/>
+  <rect x="926" y="352" width="190" height="36" rx="18" fill="#0E1B32"/>
+  <text x="282" y="375" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif">24 automations live</text>
+  <text x="515" y="375" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif">7 teams connected</text>
+  <text x="748" y="375" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif">12 alerts open</text>
+  <text x="968" y="375" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif">3 escalations</text>
+
+  <rect x="214" y="446" width="344" height="304" rx="26" fill="#091221" stroke="#1F2C42"/>
+  <text x="246" y="490" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Process health</text>
+  <text x="246" y="520" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Completion and wait-time by workflow</text>
+
+  <text x="246" y="572" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Approvals</text>
+  <rect x="246" y="584" width="260" height="16" rx="8" fill="#162238"/>
+  <rect x="246" y="584" width="226" height="16" rx="8" fill="#22D3EE"/>
+  <text x="518" y="597" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">87%</text>
+
+  <text x="246" y="634" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Knowledge routing</text>
+  <rect x="246" y="646" width="260" height="16" rx="8" fill="#162238"/>
+  <rect x="246" y="646" width="203" height="16" rx="8" fill="#38BDF8"/>
+  <text x="518" y="659" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">78%</text>
+
+  <text x="246" y="696" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Exception recovery</text>
+  <rect x="246" y="708" width="260" height="16" rx="8" fill="#162238"/>
+  <rect x="246" y="708" width="173" height="16" rx="8" fill="#0EA5E9"/>
+  <text x="518" y="721" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">66%</text>
+
+  <rect x="590" y="446" width="308" height="304" rx="26" fill="#091221" stroke="#1F2C42"/>
+  <text x="622" y="490" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Control graph</text>
+  <text x="622" y="520" fill="#64748B" font-size="15" font-family="Arial, sans-serif">System, data, and owner dependencies</text>
+
+  <circle cx="666" cy="606" r="34" fill="#0E1F36" stroke="#22D3EE" stroke-width="4"/>
+  <circle cx="778" cy="548" r="30" fill="#0E1F36" stroke="#38BDF8" stroke-width="4"/>
+  <circle cx="812" cy="652" r="30" fill="#0E1F36" stroke="#38BDF8" stroke-width="4"/>
+  <circle cx="848" cy="600" r="46" fill="url(#accent)"/>
+  <path d="M698 592L748 560" stroke="#67E8F9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M699 620L775 649" stroke="#38BDF8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M807 572L821 554" stroke="#E0F2FE" stroke-width="4" stroke-linecap="round"/>
+  <path d="M813 628L829 646" stroke="#E0F2FE" stroke-width="4" stroke-linecap="round"/>
+  <path d="M886 579L930 548" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"/>
+  <path d="M892 621L934 654" stroke="#67E8F9" stroke-width="5" stroke-linecap="round"/>
+
+  <circle cx="962" cy="534" r="26" fill="#0E1F36" stroke="#22D3EE" stroke-width="4"/>
+  <circle cx="964" cy="668" r="26" fill="#0E1F36" stroke="#0EA5E9" stroke-width="4"/>
+  <text x="640" y="611" fill="#E2E8F0" font-size="14" font-family="Arial, sans-serif">Owners</text>
+  <text x="744" y="554" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">Data</text>
+  <text x="778" y="657" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">Rules</text>
+  <text x="814" y="607" fill="#F8FAFC" font-size="17" font-family="Arial, sans-serif" font-weight="700">Control</text>
+  <text x="934" y="539" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">AI</text>
+  <text x="928" y="673" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">Ops</text>
+
+  <rect x="930" y="446" width="254" height="304" rx="26" fill="#091221" stroke="#1F2C42"/>
+  <text x="962" y="490" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Alert queue</text>
+  <text x="962" y="520" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Items requiring review right now</text>
+
+  <rect x="962" y="552" width="190" height="52" rx="16" fill="#0E1B32"/>
+  <rect x="962" y="620" width="190" height="52" rx="16" fill="#0E1B32"/>
+  <rect x="962" y="688" width="190" height="32" rx="16" fill="#0E1B32"/>
+  <circle cx="994" cy="578" r="8" fill="#22D3EE"/>
+  <circle cx="994" cy="646" r="8" fill="#0EA5E9"/>
+  <circle cx="994" cy="704" r="8" fill="#8B5CF6"/>
+  <text x="1018" y="574" fill="#F8FAFC" font-size="15" font-family="Arial, sans-serif" font-weight="700">Approval stuck</text>
+  <text x="1018" y="594" fill="#94A3B8" font-size="12" font-family="Arial, sans-serif">finance owner not assigned</text>
+  <text x="1018" y="642" fill="#F8FAFC" font-size="15" font-family="Arial, sans-serif" font-weight="700">Knowledge review</text>
+  <text x="1018" y="662" fill="#94A3B8" font-size="12" font-family="Arial, sans-serif">policy source updated</text>
+  <text x="1018" y="709" fill="#F8FAFC" font-size="14" font-family="Arial, sans-serif" font-weight="700">dashboard refresh due</text>
+</g>
+</svg>

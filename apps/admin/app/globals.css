@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --admin-bg: #09090b;
+  --admin-surface: #18181b;
+  --admin-surface-muted: #27272a;
+  --admin-border: #3f3f46;
+  --admin-text: #fafafa;
+  --admin-muted: #a1a1aa;
+  --admin-sidebar: #0a0a0c;
+  --admin-accent: #fafafa;
+  --admin-row-header: rgba(63, 63, 70, 0.45);
+  --admin-row-hover: rgba(63, 63, 70, 0.55);
+  --admin-skeleton: #3f3f46;
+  --admin-skeleton-muted: #27272a;
+  --admin-input-bg: #27272a;
+  --admin-placeholder: #71717a;
+  --admin-primary: #3b82f6;
+  --admin-primary-hover: #2563eb;
+}
+
+@theme inline {
+  --color-background: var(--admin-bg);
+  --color-foreground: var(--admin-text);
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

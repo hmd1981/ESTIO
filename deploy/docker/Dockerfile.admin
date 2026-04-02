@@ -1,0 +1,28 @@
+FROM node:20-bookworm-slim AS builder
+WORKDIR /app
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+COPY apps/admin/package.json ./apps/admin/
+RUN npm ci --workspace=admin --include-workspace-root
+
+COPY apps/admin ./apps/admin
+ARG NEXT_PUBLIC_API_URL=https://api.estio.org
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build --workspace=admin
+
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/apps/admin/.next/standalone ./
+COPY --from=builder /app/apps/admin/public ./apps/admin/public
+COPY --from=builder /app/apps/admin/.next/static ./apps/admin/.next/static
+
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+EXPOSE 3000
+CMD ["node", "apps/admin/server.js"]

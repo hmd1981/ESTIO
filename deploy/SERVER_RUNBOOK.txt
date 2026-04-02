@@ -1,0 +1,28 @@
+Estio production — run on the VM (e.g. 82.22.50.142)
+
+1) Put the FULL repo in one directory, e.g. /opt/estio-platform
+   - Must include: docker-compose.prod.yml, apps/, deploy/, package.json, install-estio-nginx-remote.sh
+
+2) ASCII-only database password, then start Docker stack:
+   cd /opt/estio-platform
+   export POSTGRES_PASSWORD='YourStrongAsciiSecret'
+   bash deploy/stack-up.sh
+
+3) Install / refresh nginx (TLS files: /etc/ssl/cloudflare/estio-origin.pem + .key):
+   sudo bash install-estio-nginx-remote.sh
+   OR from repo: sudo bash apply-nginx.sh
+
+4) Verify:
+   bash deploy/verify-production.sh
+
+5) Postgres password vs existing volume:
+   POSTGRES_* only applies on first cluster init. If the API logs Prisma P1000 but env matches,
+   rotate the role to match DATABASE_URL (from inside the postgres container):
+   psql -U estio -d estio -c "ALTER USER estio WITH PASSWORD 'same-as-POSTGRES_PASSWORD';"
+
+6) If something fails:
+   docker compose -f docker-compose.prod.yml ps
+   docker logs <api|web|admin container name> --tail 80
+   sudo grep -E 'connect\(\) failed|upstream' /var/log/nginx/error.log | tail -20
+
+Ports: web 3000, admin 3001, API 4000. Cloudflare SSL: Full (strict).

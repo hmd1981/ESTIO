@@ -1,0 +1,118 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="180" y1="120" x2="1210" y2="790" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#081121"/>
+    <stop offset="1" stop-color="#020617"/>
+  </linearGradient>
+  <linearGradient id="panel" x1="160" y1="110" x2="1240" y2="780" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#0E1A31"/>
+    <stop offset="1" stop-color="#08111F"/>
+  </linearGradient>
+  <linearGradient id="progress" x1="258" y1="420" x2="1140" y2="420" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#22D3EE"/>
+    <stop offset="0.5" stop-color="#8B5CF6"/>
+    <stop offset="1" stop-color="#38BDF8"/>
+  </linearGradient>
+  <filter id="shadow" x="120" y="80" width="1160" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#020617" flood-opacity="0.45"/>
+  </filter>
+</defs>
+
+<rect width="1400" height="900" rx="40" fill="url(#bg)"/>
+<circle cx="230" cy="210" r="140" fill="#22D3EE" fill-opacity="0.08"/>
+<circle cx="1180" cy="720" r="180" fill="#8B5CF6" fill-opacity="0.08"/>
+
+<g opacity="0.1" stroke="#94A3B8">
+  <path d="M110 160H1290"/>
+  <path d="M110 240H1290"/>
+  <path d="M110 320H1290"/>
+  <path d="M110 400H1290"/>
+  <path d="M110 480H1290"/>
+  <path d="M110 560H1290"/>
+  <path d="M110 640H1290"/>
+  <path d="M110 720H1290"/>
+  <path d="M210 100V800"/>
+  <path d="M370 100V800"/>
+  <path d="M530 100V800"/>
+  <path d="M690 100V800"/>
+  <path d="M850 100V800"/>
+  <path d="M1010 100V800"/>
+  <path d="M1170 100V800"/>
+</g>
+
+<g filter="url(#shadow)">
+  <rect x="160" y="110" width="1080" height="680" rx="30" fill="url(#panel)" stroke="#1E293B"/>
+
+  <text x="214" y="178" fill="#E2E8F0" font-size="34" font-family="Arial, sans-serif" font-weight="700">Workflow approval flow</text>
+  <text x="214" y="214" fill="#7DD3FC" font-size="16" font-family="Arial, sans-serif">named checkpoints  "  exception handling  "  visible ownership</text>
+
+  <rect x="214" y="246" width="220" height="96" rx="22" fill="#0A1428" stroke="#1F2C42"/>
+  <rect x="464" y="246" width="220" height="96" rx="22" fill="#0A1428" stroke="#1F2C42"/>
+  <rect x="714" y="246" width="220" height="96" rx="22" fill="#0A1428" stroke="#1F2C42"/>
+  <rect x="964" y="246" width="220" height="96" rx="22" fill="#0A1428" stroke="#1F2C42"/>
+
+  <text x="246" y="288" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Cycle time</text>
+  <text x="246" y="324" fill="#F8FAFC" font-size="30" font-family="Arial, sans-serif" font-weight="700">-41%</text>
+  <text x="496" y="288" fill="#64748B" font-size="15" font-family="Arial, sans-serif">SLA adherence</text>
+  <text x="496" y="324" fill="#F8FAFC" font-size="30" font-family="Arial, sans-serif" font-weight="700">92%</text>
+  <text x="746" y="288" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Exceptions routed</text>
+  <text x="746" y="324" fill="#F8FAFC" font-size="30" font-family="Arial, sans-serif" font-weight="700">14</text>
+  <text x="996" y="288" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Owner visibility</text>
+  <text x="996" y="324" fill="#F8FAFC" font-size="30" font-family="Arial, sans-serif" font-weight="700">100%</text>
+
+  <rect x="214" y="388" width="970" height="220" rx="28" fill="#091221" stroke="#1F2C42"/>
+  <text x="248" y="434" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Approval path</text>
+  <text x="248" y="464" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Every stage has a visible owner, timing rule, and escalation path</text>
+
+  <path d="M298 520H1100" stroke="url(#progress)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M1100 520L1079 507M1100 520L1079 533" stroke="#38BDF8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g>
+    <circle cx="320" cy="520" r="38" fill="#0D1D35" stroke="#22D3EE" stroke-width="4"/>
+    <circle cx="500" cy="520" r="38" fill="#101A34" stroke="#22D3EE" stroke-width="4"/>
+    <circle cx="680" cy="520" r="38" fill="#111936" stroke="#8B5CF6" stroke-width="4"/>
+    <circle cx="860" cy="520" r="38" fill="#111936" stroke="#38BDF8" stroke-width="4"/>
+    <circle cx="1040" cy="520" r="44" fill="url(#progress)"/>
+  </g>
+
+  <text x="291" y="527" fill="#F8FAFC" font-size="16" font-family="Arial, sans-serif" font-weight="700">1</text>
+  <text x="471" y="527" fill="#F8FAFC" font-size="16" font-family="Arial, sans-serif" font-weight="700">2</text>
+  <text x="651" y="527" fill="#F8FAFC" font-size="16" font-family="Arial, sans-serif" font-weight="700">3</text>
+  <text x="831" y="527" fill="#F8FAFC" font-size="16" font-family="Arial, sans-serif" font-weight="700">4</text>
+  <text x="1011" y="527" fill="#F8FAFC" font-size="16" font-family="Arial, sans-serif" font-weight="700">5</text>
+
+  <text x="274" y="580" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif" font-weight="700">Request</text>
+  <text x="445" y="580" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif" font-weight="700">Commercial</text>
+  <text x="643" y="580" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif" font-weight="700">Legal</text>
+  <text x="828" y="580" fill="#E2E8F0" font-size="16" font-family="Arial, sans-serif" font-weight="700">Finance</text>
+  <text x="1000" y="580" fill="#F8FAFC" font-size="18" font-family="Arial, sans-serif" font-weight="700">Approved</text>
+
+  <text x="253" y="605" fill="#64748B" font-size="13" font-family="Arial, sans-serif">entry and scope</text>
+  <text x="434" y="605" fill="#64748B" font-size="13" font-family="Arial, sans-serif">fit and routing</text>
+  <text x="624" y="605" fill="#64748B" font-size="13" font-family="Arial, sans-serif">terms and risk</text>
+  <text x="814" y="605" fill="#64748B" font-size="13" font-family="Arial, sans-serif">budget and code</text>
+  <text x="991" y="605" fill="#64748B" font-size="13" font-family="Arial, sans-serif">handoff ready</text>
+
+  <rect x="214" y="638" width="450" height="112" rx="24" fill="#0A1428" stroke="#1F2C42"/>
+  <rect x="696" y="638" width="488" height="112" rx="24" fill="#0A1428" stroke="#1F2C42"/>
+
+  <text x="246" y="680" fill="#E2E8F0" font-size="22" font-family="Arial, sans-serif" font-weight="700">Exception queue</text>
+  <text x="246" y="712" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Missing data, expired approvals, or contract changes route here automatically.</text>
+  <circle cx="616" cy="682" r="16" fill="#8B5CF6"/>
+  <text x="610" y="688" fill="#F8FAFC" font-size="14" font-family="Arial, sans-serif" font-weight="700">4</text>
+
+  <text x="728" y="680" fill="#E2E8F0" font-size="22" font-family="Arial, sans-serif" font-weight="700">Operational visibility</text>
+  <rect x="728" y="700" width="134" height="14" rx="7" fill="#162238"/>
+  <rect x="728" y="700" width="118" height="14" rx="7" fill="#22D3EE"/>
+  <text x="874" y="712" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">commercial</text>
+  <rect x="728" y="724" width="134" height="14" rx="7" fill="#162238"/>
+  <rect x="728" y="724" width="94" height="14" rx="7" fill="#8B5CF6"/>
+  <text x="874" y="736" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">legal</text>
+  <rect x="970" y="700" width="134" height="14" rx="7" fill="#162238"/>
+  <rect x="970" y="700" width="127" height="14" rx="7" fill="#38BDF8"/>
+  <text x="1116" y="712" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">finance</text>
+  <rect x="970" y="724" width="134" height="14" rx="7" fill="#162238"/>
+  <rect x="970" y="724" width="86" height="14" rx="7" fill="#22D3EE"/>
+  <text x="1116" y="736" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">ops</text>
+</g>
+</svg>

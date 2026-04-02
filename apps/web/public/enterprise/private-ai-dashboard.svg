@@ -1,0 +1,127 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="120" y1="80" x2="1280" y2="820" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#0F172A"/>
+    <stop offset="1" stop-color="#020617"/>
+  </linearGradient>
+  <linearGradient id="panel" x1="210" y1="170" x2="1130" y2="760" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#111B34"/>
+    <stop offset="1" stop-color="#09101F"/>
+  </linearGradient>
+  <linearGradient id="accent" x1="420" y1="280" x2="880" y2="620" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#22D3EE"/>
+    <stop offset="1" stop-color="#8B5CF6"/>
+  </linearGradient>
+  <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#111C37"/>
+    <stop offset="1" stop-color="#0B1328"/>
+  </linearGradient>
+  <filter id="shadow" x="120" y="80" width="1160" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#020617" flood-opacity="0.48"/>
+  </filter>
+</defs>
+
+<rect width="1400" height="900" rx="40" fill="url(#bg)"/>
+<circle cx="1170" cy="170" r="190" fill="#0EA5E9" fill-opacity="0.08"/>
+<circle cx="270" cy="740" r="180" fill="#8B5CF6" fill-opacity="0.08"/>
+
+<g opacity="0.12" stroke="#94A3B8">
+  <path d="M120 140H1280"/>
+  <path d="M120 220H1280"/>
+  <path d="M120 300H1280"/>
+  <path d="M120 380H1280"/>
+  <path d="M120 460H1280"/>
+  <path d="M120 540H1280"/>
+  <path d="M120 620H1280"/>
+  <path d="M120 700H1280"/>
+  <path d="M220 80V820"/>
+  <path d="M380 80V820"/>
+  <path d="M540 80V820"/>
+  <path d="M700 80V820"/>
+  <path d="M860 80V820"/>
+  <path d="M1020 80V820"/>
+  <path d="M1180 80V820"/>
+</g>
+
+<g filter="url(#shadow)">
+  <rect x="160" y="110" width="1080" height="680" rx="30" fill="url(#panel)" stroke="#1E293B"/>
+  <rect x="160" y="110" width="180" height="680" rx="30" fill="#0A1224"/>
+  <rect x="160" y="110" width="180" height="76" rx="30" fill="#0D1730"/>
+  <circle cx="213" cy="149" r="10" fill="#22D3EE"/>
+  <circle cx="247" cy="149" r="10" fill="#8B5CF6"/>
+  <circle cx="281" cy="149" r="10" fill="#38BDF8"/>
+
+  <text x="220" y="235" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Private AI</text>
+  <text x="220" y="266" fill="#64748B" font-size="15" font-family="Arial, sans-serif">approved knowledge</text>
+
+  <rect x="204" y="314" width="92" height="92" rx="18" fill="#0F1A33" stroke="#24324D"/>
+  <rect x="204" y="434" width="92" height="92" rx="18" fill="#0F1A33" stroke="#24324D"/>
+  <rect x="204" y="554" width="92" height="92" rx="18" fill="#0F1A33" stroke="#24324D"/>
+
+  <path d="M232 353H268M232 371H268M232 389H258" stroke="#22D3EE" stroke-width="6" stroke-linecap="round"/>
+  <path d="M232 470H268M232 488H258" stroke="#8B5CF6" stroke-width="6" stroke-linecap="round"/>
+  <path d="M232 590H268M232 608H250" stroke="#38BDF8" stroke-width="6" stroke-linecap="round"/>
+
+  <text x="372" y="176" fill="#E2E8F0" font-size="34" font-family="Arial, sans-serif" font-weight="700">Private AI dashboard</text>
+  <text x="372" y="210" fill="#7DD3FC" font-size="16" font-family="Arial, sans-serif">approved sources  "  audited prompts  "  role-aware answers</text>
+
+  <rect x="372" y="246" width="250" height="120" rx="22" fill="url(#card)" stroke="#20304B"/>
+  <rect x="644" y="246" width="250" height="120" rx="22" fill="url(#card)" stroke="#20304B"/>
+  <rect x="916" y="246" width="250" height="120" rx="22" fill="url(#card)" stroke="#20304B"/>
+
+  <text x="404" y="292" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Approved knowledge</text>
+  <text x="404" y="336" fill="#F8FAFC" font-size="34" font-family="Arial, sans-serif" font-weight="700">128</text>
+  <text x="493" y="336" fill="#22D3EE" font-size="16" font-family="Arial, sans-serif">sources</text>
+
+  <text x="676" y="292" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Access boundaries</text>
+  <text x="676" y="336" fill="#F8FAFC" font-size="34" font-family="Arial, sans-serif" font-weight="700">9</text>
+  <text x="704" y="336" fill="#8B5CF6" font-size="16" font-family="Arial, sans-serif">roles mapped</text>
+
+  <text x="948" y="292" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Audited prompts</text>
+  <text x="948" y="336" fill="#F8FAFC" font-size="34" font-family="Arial, sans-serif" font-weight="700">24k</text>
+  <text x="1024" y="336" fill="#38BDF8" font-size="16" font-family="Arial, sans-serif">this quarter</text>
+
+  <rect x="372" y="394" width="520" height="340" rx="26" fill="#0A1428" stroke="#1F2C42"/>
+  <text x="406" y="438" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Knowledge boundary map</text>
+  <text x="406" y="468" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Source approvals, retrieval path, and escalation logic</text>
+
+  <circle cx="482" cy="560" r="44" fill="#0F223C" stroke="#22D3EE"/>
+  <circle cx="654" cy="516" r="44" fill="#102035" stroke="#8B5CF6"/>
+  <circle cx="654" cy="642" r="44" fill="#102035" stroke="#38BDF8"/>
+  <circle cx="806" cy="578" r="50" fill="url(#accent)"/>
+  <path d="M526 552L606 526" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+  <path d="M526 569L604 626" stroke="#38BDF8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M698 525L750 555" stroke="#C084FC" stroke-width="5" stroke-linecap="round"/>
+  <path d="M698 633L749 601" stroke="#7DD3FC" stroke-width="5" stroke-linecap="round"/>
+  <path d="M782 548L828 508" stroke="#A78BFA" stroke-width="5" stroke-linecap="round"/>
+  <path d="M790 611L835 646" stroke="#67E8F9" stroke-width="5" stroke-linecap="round"/>
+
+  <text x="444" y="566" fill="#E2E8F0" font-size="15" font-family="Arial, sans-serif">Approved docs</text>
+  <text x="615" y="522" fill="#E2E8F0" font-size="14" font-family="Arial, sans-serif">Role rules</text>
+  <text x="618" y="648" fill="#E2E8F0" font-size="14" font-family="Arial, sans-serif">Safety policy</text>
+  <text x="762" y="584" fill="#F8FAFC" font-size="18" font-family="Arial, sans-serif" font-weight="700">Assistant</text>
+
+  <rect x="920" y="394" width="246" height="340" rx="26" fill="#0A1428" stroke="#1F2C42"/>
+  <text x="952" y="438" fill="#E2E8F0" font-size="24" font-family="Arial, sans-serif" font-weight="700">Answer quality</text>
+  <text x="952" y="468" fill="#64748B" font-size="15" font-family="Arial, sans-serif">Session confidence by response class</text>
+
+  <rect x="952" y="506" width="182" height="18" rx="9" fill="#162238"/>
+  <rect x="952" y="506" width="146" height="18" rx="9" fill="#22D3EE"/>
+  <text x="952" y="496" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Grounded answer</text>
+  <text x="1108" y="521" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">81%</text>
+
+  <rect x="952" y="564" width="182" height="18" rx="9" fill="#162238"/>
+  <rect x="952" y="564" width="118" height="18" rx="9" fill="#8B5CF6"/>
+  <text x="952" y="554" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Requires specialist</text>
+  <text x="1080" y="579" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">65%</text>
+
+  <rect x="952" y="622" width="182" height="18" rx="9" fill="#162238"/>
+  <rect x="952" y="622" width="74" height="18" rx="9" fill="#38BDF8"/>
+  <text x="952" y="612" fill="#94A3B8" font-size="13" font-family="Arial, sans-serif">Blocked by policy</text>
+  <text x="1036" y="637" fill="#E2E8F0" font-size="13" font-family="Arial, sans-serif">41%</text>
+
+  <rect x="952" y="676" width="182" height="1" fill="#23314A"/>
+  <text x="952" y="710" fill="#7DD3FC" font-size="14" font-family="Arial, sans-serif">Traceability</text>
+  <text x="1042" y="710" fill="#E2E8F0" font-size="14" font-family="Arial, sans-serif">prompt, source, reviewer, decision</text>
+</g>
+</svg>

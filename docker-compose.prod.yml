@@ -1,0 +1,87 @@
+# Production stack: Postgres + API + web + admin. Host ports: web 3000, admin 3001, API 4000.
+# Matches deploy/nginx/estio.conf (nginx → localhost:3000 / :3001 / :4000).
+#
+#   export POSTGRES_PASSWORD='strong-secret'
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Optional: copy deploy/env.prod.example to .env.prod and use --env-file .env.prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: estio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_estio_db}
+      POSTGRES_DB: estio
+    volumes:
+      - estio_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estio -d estio"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - estio_uploads:/app/apps/api/uploads
+    environment:
+      NODE_ENV: production
+      HOST: "0.0.0.0"
+      PORT: "4000"
+      DATABASE_URL: postgresql://estio:${POSTGRES_PASSWORD:-changeme_estio_db}@postgres:5432/estio?schema=public
+      # Auth / admin
+      JWT_SECRET: ${JWT_SECRET:-local-dev-only-change-in-prod}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
+      # Preview
+      PREVIEW_TOKEN: ${PREVIEW_TOKEN:-}
+      # Media: used when persisting uploaded asset URLs
+      PUBLIC_FILE_BASE_URL: ${PUBLIC_FILE_BASE_URL:-http://127.0.0.1:4000}
+      # On-demand revalidation
+      WEB_REVALIDATE_URL: ${WEB_REVALIDATE_URL:-http://web:3000}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://127.0.0.1:4000}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      PREVIEW_TOKEN: ${PREVIEW_TOKEN:-}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+    depends_on:
+      - api
+
+  admin:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.admin
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://127.0.0.1:4000}
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      API_INTERNAL_URL: http://api:4000
+      NEXT_PUBLIC_WEB_URL: ${NEXT_PUBLIC_WEB_URL:-http://127.0.0.1:3000}
+      NEXT_PUBLIC_PREVIEW_TOKEN: ${NEXT_PUBLIC_PREVIEW_TOKEN:-}
+    depends_on:
+      - api
+
+volumes:
+  estio_pg_data:
+  estio_uploads:

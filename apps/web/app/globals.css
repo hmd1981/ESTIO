@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/*
+ * ESTIO theme tokens — dark only.
+ * Semantic: --bg, --text, --border, --muted, --card (+ layout/surface aliases)
+ */
+
+:root,
+html,
+html.theme-dark,
+html.theme-light {
+  color-scheme: dark;
+
+  --bg: #000000;
+  --text: #f5f5f0;
+  --text-body: rgba(245, 245, 240, 0.9);
+  --muted: rgba(245, 245, 240, 0.64);
+  --border: rgba(212, 175, 55, 0.2);
+  --card: #000000;
+  --surface: #000000;
+  --canvas: #000000;
+  --surface-2: rgba(212, 175, 55, 0.08);
+  --header-scrim: rgba(0, 0, 0, 0.84);
+  --overlay: rgba(0, 0, 0, 0.72);
+  --accent: #d4af37;
+  --accent-hover: #e8c547;
+  --accent-muted: rgba(212, 175, 55, 0.14);
+  --accent-fg: #000000;
+  --ring-offset: #000000;
+  --shadow-card: 0 0 20px rgba(212, 175, 55, 0.15);
+  --error: #f87171;
+  --foreground: var(--text);
+  --background: var(--bg);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-fraunces);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+html ::selection {
+  background-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-body);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  background-image:
+    radial-gradient(circle at top, rgba(212, 175, 55, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(212, 175, 55, 0.03), transparent 30%);
+}
+
+/* RTL: Arabic script reads best with system fonts alongside Latin variable font */
+[dir="rtl"] body {
+  font-family: var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+/* RTL: avoid LTR-default text alignment in form controls */
+[dir="rtl"] input:not([type="checkbox"]):not([type="radio"]),
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: start;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+/* Arabic headlines: Latin display font has weak Arabic coverage */
+[dir="rtl"] .font-display {
+  font-family: var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 600;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.premium-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    rgba(0, 0, 0, 0.72);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px);
+}
+
+.premium-media-frame {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.14), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.1));
+  box-shadow: var(--shadow-card);
+}
+
+.premium-media-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.5)),
+    radial-gradient(circle at top, rgba(212, 175, 55, 0.12), transparent 45%);
+  pointer-events: none;
+}
+
+.premium-media {
+  filter: brightness(0.72) contrast(1.08) saturate(0.78);
+  transform: scale(1.01);
+}
