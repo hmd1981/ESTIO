@@ -24,6 +24,8 @@ type PreQualCopy = {
   mustHave: string[];
   nextTitle: string;
   next: string[];
+  notAcceptedTitle: string;
+  notAccepted: string[];
 };
 
 type CommitmentPanelCopy = {
@@ -127,6 +129,20 @@ export function DealEntryCluster({
             </p>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--muted)]">
               {preQualification.next.map((line) => (
+                <li key={line} className="flex gap-3">
+                  <span
+                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--border)]"
+                    aria-hidden
+                  />
+                  {line}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]/90">
+              {preQualification.notAcceptedTitle}
+            </p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--text-body)]">
+              {preQualification.notAccepted.map((line) => (
                 <li key={line} className="flex gap-3">
                   <span
                     className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--border)]"

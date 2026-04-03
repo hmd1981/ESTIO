@@ -8,6 +8,7 @@ import { HeroSection } from "@/components/sections/hero-section";
 import { IndustriesSection } from "@/components/sections/industries-section";
 import { ServicesOverviewSection } from "@/components/sections/services-overview-section";
 import { TrustSection } from "@/components/sections/trust-section";
+import { AiOutputPreviewSection } from "@/components/sections/ai-output-preview-section";
 import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
 import { computeHomeSectionOrder } from "@/lib/cms/home-section-order";
 import { mergeHomeSections } from "@/lib/cms/merge-home";
@@ -16,6 +17,8 @@ import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
 import { brand } from "@/lib/content/site";
+import { operationalAlignment, systemIdentity } from "@/lib/content/home";
+import { operationalAlignmentAr, systemIdentityAr } from "@/lib/content/home-ar";
 import { notFound } from "next/navigation";
 
 type Props = {
@@ -78,6 +81,8 @@ export default async function HomePage({ params, searchParams }: Props) {
   const m = mergeHomeSections(cms, raw, cmsEn);
   const mediaAssets = bundle.mediaAssets ?? {};
   const sectionOrder = computeHomeSectionOrder(cms);
+  const identityBlock = raw === "ar" ? systemIdentityAr : systemIdentity;
+  const alignmentBlock = raw === "ar" ? operationalAlignmentAr : operationalAlignment;
   const highlight = (() => {
     const q = highlightFromQuery;
     if (typeof q === "string" && q.trim()) return q.trim();
@@ -86,6 +91,57 @@ export default async function HomePage({ params, searchParams }: Props) {
 
   const nodes: Record<string, React.ReactNode> = {
     hero: <HeroSection hero={m.hero} mediaAssets={mediaAssets} />,
+    "ai-preview": <AiOutputPreviewSection locale={raw} />,
+    identity: (
+      <section
+        id="identity"
+        className="scroll-mt-24 border-b border-[var(--border)] bg-[var(--canvas)] py-10 sm:py-12"
+      >
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+              {identityBlock.heading}
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-[var(--text)] sm:text-lg">
+              {identityBlock.body}
+            </p>
+            <p className="mt-4 text-sm font-medium text-[var(--muted)]">
+              {identityBlock.contrast}
+            </p>
+          </div>
+        </div>
+      </section>
+    ),
+    alignment: (
+      <section
+        id="alignment"
+        className="scroll-mt-24 border-b border-[var(--border)] bg-[var(--canvas)] py-12 sm:py-14"
+      >
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+              {alignmentBlock.kicker}
+            </p>
+            <h2 className="mt-4 text-lg font-semibold tracking-tight text-[var(--text)] sm:text-xl">
+              {alignmentBlock.title}
+            </h2>
+            <ul className="mt-6 space-y-3">
+              {alignmentBlock.points.map((point) => (
+                <li
+                  key={point}
+                  className="flex gap-3 border-s-2 border-[var(--accent)]/30 ps-4 text-sm leading-relaxed text-[var(--text-body)]"
+                >
+                  {point}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 text-sm leading-relaxed text-[var(--muted)]">
+              {alignmentBlock.footer}
+            </p>
+          </div>
+        </div>
+      </section>
+    ),
     guided: (
       <GuidedIntentSection
         guided={m.guided}

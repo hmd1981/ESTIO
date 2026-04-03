@@ -30,6 +30,30 @@ export const ADMIN_ROUTES: AdminRouteDefinition[] = [
     matchPrefix: true,
   },
   {
+    id: "ai-studio",
+    href: "/admin/ai-studio",
+    label: "AI Studio",
+    description:
+      "Landing copy for /ai-studio plus pointers to service records for sub-routes.",
+    primaryResponsibility:
+      "Publish AI Studio marketing content and keep sub-offerings aligned with Services.",
+    section: "content",
+    sort: 25,
+    matchPrefix: false,
+  },
+  {
+    id: "studio-analytics",
+    href: "/admin/studio-analytics",
+    label: "Studio analytics",
+    description:
+      "Formal stats summary, sample-threshold policy, daily rollups for AI Studio events.",
+    primaryResponsibility:
+      "Read-only operational view; ingest schema and KPI layout are versioned (v1 frozen).",
+    section: "content",
+    sort: 26,
+    matchPrefix: false,
+  },
+  {
     id: "services",
     href: "/admin/services",
     label: "Services",

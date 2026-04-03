@@ -11,6 +11,7 @@ import { useSiteBundle } from "@/components/site-bundle-context";
 import { withLocale } from "@/lib/i18n/paths";
 import type { FooterColumn } from "@/lib/content/types";
 import { getMessages } from "@/lib/i18n/messages";
+import { toArabicUiNumerals } from "@/lib/i18n/numerals";
 
 export function SiteFooter() {
   const bundle = useSiteBundle();
@@ -36,6 +37,10 @@ export function SiteFooter() {
       ? [s?.address, s?.city, s?.country].filter(Boolean).join(", ")
       : contactPlacements.cityLine;
   const phoneDisplay = s?.phone ?? contactPlacements.phoneDisplay;
+  const phoneDisplayUi =
+    locale === "ar"
+      ? toArabicUiNumerals(String(phoneDisplay))
+      : phoneDisplay;
   const phoneHref = s?.phone
     ? `tel:${String(s.phone).replace(/[\\s-]/g, "")}`
     : contactPlacements.phoneHref;
@@ -108,7 +113,7 @@ export function SiteFooter() {
                     href={phoneHref}
                     className="font-medium text-[var(--estio-ink)] underline-offset-4 hover:underline"
                   >
-                    {phoneDisplay}
+                    {phoneDisplayUi}
                   </a>
                 </li>
                 <li>

@@ -6,15 +6,16 @@ export const brand = {
   legalName: "Estio",
   domain: "estio.org",
   tagline:
-    "Premium digital services and applied AI from Muscat — helping organisations build presence, grow commercially, and automate with discipline.",
+    "Scoped delivery firm — platforms, content operations, governed AI, and enterprise automation. Muscat. Named systems. Written scope. Single owner.",
   /** Fallback when CMS has no `footerTextAr` on Arabic routes */
   taglineAr:
-    "خدمات رقمية وتطبيقات ذكاء اصطناعي من مسقط — لتعزيز الحضور الرقمي، والنمو التجاري، والتشغيل الأذكى بانضباط.",
+    "إستيو — تنفيذ محدود النطاق للأنظمة التشغيلية والمنصّات الرقمية: نطاق معلن، تكاملات مسماة، قبول مرحلي، وتسليم يشغّله فريقكم. مقرّنا القرم، مسقط.",
 } as const;
 
 export const primaryNav: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "AI Studio", href: "/ai-studio" },
   { label: "Enterprise", href: "/enterprise" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
@@ -23,6 +24,7 @@ export const primaryNav: NavItem[] = [
 export const primaryNavAr: NavItem[] = [
   { label: "الرئيسية", href: "/" },
   { label: "الخدمات", href: "/services" },
+  { label: "استوديو الذكاء", href: "/ai-studio" },
   { label: "المؤسسات", href: "/enterprise" },
   { label: "من نحن", href: "/about" },
   { label: "اتصل بنا", href: "/contact" },
@@ -52,7 +54,15 @@ export const footerColumns: FooterColumn[] = [
         href: "/services/content-campaigns",
       },
       { label: "AI Creative Services", href: "/services/ai-creative" },
-      { label: "Enterprise AI & automation", href: "/enterprise" },
+      { label: "Operational systems & integrations", href: "/enterprise" },
+    ],
+  },
+  {
+    title: "AI Studio",
+    links: [
+      { label: "AI Image Production", href: "/ai-studio/image-production" },
+      { label: "AI Video Production", href: "/ai-studio/video-production" },
+      { label: "Brand AI Packs", href: "/ai-studio/brand-ai-packs" },
     ],
   },
 ];
@@ -77,7 +87,15 @@ export const footerColumnsAr: FooterColumn[] = [
         href: "/services/content-campaigns",
       },
       { label: "خدمات الإبداع بالذكاء الاصطناعي", href: "/services/ai-creative" },
-      { label: "الذكاء المؤسسي والأتمتة", href: "/enterprise" },
+      { label: "أنظمة التشغيل والتكامل", href: "/enterprise" },
+    ],
+  },
+  {
+    title: "استوديو الذكاء",
+    links: [
+      { label: "إنتاج الصور بالذكاء الاصطناعي", href: "/ai-studio/image-production" },
+      { label: "إنتاج الفيديو بالذكاء الاصطناعي", href: "/ai-studio/video-production" },
+      { label: "حزم العلامة التجارية", href: "/ai-studio/brand-ai-packs" },
     ],
   },
 ];
@@ -93,5 +111,6 @@ export const contactPlacements = {
   whatsappHref: "https://wa.me/message/NBV22R27A46TB1",
   email: "info@estio.org",
   emailHref: "mailto:info@estio.org",
-  mapQuery: "Qurum,+Muscat,+Oman",
+  /** Shared EN/AR default; override per locale via Pages → contact → Map link in admin. */
+  googleMapsUrl: "https://maps.app.goo.gl/vJckMvewcxNNwfq37",
 } as const;

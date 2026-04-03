@@ -35,20 +35,42 @@ const deepLinkPaths = [
   "/enterprise/automation",
 ] as const;
 
-const caseStudyVisuals = [
-  {
-    imageUrl: "/enterprise/private-ai-dashboard.svg",
-    imageAlt: "Private AI dashboard",
-  },
-  {
-    imageUrl: "/enterprise/workflow-approval-flow.svg",
-    imageAlt: "Workflow approval flow",
-  },
-  {
-    imageUrl: "/enterprise/operations-control-panel.svg",
-    imageAlt: "Operations control panel",
-  },
-] as const;
+const caseStudyVisualsByLocale = {
+  en: [
+    {
+      imageUrl: "/enterprise/private-ai-dashboard.svg",
+      imageAlt:
+        "Schematic: governed retrieval UI with citation trail and role-scoped corpus — illustrative reference pattern, not a live system.",
+    },
+    {
+      imageUrl: "/enterprise/workflow-approval-flow.svg",
+      imageAlt:
+        "Schematic: RFQ-to-approval control flow with named gates and exception queue — illustrative automation pattern.",
+    },
+    {
+      imageUrl: "/enterprise/operations-control-panel.svg",
+      imageAlt:
+        "Schematic: operator view of queue depth and failure class by integration pair — illustrative monitoring pattern.",
+    },
+  ],
+  ar: [
+    {
+      imageUrl: "/enterprise/private-ai-dashboard.svg",
+      imageAlt:
+        "رسم توضيحي: واجهة استرجاع محكوم مع إحالة للمصدر ونطاق معرفة حسب الدور — نموذج مرجعي وليس نظاماً حياً.",
+    },
+    {
+      imageUrl: "/enterprise/workflow-approval-flow.svg",
+      imageAlt:
+        "رسم توضيحي: مسار طلب عرض إلى اعتماد مع بوابات مسماة وصف استثناءات — نموذج أتمتة مرجعي.",
+    },
+    {
+      imageUrl: "/enterprise/operations-control-panel.svg",
+      imageAlt:
+        "رسم توضيحي: لوحة تشغيل لعمق الطوابير وتصنيف الفشل حسب أزواج التكامل — نموذج مراقبة مرجعي.",
+    },
+  ],
+} as const;
 
 export default async function EnterpriseOverviewPage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
@@ -59,19 +81,24 @@ export default async function EnterpriseOverviewPage({ params, searchParams }: P
   const highlightFromQuery = Array.isArray(sp.highlight)
     ? sp.highlight[0]
     : sp.highlight;
-  const content = await resolvePublishedServiceDetail(slug, raw, fallback);
   const app = getMessages(raw).enterpriseAppendix;
 
-  const bundle = await getSiteBundle(raw);
+  const [content, bundle, enPublished] = await Promise.all([
+    resolvePublishedServiceDetail(slug, raw, fallback),
+    getSiteBundle(raw),
+    raw === "ar" ? getPublishedSiteBundle("en") : Promise.resolve(null),
+  ]);
   const cms = (bundle.marketingPages?.enterprise?.sections ??
     {}) as MarketingPageSectionsCMS;
   const cmsEn =
     raw === "ar"
-      ? (((await getPublishedSiteBundle("en")).marketingPages?.enterprise
-          ?.sections ?? {}) as MarketingPageSectionsCMS)
+      ? ((enPublished?.marketingPages?.enterprise?.sections ??
+          {}) as MarketingPageSectionsCMS)
       : undefined;
   const ev = mergeEnterpriseVisuals(cms, cmsEn, raw);
   const baseDefaults = buildEnterpriseLandingMergeDefaults(raw);
+  const caseStudyVisuals =
+    raw === "ar" ? caseStudyVisualsByLocale.ar : caseStudyVisualsByLocale.en;
   const landing = mergeEnterpriseLandingSections(cms, cmsEn, raw, {
     ...baseDefaults,
     caseStudies: {

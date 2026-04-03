@@ -6,6 +6,7 @@ import { inferVideoMimeType } from "@/lib/cms/media-kind";
 import type { MediaAssetMap } from "@/lib/cms/types";
 import {
   imageNeedsUnoptimized,
+  resolveExplicitVideoUrl,
   resolveImage,
   resolveVisualMedia,
 } from "@/lib/cms/resolve-image";
@@ -27,22 +28,6 @@ function resolveHeroSrc(
   return url;
 }
 
-/** Explicit hero video fields only — no default file; background must stay static. */
-function resolveExplicitHeroVideoUrl(
-  videoUrl: string | undefined,
-  videoMediaAssetId: string | undefined,
-  mediaAssets: MediaAssetMap,
-): string | undefined {
-  const direct = videoUrl?.trim();
-  if (direct) return direct;
-  const mediaId = videoMediaAssetId?.trim();
-  if (mediaId) {
-    const fromMedia = mediaAssets[mediaId]?.url?.trim();
-    if (fromMedia) return fromMedia;
-  }
-  return undefined;
-}
-
 export function HeroSection({
   hero,
   mediaAssets = {},
@@ -58,7 +43,7 @@ export function HeroSection({
   const resolved = resolveImage(imageRef, mediaAssets);
   const imageAsVisual = resolveVisualMedia(imageRef, mediaAssets);
 
-  const explicitVideoUrl = resolveExplicitHeroVideoUrl(
+  const explicitVideoUrl = resolveExplicitVideoUrl(
     hero.videoUrl,
     hero.videoMediaAssetId,
     mediaAssets,
@@ -136,8 +121,9 @@ export function HeroSection({
               <ButtonLink href={hero.primaryCta.href}>
                 {hero.primaryCta.label}
               </ButtonLink>
-              <ButtonLink href={hero.secondaryCta.href} variant="secondary">
-                {hero.secondaryCta.label}
+              <ButtonLink href={hero.secondaryCta.href} variant="secondary" className="group/cta">
+                <span>{hero.secondaryCta.label}</span>
+                <span className="ms-1.5 inline-block transition-transform duration-200 ease-out group-hover/cta:translate-x-1 motion-reduce:transition-none" aria-hidden="true">&rarr;</span>
               </ButtonLink>
             </div>
           </div>

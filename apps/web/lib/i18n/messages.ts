@@ -55,6 +55,8 @@ export type MarketingMessages = {
     nextSteps: string[];
     /** iframe title for embedded map */
     mapIframeTitle: string;
+    /** External Google Maps link under office address */
+    openInGoogleMaps: string;
   };
   contactForm: {
     serviceInterestOptions: { value: string; label: string }[];
@@ -107,6 +109,9 @@ export type MarketingMessages = {
     h1: string;
     lead: string;
     lead2?: string;
+    /** Bridge between hero and practice grid (deal-entry narrative). */
+    practicesSectionKicker: string;
+    practicesSectionLead: string;
     learnMore: string;
     bottomH2: string;
     bottomBody: string;
@@ -127,6 +132,7 @@ export type MarketingMessages = {
   /** Homepage enterprise bridge (systems positioning + link to /enterprise). */
   homeEnterpriseBridge: {
     eyebrow: string;
+    /** Must match site-wide CTA taxonomy (e.g. Review programme paths). */
     secondaryCtaLabel: string;
   };
   /** Defaults for /enterprise landing (overridable via enterprise CMS section keys). */
@@ -139,8 +145,21 @@ export type MarketingMessages = {
     practiceSectionTitle: string;
     practiceLead: string;
     practiceBlocks: { title: string; body: string }[];
+    /** Illustrative integration map — actual scope is client inventory (SOW). */
+    integrationSurfacesTitle: string;
+    integrationSurfacesIntro: string;
+    integrationSurfacesGroups: { heading: string; examples: string }[];
+    integrationNamedSystemsTitle: string;
+    integrationNamedSystems: { category: string; examples: string }[];
+    integrationNamedSystemsFooter: string;
     proofSectionTitle: string;
-    proofItems: { title: string; body: string }[];
+    proofItems: {
+      title: string;
+      body: string;
+      evidenceType?: "case" | "internal" | "simulation" | "reference_architecture";
+      verificationLevel?: "internal" | "observed" | "repeatable" | "contractual";
+      verificationNote?: string;
+    }[];
     evidenceLabels: Record<
       "case" | "internal" | "simulation" | "reference_architecture",
       string
@@ -213,6 +232,12 @@ export type MarketingMessages = {
     qualificationRequiredLabel: string;
     qualificationOptionalLabel: string;
     scopedEngagementCtaEyebrow: string;
+    executionTrace: {
+      title: string;
+      happyPath: { label: string; steps: string[] };
+      failurePath: { label: string; steps: string[] };
+      footer: string;
+    };
     diagramTypeLabels: Record<"architecture" | "flow" | "integration", string>;
     dealEntryCards: {
       title: string;
@@ -252,6 +277,8 @@ export type MarketingMessages = {
       mustHave: string[];
       nextTitle: string;
       next: string[];
+      notAcceptedTitle: string;
+      notAccepted: string[];
     };
     dealPathMicro: {
       ENTERPRISE_AI: { focus: string; expectation: string };
@@ -259,6 +286,11 @@ export type MarketingMessages = {
       PLATFORM_BUILD: { focus: string; expectation: string };
     };
     structuredEngagementLine: string;
+    closingPressure: {
+      title: string;
+      body: string;
+    };
+    scopeControl: string;
   };
   footerContact: {
     web: string;
@@ -285,32 +317,32 @@ const en: MarketingMessages = {
   breadcrumbAria: "Breadcrumb",
   breadcrumbHome: "Home",
   serviceDetail: {
-    allServices: "All services",
-    viewAllServices: "View all services",
+    allServices: "Review programme paths",
+    viewAllServices: "Review programme paths",
     capabilities: "Capabilities",
     idealClients: "Ideal clients & use cases",
     whatYouReceive: "What you receive",
     deliverablesIntro:
-      "Every engagement includes clearly defined deliverables — documented, reviewed, and handed over with full transparency.",
-    howWeWork: "How we work",
+      "Every engagement specifies contractual deliverables — documented, reviewed against acceptance criteria, and handed over with operational artefacts.",
+    howWeWork: "Execution model",
     howWeWorkIntro:
-      "A structured process designed for clarity, accountability, and predictable outcomes.",
+      "Phased delivery with defined gates, written acceptance criteria, and rollback paths at each stage.",
     definitionOfDoneLabel: "Definition of done",
   },
-  guidedSectionKicker: "Get started",
-  homeMetadataTitleSuffix: "Premium Digital Services & Applied AI | Muscat, Oman",
+  guidedSectionKicker: "Select your engagement path",
+  homeMetadataTitleSuffix: "Scoped Delivery — Platforms, Content Ops, Governed AI & Enterprise Automation | Muscat",
   about: {
     seoTitle: "About",
     seoDescription:
-      "Estio designs and builds digital platforms, content programmes, governed AI creative output, and enterprise-grade automation — from Muscat for GCC organisations that require accountable delivery.",
+      "Scoped delivery firm: digital platforms, content operations, governed AI creative, and enterprise automation — from Muscat for GCC organisations that require written scope and accountable delivery.",
     kicker: "About Estio",
-    h1: "Digital execution and applied AI for organisations that answer to boards, regulators, and customers",
+    h1: "Scoped delivery firm — not an agency, not a consultancy",
     introP1:
-      "Estio is a Muscat-based firm that delivers websites and applications, sustained content and campaigns, AI-assisted creative production under brand and legal guardrails, and private AI and automation tied to your systems and data. We exist because regional enterprises need a supplier who signs up to scope, documents decisions, and ships work that survives internal review — not slide decks and experiments.",
+      "Estio is a Muscat-based firm that designs and deploys production websites, operates content programmes, governs AI creative output under brand and legal controls, and builds deterministic automation tied to named systems and data classes. We exist because enterprises in the GCC need a firm that signs scope, documents decisions, and ships work that survives board review, IT audit, and regulatory scrutiny — not pitch decks and innovation experiments.",
     introP2:
-      "We are not a generalist agency pitching trends. We are a delivery partner: named ownership, clear artefacts, and outcomes measured against what you said mattered when the engagement started.",
-    principlesKicker: "What we do",
-    principlesH2: "Four practices, one standard of delivery",
+      "We do not pitch trends. We define deliverables, accept accountability, and operate against the criteria you set when the engagement started. If we are not the right fit, we say so before you spend.",
+    principlesKicker: "Delivery practices",
+    principlesH2: "Four practices — one operating standard",
     values: [
       {
         title: "Digital platforms and experiences",
@@ -325,14 +357,14 @@ const en: MarketingMessages = {
         body: "Accelerated imagery, copy, and video where AI is allowed only within rules you set; human review before anything customer-facing goes live.",
       },
       {
-        title: "Enterprise AI and automation",
-        body: "Private assistants on approved knowledge, integrations, and workflow automation designed for IT-operated production environments — with access control and auditability built in.",
+        title: "Workflow automation & governed retrieval",
+        body: "Deterministic integrations across named systems; retrieval services bound to allow-listed corpora; identity and logging enforced in configuration for IT-operated production.",
       },
     ],
-    capabilitiesKicker: "How we work",
-    capabilitiesH2: "Structure you can hold us to",
+    capabilitiesKicker: "Operating model",
+    capabilitiesH2: "Enforceable structure — not aspirational process",
     capabilitiesLead:
-      "The same operating model applies whether the engagement is a site build or a multi-system automation: agreed scope, visible progress, and no silent scope creep.",
+      "The same operating model applies whether the engagement is a platform build or a multi-system automation: written scope, visible progress, and no silent scope creep. Hold us to it.",
     capabilities: [
       {
         title: "Accountable ownership",
@@ -351,8 +383,8 @@ const en: MarketingMessages = {
         body: "We limit concurrent engagements so each project gets senior attention and predictable response times.",
       },
     ],
-    positionKicker: "Why Estio",
-    positionH2: "Built for GCC operating reality",
+    positionKicker: "Operating position",
+    positionH2: "Designed for GCC procurement and operating reality",
     positionBody:
       "We work from Qurum with GCC time zones, business culture, and bilingual stakeholder communication in mind. Proximity matters when decisions need a same-day conversation or an on-site session with your IT and compliance teams.",
     sidebar: [
@@ -373,21 +405,21 @@ const en: MarketingMessages = {
         body: "We don’t sell retainers filled with unspecified hours, promise AI without data and governance clarity, or take on work we cannot staff to our own standard. If we are not the right fit, we say so early.",
       },
     ],
-    ctaH2: "Start with a direct conversation",
+    ctaH2: "Define scope. Enter qualification.",
     ctaBody:
-      "Describe the outcome you need and the constraints you operate under. We will respond with a concrete view of approach, effort, and timeline — or a referral if another path is better.",
-    ctaButton: "Contact Estio",
+      "State the outcome, systems, and constraints. We respond with a structured assessment of fit, effort, and phasing — or a direct decline if we are not the right firm.",
+    ctaButton: "Start a scoped engagement",
   },
   contact: {
     seoTitle: "Contact",
     seoDescription:
-      "Reach Estio in Muscat for project enquiries. Expect a substantive reply within one business day and a clear view of next steps.",
-    kicker: "Contact",
-    h1: "Tell us what you need to achieve",
-    lead: "Use the form or call. We aim to respond within one business day (Sunday–Thursday, Muscat time). You will get a substantive reply — not an auto-acknowledgement — and, where useful, a short call to clarify scope before any proposal.",
-    formH2: "Project definition",
+      "Qualification intake for scoped delivery — Estio, Muscat. Written reply within one business day: fit, questions, or decline.",
+    kicker: "Qualification intake",
+    h1: "Define scope before we allocate capacity",
+    lead: "This route is a qualification gate — not a contact desk. Name the outcome, systems in scope, data classes, and the internal signatory for access and go-live. Within one business day you get a written fit call, targeted scope questions, or a direct decline. No auto-replies. No open discovery calls without a brief that clears the bar below.",
+    formH2: "Engagement definition",
     formLead:
-      "State the outcome, constraints, and internal approvals. Specific inputs reduce ambiguity and speed up fit and effort assessment.",
+      "Name the outcome, constraints, systems, and who approves internally. Incomplete briefs receive a request for specifics — not a meeting invite.",
     asideDirectH3: "Prefer phone or WhatsApp?",
     whatsapp: "WhatsApp",
     officeH3: "Office",
@@ -398,21 +430,23 @@ const en: MarketingMessages = {
       "If we proceed: a written proposal with scope, milestones, dependencies on your side, and commercial terms.",
     ],
     mapIframeTitle: "Map",
+    openInGoogleMaps: "Open in Google Maps",
   },
   contactForm: {
     serviceInterestOptions: [
       { value: "WEB_DESIGN_DEVELOPMENT", label: "Website design & development" },
       { value: "CONTENT_CAMPAIGNS", label: "Content creation & campaigns" },
       { value: "AI_CREATIVE", label: "AI creative services" },
-      { value: "ENTERPRISE_AI", label: "Enterprise AI & knowledge systems" },
+      { value: "AI_STUDIO", label: "AI Studio \u2014 image, video, or brand packs" },
+      { value: "ENTERPRISE_AI", label: "Governed retrieval & internal knowledge surfaces" },
       { value: "AUTOMATION", label: "Workflow automation & integrations" },
       { value: "PLATFORM_BUILD", label: "Platform build & technical programme" },
       { value: "UNSURE", label: "Not sure yet" },
     ],
-    successTitle: "Thank you for reaching out",
+    successTitle: "Submission received — qualification in progress",
     successBody:
-      "A member of our team will review your enquiry and respond within one business day. For urgent matters, please call or message us on WhatsApp.",
-    submitAnother: "Submit another enquiry",
+      "Your brief is under review. Expect a written response within one business day: either scoping questions, a fit assessment, or a redirect. For time-sensitive matters, call directly.",
+    submitAnother: "Submit another brief",
     name: "Full name",
     namePh: "Your name",
     email: "Business email",
@@ -427,9 +461,9 @@ const en: MarketingMessages = {
     messagePh:
       "Objectives, systems in scope, constraints, success criteria, and who approves...",
     error:
-      "Something went wrong. Please try again or contact us directly at",
+      "Something went wrong. Please try again or write to",
     sending: "Sending...",
-    submit: "Send enquiry",
+    submit: "Start qualification",
     qualificationHeading: "Before you submit",
     qualificationIntro:
       "We prioritise enquiries that include the items below for your selected area — it reduces back-and-forth and tells us if we are the right firm.",
@@ -460,13 +494,24 @@ const en: MarketingMessages = {
         ],
         optional: ["Prior attempt and why it stalled.", "Expansion criteria."],
       },
+      AI_STUDIO: {
+        required: [
+          "Output type: image, video, or brand pack.",
+          "Approximate volume or asset count.",
+          "Brand direction: existing guidelines, reference images, or described direction.",
+        ],
+        optional: [
+          "Target channels (web, social, print).",
+          "Delivery timeline.",
+        ],
+      },
     },
-    intakeProcessEyebrow: "Qualified intake",
-    intakeProcessTitle: "You are entering a qualification process",
+    intakeProcessEyebrow: "Structured qualification",
+    intakeProcessTitle: "You are entering a qualification gate — not a sales funnel",
     intakeProcessBody:
-      "Submissions are classified by path and reviewed for fit. Thin briefs receive a short decline or a request for specifics — not an open-ended series of discovery calls.",
-    enterprisePreSubmitEyebrow: "Minimum bar",
-    enterprisePreSubmitTitle: "Enterprise enquiries we actually respond to",
+      "Every submission is classified by engagement path and reviewed for fit against documented criteria. Incomplete briefs receive a direct decline or a specific request for missing artefacts. We do not schedule open-ended discovery calls.",
+    enterprisePreSubmitEyebrow: "Minimum qualification bar",
+    enterprisePreSubmitTitle: "Enterprise submissions we accept for review",
     enterprisePreSubmitMustHaveTitle: "Confirm you have",
     enterprisePreSubmitMustHave: [
       "Named systems in scope — not “our stack” in the abstract.",
@@ -480,24 +525,27 @@ const en: MarketingMessages = {
       "Terms only after phase-one acceptance tests are agreed in writing.",
     ],
     structuredEngagementBeforeSubmit:
-      "This does not start delivery. It starts qualification. If you want a generic vendor conversation, say so plainly — we may redirect you.",
-    submitEnterpriseDeal: "Submit for qualification",
+      "Submission starts qualification — not delivery. Systems in scope and internal signatory must be explicit or we cannot proceed.",
+    submitEnterpriseDeal: "Start qualification",
   },
   servicesListing: {
     seoTitle: "Services",
     seoDescription:
-      "Platforms, content programmes, governed AI creative, and enterprise automation — scoped delivery from Estio, Muscat.",
-    kicker: "Services",
-    h1: "What we build and deliver",
+      "Four delivery practices: platforms, content operations, governed AI creative, and enterprise automation — scoped engagement from Estio, Muscat.",
+    kicker: "Delivery practices",
+    h1: "What we design, build, and operate",
     lead:
-      "ESTIO delivers websites and digital platforms, content and campaign execution, AI creative services, and enterprise AI & automation for organisations that expect clear scope and dependable delivery.",
+      "Four scoped practices — each with its own deliverables, acceptance tests, and commercial envelope. We do not bundle undifferentiated hours or sell capabilities theatre. You either know which line applies, or you use the final gate to force classification.",
     lead2:
-      "Each group below addresses a distinct commercial need: how your business presents itself, how it stays visible in the market, how creative output scales without losing control, and how internal operations become faster and more consistent.",
-    learnMore: "Learn more →",
-    bottomH2: "Unsure which group applies first?",
+      "Platform and web, content operations, governed creative throughput, and enterprise automation with identity-bound retrieval are executed under the same operating standard: written scope first, then build.",
+    practicesSectionKicker: "Practice catalogue",
+    practicesSectionLead:
+      "Each card is an annex to a potential SOW — not a menu of nice-to-haves. Open the line that matches your constraint; if none fit, skip to the qualification strip below.",
+    learnMore: "Define your scope →",
+    bottomH2: "No clear line match?",
     bottomBody:
-      "Send a short note on your priority outcome. We will suggest a sequencing of work — sometimes one stream, sometimes two in parallel — with dependencies stated clearly.",
-    bottomCta: "Contact Estio",
+      "State the operational constraint, systems touched, and internal owner. We return a single classified path — or a written redirect if another supplier owns the problem.",
+    bottomCta: "Define your scope",
   },
   faq: {
     seoTitle: "FAQ",
@@ -505,11 +553,11 @@ const en: MarketingMessages = {
       "How Estio prices, starts projects, delivers AI and automation, and what we need from clients — direct answers.",
     kicker: "FAQ",
     h1: "Straight answers",
-    lead: "What we are often asked before an engagement begins. If your situation is unusual, ask on the contact page — we prefer specificity to generic FAQs.",
+    lead: "What we are often asked before an engagement begins. Unusual situations belong in qualification — use the contact intake with specifics; we do not answer bespoke procurement questions here.",
     items: [
       {
         title: "How does pricing work?",
-        body: "We price from scope: deliverables, timeline, and risk. You receive a fixed proposal for defined work, or a phased plan with a clear cap per phase. We do not sell open-ended “hours buckets” without a work breakdown. Enterprise AI and automation is typically phased: assessment, proof on a narrow use case, then build.",
+        body: "We price from scope: deliverables, timeline, and risk. You receive a fixed proposal for defined work, or a phased plan with a clear cap per phase. We do not sell open-ended “hours buckets” without a work breakdown. Internal automation and governed retrieval work is typically phased: assessment, narrow pilot on one workflow, then build.",
       },
       {
         title: "What timelines should we expect?",
@@ -525,19 +573,19 @@ const en: MarketingMessages = {
       },
       {
         title: "How do your AI services actually work?",
-        body: "For creative AI, we define what may be generated, what must be human-reviewed, and what is out of bounds. For enterprise AI, we ground responses on knowledge you approve, enforce access by role, and log usage where required. We do not train public models on your confidential data without an explicit agreement.",
+        body: "For creative AI, we define what may be generated, what must be human-reviewed, and what is out of bounds. For internal retrieval systems, we ground responses on knowledge you approve, enforce access by role, and log usage where required. We do not train public models on your confidential data without an explicit agreement.",
       },
       {
         title: "Do you work on-site?",
-        body: "When the project requires it — workshops, discovery with IT, or launch support. Most delivery is remote with structured checkpoints. We are in Muscat for regional clients who need face-to-face sessions.",
+        body: "When the project requires it — workshops, discovery with IT, or launch operations. Most delivery is remote with structured checkpoints. We are in Muscat for regional clients who need face-to-face sessions.",
       },
       {
         title: "Who owns the work product?",
         body: "As agreed in the contract: typically you own paid-for deliverables and we retain no rights beyond portfolio reference unless you opt out. Source code and automation configurations are handed over with documentation unless a managed service is contracted separately.",
       },
       {
-        title: "What if we need support after launch?",
-        body: "We offer defined post-launch periods on web projects. For automation and enterprise AI, we align support SLAs to your operational needs. Ad-hoc requests are scoped as small engagements — not unlimited email support.",
+        title: "What happens after launch?",
+        body: "We define post-launch stabilisation periods on web projects. For automation and governed retrieval deployments, we align run-state SLAs to your operational requirements. Ad-hoc requests are scoped as small engagements — not unlimited email access.",
       },
       {
         title: "Do you subcontract everything?",
@@ -563,7 +611,7 @@ const en: MarketingMessages = {
     closeOverlay: "Close menu",
   },
   enterpriseAppendix: {
-    title: "Solution tracks",
+    title: "Delivery tracks",
     deepLinks: [
       {
         label: "Private AI assistant",
@@ -578,78 +626,115 @@ const en: MarketingMessages = {
     ],
   },
   homeEnterpriseBridge: {
-    eyebrow: "Operational systems",
-    secondaryCtaLabel: "Enterprise overview",
+    eyebrow: "Enterprise delivery",
+    secondaryCtaLabel: "Review programme paths",
   },
   enterpriseLanding: {
-    heroKicker: "Enterprise systems",
+    heroKicker: "Production system scope — not a capabilities page",
     heroAudienceLine:
-      "For CIOs, COOs, and transformation owners who sign off on production change — not slide decks.",
+      "For signatories only: CTO / COO / Head of Operations — you own production change, identity policy, and run-state cost. If you are not the signatory, forward this page.",
     secondaryCtaLabel: "Review programme paths",
-    practiceSectionTitle: "Where this lands in the operating model",
+    practiceSectionTitle: "1. System under delivery",
     practiceLead:
-      "Enterprise delivery is not a brighter UI. It is a named workflow, a defined knowledge boundary, and an operating model your IT and compliance teams can inspect before rollout.",
+      "Object types: (A) deterministic workflow across a closed integration inventory; (B) retrieval service bound to allow-listed corpora and identity configuration; (C) internal operator tools where scoped. Each engagement specifies: integration list (R/W), data classes, phase acceptance tests, rollback, L1 handover package.",
     practiceBlocks: [
       {
-        title: "Private AI systems",
+        title: "Retrieval + access control",
         body:
-          "Assistants and retrieval grounded on corpora you approve — with identity-aware access, logging where required, and deployment patterns that match your security model.",
+          "Corpus allow-list; role → source mapping; blocklist intents; channel placement; log retention aligned to your record rule — all configuration, not prompt text alone.",
       },
       {
-        title: "Workflow automation",
+        title: "Integration + orchestration",
         body:
-          "Documented flows across CRM, ticketing, finance, and messaging — with error handling, monitoring, and rollback paths instead of informal scripts.",
+          "Read/write contracts per system; retry and idempotency where required; exception type and owner field on every failed step; documented rollback.",
       },
       {
-        title: "Internal dashboards & tools",
+        title: "Handover",
         body:
-          "Operational visibility and handover artefacts: runbooks, escalation paths, and interfaces your teams can sustain after go-live.",
+          "Runbook, escalation matrix, monitoring dashboard or alert route, admin UI for corpus or workflow tuning — owned by your ops unless SLA states otherwise.",
       },
     ],
-    proofSectionTitle: "What the buyer can inspect",
+    integrationSurfacesTitle: "1.1 Illustrative integration inventory (non-exhaustive)",
+    integrationSurfacesIntro:
+      "Contractual scope uses your CMDB / application list. The table below names common classes only — for reviewer orientation, not as implied warranty of vendor support.",
+    integrationSurfacesGroups: [
+      {
+        heading: "Commercial & CRM",
+        examples:
+          "Opportunity / account objects; CPQ outputs; contract metadata; e-sign callback endpoints; case / ticket creation from workflow events.",
+      },
+      {
+        heading: "ERP & finance",
+        examples:
+          "GL / cost-centre posting interfaces; AP/AR approval APIs; budget-holder workflow; vendor / customer master read paths.",
+      },
+      {
+        heading: "Identity, documents, operations rail",
+        examples:
+          "OIDC / SAML IdP; HRIS role feeds where in scope; SharePoint / S3 / document DB with ACL model; ServiceNow / Jira / internal chat as notification or human-gate surfaces.",
+      },
+    ],
+    integrationNamedSystemsTitle: "Typical systems in scope",
+    integrationNamedSystems: [
+      { category: "CRM", examples: "Salesforce, HubSpot, Microsoft Dynamics, custom CRM" },
+      { category: "Finance", examples: "SAP, Oracle ERP, NetSuite, internal ERP / GL" },
+      { category: "Internal", examples: "REST APIs, internal dashboards, document management systems, ticketing (ServiceNow, Jira)" },
+    ],
+    integrationNamedSystemsFooter: "Exact systems are defined during qualification. We scope against your application inventory — not a vendor compatibility list.",
+    proofSectionTitle: "2. Pre-build artefacts (exist before capital commit)",
     evidenceLabels: {
-      case: "Case evidence",
-      internal: "Internal measurement",
-      simulation: "Simulation / model",
-      reference_architecture: "Reference architecture",
+      case: "Control artefact",
+      internal: "Operating measurement",
+      simulation: "Workflow / load model",
+      reference_architecture: "System boundary",
     },
     verificationLabels: {
       internal: "Internal control",
-      observed: "Observed in delivery",
-      repeatable: "Repeatable operating path",
-      contractual: "Explicit in contract / SOW",
+      observed: "Observed at cutover",
+      repeatable: "Repeatable path",
+      contractual: "In contract / SOW",
     },
     decisionSummaryForTeams:
-      "This is for teams that own production change — CIOs, COOs, and transformation sponsors accountable to IT and the board.",
+      "CIO / COO / Head of Ops — accountable for production outcome, risk, and run cost; not a lab without IT sign-off.",
     decisionSummaryRequires:
-      "Requires: a named sponsor, systems in scope, security constraints stated, and appetite for phased acceptance criteria.",
+      "Sponsor with budget or escalation rights. Systems + data classes in scope in writing. Security and change constraints stated. Phased gates with signed pass/fail per phase.",
     decisionSummaryDelivers:
-      "Delivers: governed automation or private AI tied to named workflows — with runbooks, logging policy, and traceability — not undifferentiated software.",
+      "Deployable subsystem: closed integration inventory, signed access matrix, logging retention, runbooks, queryable trace — operable by your staff per handover.",
     proofItems: [
       {
-        title: "Named systems in scope",
+        title: "Scope map precedes build budget",
         body:
-          "Every proposal ties value to real systems, owners, and data paths — not to a generic AI narrative.",
+          "Metric: workflow step → interface → data class → owner table complete; SOW references same row set.",
+        evidenceType: "reference_architecture",
+        verificationLevel: "contractual",
+        verificationNote: "Discovery pack → SOW.",
       },
       {
-        title: "Explicit access model",
+        title: "Access model signed before live traffic",
         body:
-          "Who can ask, what can be returned, and what must be logged are defined before anything goes live.",
+          "Metric: one document — invoke rights, corpora, blocklists, log retention — approved by security or named delegate.",
+        evidenceType: "internal",
+        verificationLevel: "contractual",
       },
       {
-        title: "Acceptance and runbooks",
+        title: "Cutover gate",
         body:
-          "Success criteria, failure handling, and owner handoff are written into the implementation path.",
+          "Metric: checklist closed; rollback tested or written; L1 + escalation named.",
+        evidenceType: "case",
+        verificationLevel: "observed",
+        verificationNote: "Pilot go-live record.",
       },
       {
-        title: "Commercial case",
+        title: "Workflow exceptions are typed and queued",
         body:
-          "The pilot case is framed around live volume, delay, rework, and specialist time — not vague efficiency claims.",
+          "Metric: each failure class maps to queue + owner; visible outside mail threads.",
+        evidenceType: "internal",
+        verificationLevel: "repeatable",
       },
     ],
-    caseStudiesTitle: "Representative case studies",
+    caseStudiesTitle: "Reference patterns (composite)",
     caseStudiesLead:
-      "Not logos on a slide. These are the mandate shapes buyers usually bring when they need proof, control, and a narrow path to value.",
+      "No client names. Each row: failure mode, built components, observable delta, validation method, decision unlocked.",
     caseStudyLabels: {
       situation: "Situation",
       systems: "Systems",
@@ -658,206 +743,229 @@ const en: MarketingMessages = {
       problem: "Problem",
       systemBuilt: "System built",
       outcome: "Outcome",
-      metrics: "Bounded metrics",
+      metrics: "Validation",
       decisionImpact: "Decision impact",
     },
     caseStudies: [
       {
         kicker: "PRIVATE AI",
-        title: "Policy assistant for distributed operations",
+        title: "Policy Q&A with citation and role boundary",
         decisionImpact:
-          "Enables a go/no-go on enterprise chat for policy: who may ask, what may be cited, and what must never leave the boundary.",
+          "Board or risk committee can approve or reject enterprise-wide policy chat: citation requirement, role matrix, and blocklist are explicit in the access model.",
         situation:
-          "Teams ask the same policy and product questions across branches, but approved answers live in PDFs, SharePoint folders, and inbox history.",
+          "Distributed ops repeats the same policy and product questions; authoritative text lives in files and mail threads, not one queryable, governed surface.",
         systems:
-          "Identity provider, approved document store, internal chat or portal, and audit logging.",
+          "Retrieval service over role-scoped corpora; IdP integration; internal chat or portal client; admin review queue for blocked intents; corpus publish workflow; audit log export; L1 runbook.",
         proof:
-          "Grounded answers with citations, role-aware access, admin review queue, and runbook for ownership after go-live.",
+          "Shorter time to first cited answer on tier-1 policy questions; reduction in escalations to subject-matter owners; sampled QA shows fewer contradictory answers across sites after corpus lock.",
         commercial:
-          "Value comes from faster first-response time, fewer escalations to specialists, and less policy drift between teams.",
+          "Measured on ticket samples and spot audits — not percentage promises without your baseline.",
       },
       {
         kicker: "AUTOMATION",
-        title: "RFQ-to-approval workflow with named checkpoints",
+        title: "Commercial document path with fixed gates",
         decisionImpact:
-          "Removes ambiguity on cycle time and ownership: commercial can defend status in CRM and finance without inbox archaeology.",
+          "Finance and sales leadership can enforce cycle-time SLAs on the RFQ path because status and exceptions are system-owned, not inbox-owned.",
         situation:
-          "Commercial teams chase status between CRM, finance, legal, and email, while exceptions disappear into manual follow-up.",
+          "RFQ status is chased across CRM, finance approval, and legal review; stalled items lack a single accountable queue.",
         systems:
-          "CRM, finance or ERP approval step, document generation, notifications, and an exception queue.",
+          "CRM-opportunity state machine; ERP or finance approval API; document render service; notification channel; exception queue with SLA owner field; immutable event log for approvals.",
         proof:
-          "Workflow map, named approval gates, retry handling, failure logging, and rollback path before scale-up.",
+          "Fewer days with status “unknown” on in-flight RFQs; document version mismatches detected before customer send; weekly exception count visible by failure class.",
         commercial:
-          "Value comes from cycle-time compression, fewer manual handoffs, and fewer errors in commercial paperwork.",
+          "Tracked against your historical cycle-time sample and error log — bounded claims only.",
       },
       {
         kicker: "BILINGUAL OPS",
-        title: "English and Arabic knowledge flow under one control model",
+        title: "One corpus, two languages, shared change control",
         decisionImpact:
-          "Unlocks one governance model for bilingual answers: same sources, same policy, auditable changes — no parallel shadow wikis.",
+          "Legal and HR can run one change programme for policy text instead of parallel EN/AR shadow copies with divergent enforcement.",
         situation:
-          "Regional teams need consistent answers in both languages, but translation and handoff delay decisions.",
+          "EN and AR answers diverge because translations and approvals happen in separate channels without linked versioning.",
         systems:
-          "Approved bilingual knowledge base, assistant layer, ticketing or portal, and a monitoring dashboard.",
+          "Versioned bilingual record store; paired publish workflow; assistant surfaces for EN/AR with shared governance hooks; defect tickets linked to corpus version; locale-specific evaluation set.",
         proof:
-          "Shared governance for content changes, language-specific evaluation, answer traceability, and staged rollout by team.",
+          "Policy updates publish to both languages under one change ticket; fewer employee-reported conflicts between language variants post-release.",
         commercial:
-          "Value comes from reduced rework, cleaner onboarding, and more consistent service across locations.",
+          "Compared to pre-change helpdesk or HR case tags — qualitative volume trend, not fabricated uplift.",
       },
     ],
-    fitSectionTitle: "Fit decision",
+    fitSectionTitle: "Fit gate — binary filter",
     fitSectionLead:
-      "Use this to decide whether the engagement model matches how your organisation buys and runs change.",
-    fitColumnTitle: "Fit",
-    nonFitColumnTitle: "Not a fit",
+      "This is not a soft assessment. Either your organisation can supply everything in the left column, or the engagement does not proceed. No exceptions. No workarounds.",
+    fitColumnTitle: "Proceed — all conditions met",
+    nonFitColumnTitle: "Stop — do not enquire",
     fitBullets: [
-      "You can name a sponsor, a workflow, and systems in scope.",
-      "You want artefacts IT can review: access model, logging, runbooks.",
-      "You accept phased rollout with acceptance criteria — not big-bang optimism.",
+      "Named sponsor who can commit scope, approve access changes, and sign off production go-live.",
+      "You can list — in writing — every system touched (read/write) and the data classes involved.",
+      "You require written artefacts: access model, integration map, runbooks, and acceptance tests. Not just a 'working system'.",
+      "You accept phased delivery: discovery → narrow pilot → scale — with a contractual stop line if phase one misses the bar.",
     ],
     nonFitBullets: [
-      "You need a vendor to “just try AI” without a bounded workflow or data boundary.",
-      "No owner exists who can approve access, integrations, or go-live.",
-      "You want fixed-price magic without discovery on real data paths and constraints.",
+      "Exploratory AI without a named workflow or corpus boundary. We do not build 'see what it can do' systems.",
+      "No internal owner can approve identity changes, integrations, or production traffic. No signatory means no engagement.",
+      "Fixed price and fixed date demanded before integration inventory and constraints are documented. Scope defines price — not the reverse.",
     ],
-    diagramSectionTitle: "System diagrams buyers can inspect",
+    diagramSectionTitle: "Reference diagrams",
     diagramLead:
-      "We sell the operating model as much as the feature. These diagrams show what actually has to exist before a private assistant or automation can be trusted in production.",
+      "Topology figure when set in CMS; then decomposed views — each column is a control or ownership boundary for IT review.",
     diagrams: [
       {
-        title: "Private AI assistant architecture",
+        title: "Private assistant — control stack",
         diagramType: "architecture",
         explanation:
-          "Read left to right: approved corpora, enforced policy layer, channels teams already use, then operational ownership.",
+          "Structural change: authoritative text moves behind version control + identity; responses become citations into that store; override path is admin-only and logged.",
         columns: [
           {
-            label: "Approved knowledge",
-            body: "Policies, product facts, SOPs, and documents you explicitly allow into scope.",
+            label: "Before",
+            body: "Uncontrolled search, forwarded PDFs, and inconsistent verbal guidance across sites.",
           },
           {
-            label: "Retrieval + policy layer",
-            body: "Access rules, source grounding, and prompt controls aligned to identity and data policy.",
+            label: "Corpus boundary",
+            body: "Explicit allow-list of sources; versioned updates; no silent drift into unapproved text.",
           },
           {
-            label: "Assistant in work channels",
-            body: "Teams ask inside chat, portal, or ticketing flows they already use.",
+            label: "Policy + identity",
+            body: "Role → permitted corpora → blocklist intents; logging retention matches your record-keeping rule.",
           },
           {
-            label: "Logs + ownership",
-            body: "Admin review, quality sampling, monitoring, and runbooks for day-two support.",
+            label: "After — owned channel",
+            body: "Same chat or portal surface; answers cite sources; humans queue for exceptions; ops owns monitoring.",
           },
         ],
         footer:
-          "The point is not chat. The point is controlled answers inside an auditable operating model.",
+          "Boundary: who may publish corpus changes; who may override a block; retention of query logs.",
       },
       {
-        title: "Workflow automation control loop",
+        title: "Automation — closed control loop",
         diagramType: "flow",
         explanation:
-          "A closed loop: trigger → orchestration → human gate → monitoring. Exceptions never disappear into personal inboxes.",
+          "Structural change: workflow state lives in the orchestration store; human approvals are records with user + timestamp; stalled items inherit SLA from queue config.",
         columns: [
           {
-            label: "Trigger event",
-            body: "Ticket, form submission, CRM update, or document arrival starts the flow.",
+            label: "Before",
+            body: "Manual copy between tools; status requests by message; exceptions without a ticket class.",
           },
           {
-            label: "Orchestration layer",
-            body: "Rules, integrations, retries, and exception handling move work between systems.",
+            label: "Trigger + orchestration",
+            body: "System events drive steps; integrations retry; partial failure does not corrupt downstream records.",
           },
           {
-            label: "Human approval",
-            body: "Named checkpoints remain where judgement, policy, or sign-off is required.",
+            label: "Human gate",
+            body: "Judgement-only steps stay human; system records who approved, when, and on which revision.",
           },
           {
-            label: "Monitoring + escalation",
-            body: "Failures surface to owners with logs, alerting, and a documented recovery path.",
+            label: "After — observable ops",
+            body: "Dashboards for queue depth and failure class; alert routes to named on-call; rollback documented.",
           },
         ],
         footer:
-          "The point is not removing people. The point is removing blind copy-paste while keeping control.",
+          "Ownership: queue owner per failure class; integration owner per system pair.",
       },
     ],
-    roiSectionTitle: "How the ROI case is framed",
+    roiSectionTitle: "Economics (qualitative unless you supply baseline)",
     roiLead:
-      "We do not sell AI on abstract enthusiasm. We frame value against a named workflow, a known monthly volume, and a visible cost of delay, error, or specialist time.",
-    roiFormulaLabel: "Typical framing",
+      "Value axes: clock time (specialist hours, queue wait), defect rate (rework, compliance variance), inter-system handoff count and status dwell time on the scoped path. Cost drivers: integration count, auth mode count, logging + human-review ratio, pilot headcount, regulated or bilingual corpus handling, L1/L2 owner (you vs vendor SLA). No percentage ROI without your baseline measurement on the same workflow.",
+    roiFormulaLabel: "Ledger framing",
     roiFormula:
-      "Recovered hours + avoided rework + faster cycle time - implementation and support cost",
-    roiInputsTitle: "Bring these numbers to the first meeting",
+      "(Δ time + Δ defects + Δ handoff dwell) − (discovery + pilot implementation + run)",
+    roiInputsTitle: "Bring to the first working session",
     roiInputs: [
-      "Process name and business owner",
-      "Monthly volume, tickets, documents, or enquiries",
-      "Minutes lost per case or per handoff",
-      "Cost of exception, delay, or wrong answer",
-      "Systems, approvals, and security constraints",
+      "Single workflow name and business owner.",
+      "Monthly volume: tickets, documents, or cases on that path.",
+      "Minutes per case today — handoff to handoff.",
+      "Exception or error classes you already count (or agree to count).",
+      "Systems touched, approval chains, and non-negotiable security rules.",
     ],
     roiCards: [
       {
-        title: "Recovered capacity",
-        body:
-          "Start where skilled people spend time repeating approved answers or manually moving data between systems.",
+        title: "Time",
+        body: "Repeat retrieval or automated field moves vs manual search and copy.",
       },
       {
-        title: "Fewer exceptions",
-        body:
-          "Value often appears in lower rework, fewer escalations, and cleaner documentation for audit or finance review.",
+        title: "Errors",
+        body: "Wrong document versions, policy drift, untracked exceptions.",
       },
       {
-        title: "Faster decisions",
-        body:
-          "Cycle-time improvement matters when approvals, onboarding, or service response are blocking revenue or operations.",
+        title: "Handoffs",
+        body: "Count of system-to-system hops and time in unknown state before the next recorded status.",
       },
     ],
     roiReducedTitle: "What is reduced",
     roiAutomatedTitle: "What is automated",
     roiGainedTitle: "What is gained",
     roiReduced: [
-      "Manual handoffs between systems when the path is documented and repeatable.",
-      "Specialist time spent answering the same approved policy or product questions.",
-      "Rework caused by missing or inconsistent status between teams.",
+      "Status threads and manual updates between named systems on the scoped path.",
+      "Repeated policy or product answers handled without retrieval, citation, or queue.",
+      "Rework from version drift, missing handoff context, or untracked exceptions.",
     ],
     roiAutomated: [
-      "Routing, status updates, and notifications between named systems.",
-      "Retrieval from approved corpora with policy and identity checks enforced in configuration.",
-      "Exception queues where human judgement is still required — but visible, not hidden in email.",
+      "Deterministic routing and field updates across the integration inventory.",
+      "Grounded retrieval with identity-scoped corpora and configured blocklists.",
+      "Exception objects with class, owner, and SLA instead of informal follow-up.",
     ],
     roiGained: [
-      "Faster cycle time on the named workflow with measurable checkpoints.",
-      "Traceability: logs, citations, and runbooks for operations and audit.",
-      "A pilot that can expand because scope boundaries were explicit from day one.",
+      "Checkpoints per phase: design review, pilot traffic review, scale gate — each with pass/fail criteria.",
+      "Evidence pack: logs, citations, configuration export where contract allows, runbooks.",
+      "Expansion only when phase-one measures meet the bar written in the proposal.",
     ],
     roiInvestmentScope:
-      "Investment is always scoped: discovery, a narrow pilot on real paths, then scale — effort and dependency are stated before build, not after.",
-    roiInvestmentProfileTitle: "Investment profile",
+      "Spend tracks phases: fixed discovery, capped pilot, optional scale — each gated on signed prerequisites from your side (access, data samples, change windows).",
+    roiInvestmentProfileTitle: "What moves the fee and the calendar",
     roiInvestmentVariables: [
-      "Executive and SME time for workshops, data classification, and sign-offs.",
-      "IT capacity for integrations, identity, and change windows.",
-      "Trade-off between speed of rollout and depth of logging / review gates.",
-      "Run cost: support model and escalation paths you want Estio or your team to own.",
+      "Number of integrations and auth modes; volume and peak-load requirement.",
+      "Logging depth, retention, and human review ratio you require.",
+      "Pilot population size and geography; bilingual or regulated content handling.",
+      "Who operates L1/L2 — your staff, Estio under SLA, or mixed — and required response times.",
     ],
+    executionTrace: {
+      title: "Example execution trace",
+      happyPath: {
+        label: "Normal path",
+        steps: [
+          "Request",
+          "System trigger",
+          "Workflow routing",
+          "Approval gate",
+          "System action",
+          "Logged output",
+        ],
+      },
+      failurePath: {
+        label: "Failure path",
+        steps: [
+          "Exception",
+          "Typed queue",
+          "Named owner",
+          "Retry or escalate",
+          "Audit log",
+        ],
+      },
+      footer: "State is persisted at each transition. Every step is traceable, every failure is owned, every output is logged. This is what production-grade means.",
+    },
     diagramTypeLabels: {
       architecture: "Architecture",
       flow: "Control flow",
       integration: "Integration map",
     },
-    dealEntryTitle: "Pick one intake path — we do not merge these in email",
+    dealEntryTitle: "Qualification entry — one path per submission",
     dealEntryLead:
-      "Each card is a different qualification. If your note mixes automation, assistant, and “strategy”, we ask you to split it or we decline. That is how both sides avoid wasted quarters.",
+      "Each button below opens a single qualification path. If you combine automation, retrieval, and strategy in one message, we split it or decline — pick one path and complete its checklist.",
     dealEntryChecklistLabel: "Include in your first note",
     qualificationRequiredLabel: "Required in your first note",
     qualificationOptionalLabel: "Strongly helps",
-    scopedEngagementCtaEyebrow: "Qualified intake",
+    scopedEngagementCtaEyebrow: "Qualification",
     dealEntryCards: [
       {
         title: "Scope one manual workflow",
         body:
-          "Use this when the friction sits between CRM, finance, legal, ticketing, email, or spreadsheet handoffs.",
+          "Choose when work moves by hand between CRM, finance, legal, ticketing, or mail — and you can name the monthly volume on that path.",
         checklist: [
           "Process name and owner",
           "Monthly transaction volume",
           "Common failure or exception path",
         ],
-        ctaLabel: "Start workflow qualification",
+        ctaLabel: "Start qualification",
         messageTemplate:
           "We want to scope one manual workflow.\nProcess name:\nBusiness owner:\nMonthly volume:\nCurrent failure points:\nSystems involved:\nDesired outcome:",
         intent: "AUTOMATION",
@@ -874,13 +982,13 @@ const en: MarketingMessages = {
       {
         title: "Assess a private AI assistant",
         body:
-          "Use this when teams need faster answers from approved policies, products, or procedures without exposing data to uncontrolled tools.",
+          "Choose when answers must come only from corpora you approve, under identity rules, inside channels you already operate — not from public tools.",
         checklist: [
           "Knowledge sources in scope",
           "Access and security owners",
           "High-risk question categories",
         ],
-        ctaLabel: "Start assistant qualification",
+        ctaLabel: "Start qualification",
         messageTemplate:
           "We want to assess a private AI assistant.\nPrimary use case:\nApproved knowledge sources:\nUsers or teams:\nAccess constraints:\nWhat the assistant must never do:",
         intent: "ENTERPRISE_AI",
@@ -897,15 +1005,15 @@ const en: MarketingMessages = {
       {
         title: "Build the pilot ROI case",
         body:
-          "Use this when leadership needs a narrow pilot with commercial logic before approving a broader rollout.",
+          "Choose when the board or finance needs a single-workflow business case with explicit phase-one success tests before funding scale.",
         checklist: [
           "Named sponsor or decision-maker",
           "Baseline effort or delay today",
           "Success criteria for phase one",
         ],
-        ctaLabel: "Start pilot ROI qualification",
+        ctaLabel: "Start qualification",
         messageTemplate:
-          "We want to build the ROI case for a narrow enterprise AI or automation pilot.\nPilot candidate:\nDecision-maker:\nCurrent effort or delay:\nWhat success would look like in phase one:\nConstraints or dependencies:",
+          "We want to build the ROI case for a narrow governed-assistant or automation pilot.\nPilot candidate:\nDecision-maker:\nCurrent effort or delay:\nWhat success would look like in phase one:\nConstraints or dependencies:",
         intent: "PLATFORM_BUILD",
         qualificationRequired: [
           "Sponsor who can commit budget and accept pilot success criteria.",
@@ -919,49 +1027,46 @@ const en: MarketingMessages = {
       },
     ],
     mediaPlaceholder: "Visual",
-    finalCtaEyebrow: "Deal entry",
-    programCardContinue: "Continue",
+    finalCtaEyebrow: "Entry",
+    programCardContinue: "Review programme paths",
     salesMicro: {
-      afterHero:
-        "If the problem is unnamed, the system will be wrong. Name the workflow, the systems, and who signs off when it fails in production.",
-      afterPractice:
-        "This is operational reality — not an interface layer on top of informal email and spreadsheets.",
-      afterPrograms:
-        "Each programme path has different qualification. Pick one concrete motion; we do not merge paths in the first conversation.",
-      beforeProof: "Proof you can inspect — not claims you have to trust.",
-      afterProof:
-        "This is not theoretical. It is how scope, evidence, and acceptance are set before build.",
-      afterCases:
-        "Read decision impact first. If you cannot map it to a vote you need internally, pause before you enquire.",
-      afterFit:
-        "If you cannot name systems in scope and an internal owner for access, this will not move forward.",
-      afterRoi:
-        "We do not invent ROI. Your volumes, constraints, and phase boundaries determine price and timeline.",
-      afterDiagrams:
-        "If this looks heavy, that is the point: named boundaries, visible hand-offs, and an order of operations you can audit. Hand-wavy “platform” diagrams are how eighteen-month failures start.",
-      beforeDeliverables:
-        "Deliverables below are what the contract holds us to — not a capabilities wish list.",
+      afterHero: "If you cannot name the workflow, the systems it touches, and who signs off when it fails in production — stop here. Unnamed scope produces the wrong system.",
+      afterPractice: "What you read above ships to production. These are deployable system classes — not wireframes, not concepts, not vendor demos.",
+      afterPrograms: "Mixed-scope briefs are split or declined at intake — by design, not bureaucracy.",
+      beforeProof: "Every claim below has a written artefact behind it. We do not ask you to trust assertions.",
+      afterProof: "These rows map directly to SOW line items and cutover records. If you cannot trace your requirements to this structure, pause before enquiring.",
+      afterCases: "Read the decision-impact column first. If it does not map to an internal approval you need to win, this engagement will not close on your side.",
+      afterFit: "Fail the left column → no proposal. We enforce this because starting without these prerequisites wastes months for both sides.",
+      afterRoi: "We do not fabricate ROI. Your volumes, your constraints, and your phase boundaries determine the fee and the calendar. Bring numbers, not aspirations.",
+      afterDiagrams: "If the diagrams feel dense, that is by design. Named boundaries, visible handoffs, and auditable sequence. Vague architecture is the start of a twelve-month failure.",
+      beforeDeliverables: "What follows are contractual deliverables — what the SOW binds us to. Not a wish-list of capabilities.",
       processObjection:
-        "Heavy on purpose: light engagements create silent production failures. Phases exist so you can stop early without collateral damage — that is the answer to “how long”.",
+        "The process is deliberately heavy. Lightweight engagements produce silent production failures. Phases exist so you can stop early with limited damage — that answers 'how long does this take?'",
     },
     commitmentPanel: {
-      title: "What we expect before we commit capacity",
+      title: "Prerequisites — non-negotiable before we allocate capacity",
       body:
-        "A named sponsor with authority to escalate or commit budget. A written list of systems in scope. Realistic IT change windows. Without those three, we decline — it saves both organisations months of friction.",
+        "Named sponsor with budget authority or escalation rights. Written systems-in-scope list signed by business and IT. Agreed change windows for integrations and identity provider. Missing any item → we decline. Do not submit without these.",
     },
     preQualification: {
-      eyebrow: "Before you use the buttons below",
-      mustHaveTitle: "What you must have",
+      eyebrow: "Stop. Confirm these before you proceed.",
+      mustHaveTitle: "You must already have",
       mustHave: [
-        "Systems in scope, named — integrations are not guessed in a workshop.",
-        "Internal owner for access, data classification, and go-live approval.",
-        "Timeline realism: discovery, narrow pilot, then scale — not organisation-wide instant rollout.",
+        "A written list of systems the workflow touches (read and write) — not “our stack” or “various tools”. Name them.",
+        "A named person who can approve identity changes, integration access, and production go-live within your change process — within one business week.",
+        "A single workflow name and approximate monthly volume — enough to bound pilot traffic and validate the investment case.",
       ],
-      nextTitle: "What happens next",
+      nextTitle: "What happens after you submit",
       next: [
-        "Structured written response tied to the path you chose — not a brochure email.",
-        "A short alignment call only if the brief clears the bar.",
-        "Proposal with phases, dependencies on your side, and explicit acceptance tests for phase one.",
+        "Written classification against your chosen path — specific questions, a direct decline, or a request for one missing artefact. No open-ended discovery calls.",
+        "No commercial proposal until integration inventory and constraints are documented mutually.",
+        "A scoping call only when your brief clears the qualification bar. Otherwise, async communication only.",
+      ],
+      notAcceptedTitle: "Submissions we reject",
+      notAccepted: [
+        "Undifferentiated “AI strategy” or “digital transformation” scopes without a named workflow and system list. We do not consult on ambiguity.",
+        "Engagements where no internal owner can sign access, integration scope, or production traffic. No signatory, no engagement.",
+        "Fixed-price or fixed-date demands before discovery documentation is complete. Scope precedes price.",
       ],
     },
     dealPathMicro: {
@@ -985,7 +1090,12 @@ const en: MarketingMessages = {
       },
     },
     structuredEngagementLine:
-      "This is a structured engagement, not a generic consultation.",
+      "Structured engagement only: submission starts qualification, not delivery. Unnamed systems or signatory — no forward motion.",
+    closingPressure: {
+      title: "We accept a limited number of concurrent engagements.",
+      body: "If your systems, scope, and ownership are clear — proceed now. Otherwise, wait until they are. Incomplete submissions delay both sides.",
+    },
+    scopeControl: "We do not expand scope mid-engagement without redefinition.",
   },
 };
 
@@ -994,8 +1104,8 @@ const ar: MarketingMessages = {
   breadcrumbAria: "مسار التنقل",
   breadcrumbHome: "الرئيسية",
   serviceDetail: {
-    allServices: "صفحة الخدمات",
-    viewAllServices: "عرض صفحة الخدمات",
+    allServices: "استعراض مسارات البرامج",
+    viewAllServices: "استعراض مسارات البرامج",
     capabilities: "نطاق التنفيذ",
     idealClients: "من يناسبهم العمل",
     whatYouReceive: "مخرجات التعاقد",
@@ -1006,18 +1116,19 @@ const ar: MarketingMessages = {
       "مراحل واضحة، ومسؤوليات معلنة، وتسليم يمكن قياسه — لا عمل مفتوح النهاية.",
     definitionOfDoneLabel: "تعريف الإنجاز",
   },
-  guidedSectionKicker: "اختر المسار",
-  homeMetadataTitleSuffix: "خدمات رقمية وتطبيقات ذكاء اصطناعي | مسقط، عُمان",
+  guidedSectionKicker: "مسارات التنفيذ",
+  homeMetadataTitleSuffix:
+    "تنفيذ محدود النطاق — منصّات، محتوى تشغيلي، إبداع محكوم، أتمتة واسترجاع داخلي | مسقط",
   about: {
     seoTitle: "من نحن",
     seoDescription:
-      "إستيو: منصّات رقمية، برامج محتوى، إبداع بذكاء محكوم، وأتمتة مؤسسية — من مسقط لمؤسسات الخليج التي تطلب تسليماً موثّقاً ومساءلة واضحة.",
+      "إستيو — تنفيذ محدود النطاق من مسقط: منصّات رقمية، تشغيل محتوى وحملات، إنتاج إبداعي بضوابط، وأتمتة واسترجاع داخلي على أنظمة مسماة. تسليم يصمد أمام الإدارة وتقنية المعلومات والتدقيق.",
     kicker: "عن إستيو",
-    h1: "تنفيذ رقمي وذكاء تطبيقي لمؤسسات تقدّم تقاريرها لمجالس الإدارة والجهات التنظيمية",
+    h1: "شركة تنفيذ محدود النطاق — ليست وكالة عامة ولا استشارة مفتوحة",
     introP1:
-      "إستيو شركة في القرم، مسقط: ننفّذ مواقع وتطبيقات ويب، وبرامج محتوى وحملات مستمرة، وإنتاجاً إبداعياً بمساعدة ذكاء اصطناعي ضمن حدود العلامة والالتزام القانوني، وذكاءً مؤسسياً وأتمتة مربوطة بأنظمتكم وبياناتكم. وجودنا مبرّر لأن المؤسسة الإقليمية تحتاج مورّداً يوقّع على نطاق، ويوثّق القرار، ويسلّم عملاً يصمد أمام المراجعة الداخلية — لا عروضاً ولا تجارب معزولة.",
+      "إستيو في القرم، مسقط: نبني ونشغّل منصّات ويب، وبرامج محتوى وحملات بمؤشرات، وإبداعاً مساعداً بالذكاء ضمن حدود العلامة والالتزام، ونربط التطبيقات بسير عمل حتمي واسترجاعاً داخلياً محكوماً على مصادر تعتمدونها. نخدم مؤسسات الخليج التي تشتري تغييراً تشغيلياً بعقد واضح: نطاق كتابي، وجرد تكامل، وقبول مرحلي، ومسؤول واحد — لا عروضاً تجميلية ولا تجارب بلا مالك.",
     introP2:
-      "لسنا وكالة عامة تبيع «الاتجاهات». نحن شريك تنفيذ: مسؤول مسمّى، وثائق واضحة، ومقاييس ترتبط بما اتفقنا أنه الهدف عند بدء التعاقد.",
+      "لا نبيع «الاتجاهات». نحدّد المخرجات قبل البناء، ونلتزم بمعايير قبول، ونقيس على ما اتفقنا أنه النجاح. إن لم نكن المناسبين نقول ذلك مبكراً.",
     principlesKicker: "ماذا ننفّذ",
     principlesH2: "أربعة مجالات، ومعيار تسليم واحد",
     values: [
@@ -1034,8 +1145,9 @@ const ar: MarketingMessages = {
         body: "تسريع صورة ونص وفيديو حيث يُسمح للذكاء فقط بما تحدّدونه؛ ومراجعة بشرية قبل أي نشر يصل للعميل.",
       },
       {
-        title: "ذكاء مؤسسي وأتمتة",
-        body: "مساعد على معرفة معتمدة، وتكاملات، وأتمتة سير عمل لبيئات يشغّلها IT — مع صلاحيات وسجلات تدقيق.",
+        title: "أتمتة واسترجاع داخلي محكوم",
+        body:
+          "تنسيق بين أنظمة مسماة، وخدمات استرجاع على مصادر تدخلونها في نطاق المعتمد، وهوية وصلاحيات وسجلات حسب سياساتكم — بيئة يشغّلها فريق تقنية المعلومات لديكم.",
       },
     ],
     capabilitiesKicker: "كيف نعمل",
@@ -1082,65 +1194,67 @@ const ar: MarketingMessages = {
         body: "لا نبيع اشتراكات ساعات غامضة، ولا نعدّ ذكاءً دون وضوح بيانات وحوكمة، ولا نأخذ عملاً لا نستطيع تغطيته بمعيارنا. إن لم نكن المناسبين نقول ذلك مبكراً.",
       },
     ],
-    ctaH2: "ابدأوا بحوار مباشر",
+    ctaH2: "حدّدوا النطاق ثم ادخلوا التأهيل",
     ctaBody:
-      "صفوا النتيجة المطلوبة والقيود التي تعملون ضمنها. نرد برؤية عملية للمسار والجهد والجدول — أو بتوجيه إن كان مسار آخر أنسب.",
-    ctaButton: "تواصل مع إستيو",
+      "اذكروا المخرج، والأنظمة المعنية، والقيود، ومن يعتمد داخلياً. نرد بتقييم ملاءمة أو أسئلة نطاق أو توجيه لمسار أنسب — بلا استكشاف مفتوح بلا موجز.",
+    ctaButton: "بدء التأهيل",
   },
   contact: {
-    seoTitle: "اتصل بنا",
+    seoTitle: "التأهيل والتواصل",
     seoDescription:
-      "التواصل مع إستيو في مسقط لطلبات المشاريع — ردّ ذو معنى خلال يوم عمل ومسار تالٍ واضح.",
-    kicker: "التواصل",
-    h1: "صفوا المطلوب تحقيقه",
+      "مدخل تأهيل من إستيو، مسقط: موجز واضح، ردّ كتابي خلال يوم عمل — ملاءمة، أسئلة نطاق، أو رفض مباشر.",
+    kicker: "مدخل التأهيل",
+    h1: "حدّدوا النطاق قبل تخصيص السعة",
     lead:
-      "عبر النموذج أو الهاتف. نستهدف الرد خلال يوم عمل واحد (الأحد–الخميس بتوقيت مسقط). يصلكم ردّ مفيد — لا رسالة آلية فقط — وعند الحاجة اتصال قصير لضبط النطاق قبل أي مقترح.",
-    formH2: "تعريف المشروع",
+      "هذا المسار ليس «نموذج اتصال» عاماً. هو بوابة تأهيل: اذكروا المخرج المطلوب، والأنظمة ضمن النطاق، وفئات البيانات، والموقّع الداخلي على الوصول والإطلاق في الإنتاج. خلال يوم عمل (الأحد–الخميس، مسقط) يصلكم ردّ كتابي: تقييم ملاءمة، أو أسئلة محددة، أو رفض مباشر — بلا رسائل آلية. لا نجدول مكالمات استكشاف بلا موجز يجتاز الحد الأدنى أدناه.",
+    formH2: "تعريف النطاق في الطلب",
     formLead:
-      "اذكروا النتيجة المطلوبة والقيود والاعتمادات الداخلية. التفاصيل تقلل الغموض وتسرّع تقييم الملاءمة والجهد.",
-    asideDirectH3: "هاتف أو واتساب؟",
+      "كلما أوضحتم النتيجة والقيود والمالك الداخلي، قلّت الرسائل ذهاباً وإياباً. الموجز الضعيف يُردّ أو يُطلب منه مستند واحد فقط — لا سلسلة اجتماعات.",
+    asideDirectH3: "قناة عاجلة؟",
     whatsapp: "واتساب",
     officeH3: "الموقع",
     nextH3: "بعد إرسال الطلب",
     nextSteps: [
-      "خلال يوم عمل: ردّ كتابي بأسئلة أولية أو اقتراح وقت لاتصال 20–30 دقيقة.",
-      "في الاتصال: تأكيد الأهداف والقيود وأصحاب المصلحة وهل إستيو الشريك المناسب.",
-      "إن اتفقنا على المتابعة: مقترح كتابي بالنطاق والمراحل والتبعيات من جهتكم والشروط التجارية.",
+      "خلال يوم عمل: ردّ كتابي — أسئلة نطاق، أو رفض، أو طلب مستند ناقص واحد.",
+      "مكالمة قصيرة فقط إذا اجتاز الموجز حد التأهيل؛ وإلا يبقى التواصل كتابياً.",
+      "أي مقترح تجاري بعد اتفاق نطاق ومعايير قبول مرحلية كتابية — لا عروض أسعار على موجز غامض.",
     ],
     mapIframeTitle: "موقع المكتب على الخريطة",
+    openInGoogleMaps: "الموقع على خرائط Google",
   },
   contactForm: {
     serviceInterestOptions: [
       { value: "WEB_DESIGN_DEVELOPMENT", label: "تصميم وتطوير المواقع" },
       { value: "CONTENT_CAMPAIGNS", label: "المحتوى والحملات" },
       { value: "AI_CREATIVE", label: "إبداع معزّز بالذكاء" },
-      { value: "ENTERPRISE_AI", label: "ذكاء مؤسسي وأنظمة معرفة" },
+      { value: "AI_STUDIO", label: "استوديو الذكاء — صور، فيديو، أو حزم علامة" },
+      { value: "ENTERPRISE_AI", label: "استرجاع داخلي محكوم وقواعد معرفة" },
       { value: "AUTOMATION", label: "أتمتة سير العمل والتكاملات" },
       { value: "PLATFORM_BUILD", label: "بناء منصة وبرنامج تقني" },
       { value: "UNSURE", label: "لم يُحدَّد بعد" },
     ],
-    successTitle: "تم استلام رسالتكم",
+    successTitle: "وصل الطلب — التأهيل قيد المراجعة",
     successBody:
-      "سيتابع فريقنا الاستفسار ويعود إليكم خلال يوم عمل واحد. للعاجل، يُرجى الاتصال أو التواصل عبر واتساب.",
-    submitAnother: "إرسال استفسار جديد",
+      "نراجع الموجز وفق المسار الذي اخترتموه. خلال يوم عمل واحد: ردّ كتابي بأسئلة نطاق، أو تقييم ملاءمة، أو رفض مباشر. للعاجل التشغيلي استخدموا الهاتف أو واتساب مع إشارة إلى رقم الطلب إن وُجد.",
+    submitAnother: "طلب تأهيل آخر",
     name: "الاسم الكامل",
     namePh: "الاسم كما يظهر في المراسلات",
     email: "البريد المهني",
-    emailPh: "name@company.com",
+    emailPh: "you@company.com",
     phone: "الهاتف (اختياري)",
-    phonePh: "+968 …",
+    phonePh: "+۹۶۸ …",
     company: "الشركة أو الجهة",
     companyPh: "اسم المؤسسة",
     interest: "مجال الاهتمام",
     interestPlaceholder: "اختروا مجالًا",
     message: "موجز المشروع",
     messagePh: "الأهداف، الأنظمة ضمن النطاق، القيود، معايير النجاح، ومن يعتمد…",
-    error: "تعذّر الإرسال. أعيدوا المحاولة أو راسلونا على",
+    error: "تعذّر الإرسال. أعيدوا المحاولة، أو أرسلوا مباشرة إلى",
     sending: "جارٍ الإرسال…",
-    submit: "إرسال الاستفسار",
+    submit: "بدء التأهيل",
     qualificationHeading: "قبل الإرسال",
     qualificationIntro:
-      "نرجّح الطلبات التي تتضمن البنود أدناه حسب المجال المختار — يقلل الرسائل ذهاباً وإياباً ويوضح إن كنا الشريك المناسب.",
+      "نأخذ في الاعتبار أولاً الطلبات التي ترفق السياق أدناه حسب المجال — هذا يحدد سريعاً إن كان التعاقد معنا واقعياً.",
     qualificationRequiredHeading: "السياق المطلوب لهذا المجال",
     qualificationOptionalHeading: "يُحسّن الجودة بشكل كبير",
     qualificationByIntent: {
@@ -1168,6 +1282,17 @@ const ar: MarketingMessages = {
         ],
         optional: ["محاولة سابقة وفشلها.", "معايير التوسع."],
       },
+      AI_STUDIO: {
+        required: [
+          "نوع المخرج: صور، فيديو، أو حزمة علامة.",
+          "الحجم التقريبي أو عدد الأصول.",
+          "اتجاه العلامة: إرشادات قائمة، صور مرجعية، أو وصف الاتجاه.",
+        ],
+        optional: [
+          "القنوات المستهدفة (ويب، اجتماعي، طباعة).",
+          "الجدول الزمني للتسليم.",
+        ],
+      },
     },
     intakeProcessEyebrow: "استقبال مؤهّل",
     intakeProcessTitle: "أنتم تدخلون مسار تأهيل",
@@ -1188,24 +1313,27 @@ const ar: MarketingMessages = {
       "الشروط التجارية فقط بعد الاتفاق كتابياً على اختبارات قبول المرحلة الأولى.",
     ],
     structuredEngagementBeforeSubmit:
-      "هذا لا يبدأ التنفيذ. يبدأ التأهيل. إن أردتم حوار مورّد عام، اذكروا ذلك صراحة — قد نحوّلكم.",
-    submitEnterpriseDeal: "إرسال للتأهيل",
+      "الإرسال يبدأ التأهيل لا التنفيذ. الأنظمة ضمن النطاق والموقّع الداخلي يجب أن يكونا صريحين وإلا لا نتابع.",
+    submitEnterpriseDeal: "بدء التأهيل",
   },
   servicesListing: {
     seoTitle: "الخدمات",
     seoDescription:
-      "منصّات، برامج محتوى، إبداع بذكاء محكوم، وأتمتة مؤسسية — نطاق معلن من إستيو، مسقط.",
-    kicker: "الخدمات",
-    h1: "ما الذي نبنيه وننفّذه",
+      "أربع ممارسات تنفيذ من إستيو، مسقط: منصّات رقمية، تشغيل محتوى وحملات، إبداع محكوم، وأتمتة واسترجاع داخلي — كلها بنطاق كتابي وقبول مرحلي.",
+    kicker: "ممارسات التنفيذ",
+    h1: "ما نصمّمه ونبنيه ونشغّله",
     lead:
-      "تقدّم إستيو مواقع ومنصّات رقمية، وتنفيذ محتوى وحملات، وخدمات إبداع بالذكاء الاصطناعي، والذكاء المؤسسي والأتمتة للجهات التي تريد نطاقاً واضحاً وتسليماً يمكن الاعتماد عليه.",
+      "أربع ممارسات مستقلة التعاقد — لكل منها مخرجاتها ومعايير قبولها. لا نبيع حزماً غامضة ولا ساعات بلا تفكيك عمل. إما أن تعرفوا أي خط ينطبق على قيودكم، أو تستخدمون الشريط السفلي لإجبار التصنيف.",
     lead2:
-      "كل مجموعة أدناه تعالج حاجة تجارية مختلفة: كيف تظهرون رقمياً، وكيف تحافظون على حضوركم في السوق، وكيف تزيدون الإنتاج الإبداعي دون فقدان السيطرة، وكيف تصبح العمليات الداخلية أسرع وأكثر اتساقاً.",
-    learnMore: "التفاصيل ←",
-    bottomH2: "غير متأكدين أين تبدأون؟",
+      "كل مجموعة أدناه تعالج حاجة تشغيلية مختلفة؛ التنفيذ يتبع نفس المعيار: نطاق مكتوب ثم بناء.",
+    practicesSectionKicker: "دليل الممارسات",
+    practicesSectionLead:
+      "كل بطاقة ملحق محتمل لنطاق عمل — ليس قائمة رغبات. افتحوا الخط الأقرب للقيود لديكم؛ وإن لم يُطابق أيٌّ منها، انتقلوا إلى شريط التأهيل في الأسفل.",
+    learnMore: "حدّدوا النطاق ←",
+    bottomH2: "لا تطابق واضح؟",
     bottomBody:
-      "أرسلوا ملخّصاً للنتيجة المطلوبة. نقترح ترتيب العمل — أحياناً مسار واحد، وأحياناً مساران متوازيان — مع ذكر التبعيات بوضوح.",
-    bottomCta: "تواصل مع إستيو",
+      "اذكروا القيد التشغيلي والأنظمة المعنية والمالك الداخلي. نعيد تصنيفاً لمسار واحد — أو تحويلاً كتابياً إن كان المورد المناسب غيرنا.",
+    bottomCta: "حدّدوا النطاق",
   },
   faq: {
     seoTitle: "الأسئلة الشائعة",
@@ -1213,7 +1341,7 @@ const ar: MarketingMessages = {
       "التسعير، بداية المشاريع، الذكاء والأتمتة، وما نحتاجه من العميل — إجابات مباشرة.",
     kicker: "الأسئلة الشائعة",
     h1: "إجابات مباشرة",
-    lead: "ما يُكرّر سؤاله قبل التعاقد. إن كان وضعكم استثنائياً، استخدموا صفحة التواصل — نفضّل التفاصيل على الإجابات العامة.",
+    lead: "أسئلة تتكرر قبل التوقيع. الحالات الخاصة تمرّ عبر مدخل التأهيل — نفضّل موجزاً مفصلاً على أسئلة عامة هنا.",
     items: [
       {
         title: "كيف يتم التسعير؟",
@@ -1245,7 +1373,7 @@ const ar: MarketingMessages = {
       },
       {
         title: "ماذا بعد الإطلاق؟",
-        body: "فترات تثبيت معلنة لمشاريع الويب. للأتمتة والذكاء نربط اتفاق الدعم باحتياج التشغيل. الطلبات المؤقتة تُ scoped كمشاريع صغيرة — ليست دعماً بريدياً غير محدود.",
+        body: "فترات تثبيت معلنة لمشاريع الويب. للأتمتة ومسارات الاسترجاع الداخلي نربط اتفاق الدعم باحتياج التشغيل. الطلبات المؤقتة تُعرَّف كنطاق صغير منفصل — لا صندوق بريد مفتوح.",
       },
       {
         title: "هل تستأجرون كل شيء خارجياً؟",
@@ -1271,37 +1399,37 @@ const ar: MarketingMessages = {
     closeOverlay: "إغلاق القائمة",
   },
   enterpriseAppendix: {
-    title: "مسارات التنفيذ",
+    title: "ملاحق البرامج",
     deepLinks: [
       {
-        label: "مساعد ذكاء خاص",
+        label: "الاسترجاع الداخلي المحكوم",
         description:
-          "إجابات من معرفتكم المعتمدة، بصلاحيات وسجلات، وربط بالقنوات التي يستخدمها فريقكم أصلاً.",
+          "إجابات من مصادر تدخلونها في قائمة المعتمد؛ صلاحيات هوية وسجلات؛ وقنوات هي نفسها التي يعمل عليها فريقكم اليوم.",
       },
       {
-        label: "أتمتة سير العمل",
+        label: "أتمتة سير العمل بين الأنظمة",
         description:
-          "تدفقات كاملة عبر CRM والعمليات والمراسلات — مع معالجة أخطاء ومراقبة وأدلة تشغيل يمتلكها فريق تقنيتكم.",
+          "تدفقات محددة بين إدارة العملاء والمالية والتذاكر والمراسلات — مع استثناءات مصنّفة ومراقبة وأدلة تشغيل يتولاها فريق تقنية المعلومات لديكم.",
       },
     ],
   },
   homeEnterpriseBridge: {
-    eyebrow: "أنظمة تشغيلية",
-    secondaryCtaLabel: "نظرة على المؤسسات",
+    eyebrow: "تسليم مؤسسي",
+    secondaryCtaLabel: "استعراض مسارات البرامج",
   },
   enterpriseLanding: {
-    heroKicker: "أنظمة مؤسسية",
+    heroKicker: "نطاق نظام قابل للتنفيذ — ملخص يعادل مستوى نطاق العمل",
     heroAudienceLine:
       "لرؤساء تقنية وتشغيل وتحول يوقعون على تغيير إنتاجي — لا على شرائح عرض.",
-    secondaryCtaLabel: "مراجعة مسارات البرامج",
-    practiceSectionTitle: "أين يهبط هذا داخل نموذج التشغيل",
+    secondaryCtaLabel: "استعراض مسارات البرامج",
+    practiceSectionTitle: "١. النظام قيد التسليم",
     practiceLead:
-      "التسليم المؤسسي ليس واجهة أجمل. بل سير عمل مسمى، وحدود معرفة واضحة، ونموذج تشغيل يستطيع فريق التقنية والالتزام فحصه قبل الإطلاق.",
+      "فئات الكائنات: (أ) سير عمل حتمي عبر جرد تكامل متفق عليه؛ (ب) خدمة استرجاع مربوطة بمجموعات معتمدة وإعدادات هوية؛ (ج) أدوات تشغيل داخلية ضمن النطاق. يحدد كل تعاقد: قائمة التكامل (قراءة/كتابة)، وفئات البيانات، اختبارات القبول لكل مرحلة، التراجع، وحزمة تسليم المستوى الأول.",
     practiceBlocks: [
       {
-        title: "أنظمة ذكاء خاصة",
+        title: "استرجاع وحكم وصول",
         body:
-          "مساعدة واسترجاع مرتبطان بمصادر تعتمدونها — بصلاحيات هوية وسجلات عند الحاجة وأنماط نشر تناسب نموذج الأمن لديكم.",
+          "قائمة معرفة معتمدة؛ ربط الدور بالمصدر؛ نوايا محظورة؛ قنوات النشر؛ احتفاظ السجلات وفق سياسة السجلات لديكم — كلها إعدادات تشغيلية لا تعتمد على الصياغة وحدها.",
       },
       {
         title: "أتمتة سير العمل",
@@ -1314,7 +1442,34 @@ const ar: MarketingMessages = {
           "رؤية تشغيلية وتسليم يمكن صيانته: أدلة تشغيل ومسارات تصعيد وواجهات يمكن لفرقكم الإبقاء عليها بعد الإطلاق.",
       },
     ],
-    proofSectionTitle: "ما يستطيع المشتري فحصه",
+    integrationSurfacesTitle: "١.١ جرد أسطح التكامل — أمثلة توضيحية غير شاملة",
+    integrationSurfacesIntro:
+      "النطاق الفعلي يُبنى على جرد تطبيقاتكم. ما يلي فئات شائعة في بيئات الخليج — لتوجيه المراجع فقط، لا كتعهد ضمني بدعم كل مورّد.",
+    integrationSurfacesGroups: [
+      {
+        heading: "المبيعات وإدارة علاقات العملاء (CRM)",
+        examples:
+          "فرص وحسابات؛ تسعير وعروض (CPQ)؛ بيانات وصفية للعقود؛ ربط التوقيع الإلكتروني؛ فتح تذكرة أو حالة من أحداث سير العمل.",
+      },
+      {
+        heading: "المالية وأنظمة تخطيط الموارد (ERP)",
+        examples:
+          "ترحيل إلى دفتر الأستاذ ومراكز التكلفة؛ موافقات الذمم المدينة/الدائنة؛ مسار صاحب الميزانية؛ قراءة السجلات الرئيسية للمورّدين والعملاء.",
+      },
+      {
+        heading: "الهوية والوثائق وقناة التشغيل",
+        examples:
+          "مزود هوية (مثل بروتوكولات OIDC/SAML)؛ تغذية أدوار من الموارد البشرية عند الدخول في النطاق؛ مستودعات وثائق (SharePoint/S3 ونحوها) مع صلاحيات؛ ServiceNow أو Jira أو مراسلة داخلية كقنوات إشعار أو بوابة بشرية.",
+      },
+    ],
+    integrationNamedSystemsTitle: "أنظمة نموذجية ضمن النطاق",
+    integrationNamedSystems: [
+      { category: "CRM", examples: "Salesforce، HubSpot، Microsoft Dynamics، CRM مخصص" },
+      { category: "مالية", examples: "SAP، Oracle ERP، NetSuite، ERP داخلي" },
+      { category: "داخلي", examples: "واجهات REST، لوحات داخلية، أنظمة إدارة وثائق، تذاكر (ServiceNow، Jira)" },
+    ],
+    integrationNamedSystemsFooter: "الأنظمة الدقيقة تُحدد أثناء التأهيل. نُحدد النطاق مقابل جرد تطبيقاتكم — لا قائمة توافق مورّدين.",
+    proofSectionTitle: "٢. مخرجات التحضير قبل الالتزام المالي",
     evidenceLabels: {
       case: "إثبات من حالة",
       internal: "قياس داخلي",
@@ -1371,7 +1526,7 @@ const ar: MarketingMessages = {
     },
     caseStudies: [
       {
-        kicker: "ذكاء خاص",
+        kicker: "استرجاع داخلي",
         title: "مساعد سياسات لعمليات موزعة",
         decisionImpact:
           "يمكّن قراراً بشأن الدردشة المؤسسية للسياسات: من يحق له السؤال، ماذا يُستشهد به، وما الذي لا يخرج من الحدود.",
@@ -1386,7 +1541,7 @@ const ar: MarketingMessages = {
       },
       {
         kicker: "أتمتة",
-        title: "سير RFQ إلى الاعتماد مع نقاط تحكم مسماة",
+        title: "مسار طلب العرض إلى الاعتماد — بنقاط تحكم مسماة",
         decisionImpact:
           "يزيل الغموض عن زمن الدورة والملكية: التجاري يدافع عن الحالة في CRM والمالية دون أرشفة بريد.",
         situation:
@@ -1420,7 +1575,7 @@ const ar: MarketingMessages = {
     nonFitColumnTitle: "غير ملاءم",
     fitBullets: [
       "يمكنكم تسمية راعٍ وسير عمل وأنظمة ضمن النطاق.",
-      "تريدون أدلة يستطيع فريق IT مراجعتها: نموذج وصول، وسجلات، وأدلة تشغيل.",
+      "تريدون أدلة يستطيع فريق تقنية المعلومات مراجعتها: نموذج وصول، وسجلات، وأدلة تشغيل.",
       "تقبلون إطلاقاً مرحلياً بمعايير قبول — لا تفاؤلاً كاملاً دفعة واحدة.",
     ],
     nonFitBullets: [
@@ -1433,7 +1588,7 @@ const ar: MarketingMessages = {
       "نبيع نموذج التشغيل بقدر ما نبيع الميزة. هذه المخططات توضّح ما الذي يجب أن يوجد فعلاً قبل الوثوق بمساعد خاص أو أتمتة في بيئة إنتاجية.",
     diagrams: [
       {
-        title: "معمارية المساعد الخاص",
+        title: "بنية الاسترجاع الداخلي المحكوم",
         diagramType: "architecture",
         explanation:
           "من اليسار إلى اليمين: مصادر معتمدة، طبقة سياسات مفروضة، القنوات المستخدمة، ثم ملكية تشغيلية.",
@@ -1447,8 +1602,8 @@ const ar: MarketingMessages = {
             body: "قواعد وصول، وربط بالمصادر، وضوابط تعليمات متوافقة مع الهوية وسياسة البيانات.",
           },
           {
-            label: "المساعد داخل قنوات العمل",
-            body: "الفرق تسأل من داخل الدردشة أو البوابة أو مسارات التذاكر التي تستخدمها أصلاً.",
+            label: "الواجهة في قنوات العمل الحالية",
+            body: "الأسئلة تمر عبر الدردشة أو البوابة أو التذاكر التي تعتمدونها أصلاً — بلا قناة معزولة.",
           },
           {
             label: "سجلات وملكية",
@@ -1543,14 +1698,39 @@ const ar: MarketingMessages = {
       "المفاضلة بين سرعة الإطلاق وعمق السجلات وبوابات المراجعة.",
       "تكلفة التشغيل: نموذج دعم ومسارات تصعيد يختارها العميل أو إستيو.",
     ],
+    executionTrace: {
+      title: "مثال على مسار التنفيذ",
+      happyPath: {
+        label: "المسار الطبيعي",
+        steps: [
+          "طلب",
+          "محفّز النظام",
+          "توجيه سير العمل",
+          "بوابة اعتماد",
+          "إجراء النظام",
+          "مخرج مسجّل",
+        ],
+      },
+      failurePath: {
+        label: "مسار الفشل",
+        steps: [
+          "استثناء",
+          "صف مصنّف",
+          "مالك مسمّى",
+          "إعادة محاولة أو تصعيد",
+          "سجل تدقيق",
+        ],
+      },
+      footer: "الحالة محفوظة في كل انتقال. كل خطوة قابلة للتتبع، كل فشل له مالك، كل مخرج مسجّل. هذا ما يعنيه مستوى الإنتاج.",
+    },
     diagramTypeLabels: {
       architecture: "معمارية",
       flow: "تدفق تحكم",
       integration: "خريطة تكامل",
     },
-    dealEntryTitle: "مدخل واحد فقط — لا ندمج المسارات في بريد واحد",
+    dealEntryTitle: "مدخل تأهيل واحد لكل إرسال — لا دمج للمسارات في رسالة واحدة",
     dealEntryLead:
-      "كل بطاقة تأهيل مختلف. إن خلطتم الأتمتة والمساعد و«الاستراتيجية» في رسالة واحدة نطلب تقسيم الموجز أو نرفض. هكذا يتجنب الطرفان أرباعاً ضائعة.",
+      "كل زر يفتح مسار تأهيل واحد. إن دمجتم الأتمتة والاسترجاع والاستراتيجية في رسالة واحدة نقسّمها أو نرفض — اختاروا مساراً واحداً وأكملوا قائمته.",
     dealEntryChecklistLabel: "أدرجوه في أول رسالة",
     qualificationRequiredLabel: "مطلوب في أول رسالة",
     qualificationOptionalLabel: "يُحسّن الجودة",
@@ -1565,7 +1745,7 @@ const ar: MarketingMessages = {
           "الحجم الشهري للمعاملات",
           "أشهر مسار فشل أو استثناء",
         ],
-        ctaLabel: "بدء تأهيل سير العمل",
+        ctaLabel: "بدء التأهيل",
         messageTemplate:
           "نريد تحديد نطاق سير عمل يدوي واحد.\nاسم العملية:\nالمالك من جهة الأعمال:\nالحجم الشهري:\nنقاط الفشل الحالية:\nالأنظمة المعنية:\nالنتيجة المطلوبة:",
         intent: "AUTOMATION",
@@ -1580,17 +1760,17 @@ const ar: MarketingMessages = {
         ],
       },
       {
-        title: "تقييم مساعد ذكاء خاص",
+        title: "تأهيل مسار المعرفة الداخلية المحكوم",
         body:
-          "استخدموا هذا عندما تحتاج الفرق إلى إجابات أسرع من سياسات أو منتجات أو إجراءات معتمدة دون تعريض البيانات لأدوات غير مضبوطة.",
+          "للفرق التي تحتاج إجابات من سياسات ومنتجات وإجراءات معتمدة — بحدود مصدر وصلاحية، دون إرسال بياناتكم إلى أدوات استهلاكية غير مضبوطة.",
         checklist: [
           "مصادر المعرفة داخل النطاق",
           "مالكو الوصول والأمن",
           "فئات الأسئلة عالية الحساسية",
         ],
-        ctaLabel: "بدء تأهيل المساعد",
+        ctaLabel: "بدء التأهيل",
         messageTemplate:
-          "نريد تقييم مساعد ذكاء خاص.\nحالة الاستخدام الأساسية:\nمصادر المعرفة المعتمدة:\nالمستخدمون أو الفرق:\nقيود الوصول:\nما الذي يجب ألا يفعله المساعد أبداً:",
+          "نريد تأهيل مسار المعرفة الداخلية المحكوم.\nحالة الاستخدام الأساسية:\nمصادر المعرفة المعتمدة:\nالمستخدمون أو الفرق:\nقيود الوصول:\nما الذي يجب ألا يُجاب عنه آلياً:",
         intent: "ENTERPRISE_AI",
         qualificationRequired: [
           "قائمة مصادر معرفة معتمدة (أو «لا يوجد بعد» صراحة).",
@@ -1611,7 +1791,7 @@ const ar: MarketingMessages = {
           "الجهد أو التأخير الحالي",
           "معايير نجاح المرحلة الأولى",
         ],
-        ctaLabel: "بدء تأهيل عائد المرحلة الأولى",
+        ctaLabel: "بدء التأهيل",
         messageTemplate:
           "نريد بناء حالة عائد لمرحلة أولى ضيقة في الذكاء المؤسسي أو الأتمتة.\nمرشح المرحلة الأولى:\nصاحب القرار:\nالجهد أو التأخير الحالي:\nكيف يبدو النجاح في المرحلة الأولى:\nالقيود أو التبعيات:",
         intent: "PLATFORM_BUILD",
@@ -1627,15 +1807,15 @@ const ar: MarketingMessages = {
       },
     ],
     mediaPlaceholder: "مرئي",
-    finalCtaEyebrow: "مدخل الصفقة",
-    programCardContinue: "متابعة",
+    finalCtaEyebrow: "بوابة التأهيل",
+    programCardContinue: "استعراض مسارات البرامج",
     salesMicro: {
       afterHero:
         "إن لم تُسمَّ المشكلة، سيكون النظام خاطئاً. سمّوا سير العمل والأنظمة ومن يوقع عند الفشل في الإنتاج.",
       afterPractice:
         "هذا واقع تشغيلي — لا طبقة واجهة فوق بريد وجداول غير رسمية.",
       afterPrograms:
-        "لكل مسار برنامج تأهيل مختلف. اختاروا حركة واحدة ملموسة؛ لا ندمج المسارات في أول محادثة.",
+        "الموجزات المختلطة تُقسَّم أو تُرفض عند الاستقبال — قصداً لا بيروقراطية.",
       beforeProof: "إثبات يمكن فحصه — لا ادعاءات تُسلَّم بالثقة فقط.",
       afterProof:
         "هذا ليس نظرياً. هكذا يُضبط النطاق والإثبات والقبول قبل البناء.",
@@ -1655,21 +1835,27 @@ const ar: MarketingMessages = {
     commitmentPanel: {
       title: "ما نتوقعه قبل أن نخصص سعة",
       body:
-        "راعٍ مسمّى بصلاحية التصعيد أو الالتزام بالميزانية. قائمة كتابية بالأنظمة ضمن النطاق. نوافذ تغيير واقعية من IT. بدونها نرفض — يوفر ذلك أشهر احتكاك لكلا الطرفين.",
+        "راعٍ مسمّى بصلاحية التصعيد أو الالتزام بالميزانية. قائمة كتابية بالأنظمة ضمن النطاق. نوافذ تغيير واقعية من IT. نقص أي بند → نرفض.",
     },
     preQualification: {
       eyebrow: "قبل استخدام الأزرار أدناه",
-      mustHaveTitle: "ما يجب أن يتوفر",
+      mustHaveTitle: "لديكم أصلاً",
       mustHave: [
-        "أنظمة مسماة ضمن النطاق — التكاملات لا تُخمَّن في ورشة.",
-        "مالك داخلي للوصول، وتصنيف البيانات، واعتماد الإطلاق.",
-        "واقعية زمنية: استكشاف، مرحلة أولى ضيقة، ثم توسعة — لا إطلاق فوري على المؤسسة كاملة.",
+        "قائمة كتابية بالأنظمة التي يلمسها السير (قراءة وكتابة) — لا «مكدسنا» بلا تسمية.",
+        "شخص يستطيع اعتماد الهوية والتكامل وإطلاق الإنتاج ضمن عملية التغيير لديكم.",
+        "اسم سير عمل واحد وحجم شهري تقريبي — يكفي لتحديد حركة المرحلة الأولى.",
       ],
-      nextTitle: "ماذا يحدث بعد ذلك",
+      nextTitle: "بعد الإرسال",
       next: [
-        "ردّ كتابي مرتبط بالمسار الذي اخترتموه — لا بريد كتيب.",
-        "اتصال توضيحي قصير فقط إذا اجتاز الموجز الحدّ.",
-        "مقترح بمراحل وتبعيات من جهتكم واختبارات قبول صريحة للمرحلة الأولى.",
+        "تصنيف كتابي حسب المسار — أسئلة، أو رفض، أو طلب مستند ناقص واحد.",
+        "لا مقترح تجاري قبل اتفاق جرد التكامل والقيود.",
+        "اتصال توضيحي فقط إذا اجتاز الموجز الحد؛ وإلا تبادل كتابي.",
+      ],
+      notAcceptedTitle: "لا نقبل",
+      notAccepted: [
+        "نطاقات «استراتيجية ذكاء» أو «تحول رقمي» بلا سير عمل مسمى وقائمة أنظمة.",
+        "تعاقدات بلا من يوقع الوصول أو التكامل أو حركة الإنتاج.",
+        "سعر أو تاريخ ثابت قبل اكتمال وثائق الاستكشاف.",
       ],
     },
     dealPathMicro: {
@@ -1693,7 +1879,12 @@ const ar: MarketingMessages = {
       },
     },
     structuredEngagementLine:
-      "هذا تعاقد منظم، لا استشارة عامة.",
+      "تعاقد منظم فقط: الإرسال يبدأ التأهيل لا التسليم. بلا أنظمة مسماة أو موقّع — لا حركة.",
+    closingPressure: {
+      title: "نقبل عدداً محدوداً من التعاقدات المتزامنة.",
+      body: "إن كانت أنظمتكم ونطاقكم وملكيتكم واضحة — تقدّموا الآن. وإلا، انتظروا حتى تكون كذلك.",
+    },
+    scopeControl: "لا نوسّع النطاق أثناء التعاقد دون إعادة تعريف.",
   },
 };
 

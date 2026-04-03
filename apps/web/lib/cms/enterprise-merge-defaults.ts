@@ -9,9 +9,20 @@ export function buildEnterpriseLandingMergeDefaults(locale: AppLocale) {
     (p) => ({
       claim: p.title,
       metric: p.body,
-      evidenceType: "reference_architecture" as const,
+      evidenceType: (p.evidenceType ?? "reference_architecture") as
+        | "case"
+        | "internal"
+        | "simulation"
+        | "reference_architecture",
       visual: {},
-      verification: { level: "internal" as const, note: "" },
+      verification: {
+        level: (p.verificationLevel ?? "internal") as
+          | "internal"
+          | "observed"
+          | "repeatable"
+          | "contractual",
+        note: p.verificationNote ?? "",
+      },
     }),
   );
   const diagramDefaults: EnterpriseDiagramMerged[] = el.diagrams.map((d) => ({

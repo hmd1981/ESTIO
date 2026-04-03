@@ -64,14 +64,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           ?.sections ?? {}) as MarketingPageSectionsCMS)
       : undefined;
   const L = getMessages(raw).servicesListing;
+  const seoTitle =
+    cms.seoTitle?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoTitle?.trim()) ||
+    L.seoTitle;
+  const seoDesc =
+    cms.seoDescription?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoDescription?.trim()) ||
+    L.seoDescription;
   return marketingDetailMetadata(
     {
-      title: cms.seoTitle ?? cmsEn?.seoTitle ?? L.seoTitle,
-      description:
-        (cms.seoDescription ?? cmsEn?.seoDescription ?? L.seoDescription).replace(
-          "Estio",
-          brand.name,
-        ),
+      title: seoTitle,
+      description: seoDesc.replace("Estio", brand.name),
     },
     `/${raw}/services`,
   );
@@ -156,6 +160,17 @@ export default async function ServicesOverviewPage({ params, searchParams }: Pro
               />
             </div>
           </div>
+        </Container>
+      </section>
+
+      <section className="border-b border-[var(--border)] bg-[var(--canvas)] py-10 sm:py-12">
+        <Container as="div" className="max-w-3xl">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+            {L.practicesSectionKicker}
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-[var(--text-body)] sm:text-base">
+            {L.practicesSectionLead}
+          </p>
         </Container>
       </section>
 

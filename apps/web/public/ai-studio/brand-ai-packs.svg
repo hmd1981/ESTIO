@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" fill="#0a0a0a"/>
+  <rect x="40" y="50" width="200" height="130" rx="4" stroke="#d4af37" stroke-opacity="0.2" stroke-width="1"/>
+  <text x="140" y="80" text-anchor="middle" fill="#d4af37" fill-opacity="0.5" font-family="system-ui" font-size="10" font-weight="600" letter-spacing="0.1em">VISUAL SYSTEM</text>
+  <rect x="60" y="95" width="40" height="40" rx="2" fill="#181818" stroke="#333" stroke-width="1"/>
+  <rect x="110" y="95" width="40" height="40" rx="2" fill="#181818" stroke="#333" stroke-width="1"/>
+  <rect x="160" y="95" width="40" height="40" rx="2" fill="#181818" stroke="#333" stroke-width="1"/>
+  <text x="80" y="120" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">A</text>
+  <text x="130" y="120" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">B</text>
+  <text x="180" y="120" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">C</text>
+  <text x="140" y="165" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Style presets � References</text>
+  <rect x="280" y="50" width="200" height="130" rx="4" stroke="#333" stroke-width="1"/>
+  <text x="380" y="80" text-anchor="middle" fill="#888" font-family="system-ui" font-size="10" font-weight="500" letter-spacing="0.1em">PROMPT SYSTEM</text>
+  <rect x="300" y="95" width="160" height="16" rx="2" fill="#151515" stroke="#292929" stroke-width="1"/>
+  <rect x="300" y="117" width="160" height="16" rx="2" fill="#151515" stroke="#292929" stroke-width="1"/>
+  <rect x="300" y="139" width="120" height="16" rx="2" fill="#151515" stroke="#292929" stroke-width="1"/>
+  <text x="380" y="106" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">prompt_architecture_v1</text>
+  <text x="380" y="128" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">style_config_brand_main</text>
+  <text x="360" y="150" text-anchor="middle" fill="#555" font-family="system-ui" font-size="8">consistency_rules</text>
+  <rect x="520" y="50" width="240" height="130" rx="4" stroke="#333" stroke-width="1"/>
+  <text x="640" y="80" text-anchor="middle" fill="#888" font-family="system-ui" font-size="10" font-weight="500" letter-spacing="0.1em">ASSET LIBRARY</text>
+  <rect x="540" y="95" width="60" height="40" rx="2" fill="#181818" stroke="#292929" stroke-width="1"/>
+  <rect x="610" y="95" width="60" height="40" rx="2" fill="#181818" stroke="#292929" stroke-width="1"/>
+  <rect x="680" y="95" width="60" height="40" rx="2" fill="#181818" stroke="#292929" stroke-width="1"/>
+  <text x="640" y="155" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Tagged � Named � Versioned</text>
+  <rect x="160" y="220" width="480" height="80" rx="4" stroke="#d4af37" stroke-opacity="0.15" stroke-width="1"/>
+  <text x="400" y="250" text-anchor="middle" fill="#d4af37" fill-opacity="0.4" font-family="system-ui" font-size="10" font-weight="600">QUALITY BENCHMARK</text>
+  <text x="400" y="272" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Brand direction enforced � Cross-channel consistency � Documented rules</text>
+  <text x="400" y="340" text-anchor="middle" fill="#444" font-family="system-ui" font-size="10" letter-spacing="0.12em">BRAND AI PACK STRUCTURE</text>
+  <text x="400" y="360" text-anchor="middle" fill="#333" font-family="system-ui" font-size="9">Visual System + Prompt Architecture + Asset Library + Quality Controls</text>
+</svg>

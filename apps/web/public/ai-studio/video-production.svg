@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" fill="#0a0a0a"/>
+  <rect x="40" y="60" width="280" height="180" rx="4" stroke="#d4af37" stroke-opacity="0.2" stroke-width="1"/>
+  <rect x="56" y="76" width="248" height="148" rx="2" fill="#111"/>
+  <polygon points="160,120 200,150 160,180" fill="none" stroke="#d4af37" stroke-opacity="0.35" stroke-width="1.5"/>
+  <rect x="56" y="204" width="248" height="4" rx="2" fill="#222"/>
+  <rect x="56" y="204" width="160" height="4" rx="2" fill="#d4af37" fill-opacity="0.25"/>
+  <text x="180" y="240" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">1560s MP4 / MOV</text>
+  <rect x="380" y="40" width="180" height="70" rx="4" stroke="#333" stroke-width="1"/>
+  <text x="470" y="68" text-anchor="middle" fill="#888" font-family="system-ui" font-size="10" font-weight="500">PROMO VIDEOS</text>
+  <text x="470" y="86" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Product � Brand � Service</text>
+  <rect x="380" y="125" width="180" height="70" rx="4" stroke="#333" stroke-width="1"/>
+  <text x="470" y="153" text-anchor="middle" fill="#888" font-family="system-ui" font-size="10" font-weight="500">SOCIAL REELS</text>
+  <text x="470" y="171" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">IG � TikTok � YT Shorts</text>
+  <rect x="380" y="210" width="180" height="70" rx="4" stroke="#333" stroke-width="1"/>
+  <text x="470" y="238" text-anchor="middle" fill="#888" font-family="system-ui" font-size="10" font-weight="500">MOTION LOOPS</text>
+  <text x="470" y="256" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Backgrounds � Signage</text>
+  <rect x="620" y="100" width="140" height="120" rx="4" stroke="#d4af37" stroke-opacity="0.25" stroke-width="1"/>
+  <text x="690" y="130" text-anchor="middle" fill="#d4af37" fill-opacity="0.5" font-family="system-ui" font-size="10" font-weight="600">DELIVERY</text>
+  <text x="690" y="155" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Platform-optimised</text>
+  <text x="690" y="170" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Multi-format export</text>
+  <text x="690" y="185" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Brand reviewed</text>
+  <text x="690" y="200" text-anchor="middle" fill="#555" font-family="system-ui" font-size="9">Revision included</text>
+  <text x="400" y="340" text-anchor="middle" fill="#444" font-family="system-ui" font-size="10" letter-spacing="0.12em">AI VIDEO PRODUCTION PIPELINE</text>
+  <text x="400" y="360" text-anchor="middle" fill="#333" font-family="system-ui" font-size="9">Brief � Motion Samples � Review � Production � Final Delivery</text>
+</svg>

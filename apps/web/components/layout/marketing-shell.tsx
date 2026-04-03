@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SkipLink } from "@/components/layout/skip-link";
+import { AiStudioSalesBar } from "@/components/ai-studio/ai-studio-sales-bar";
 
 export function MarketingShell({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <SiteFooter />
+      <AiStudioSalesBar />
     </>
   );
 }

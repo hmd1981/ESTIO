@@ -64,6 +64,13 @@ export default async function AdminPagesPage() {
         >
           FAQ
         </Link>
+        ,{" "}
+        <Link
+          href="/admin/pages/ai-studio"
+          className="font-medium text-[var(--admin-primary)] underline-offset-2 hover:underline"
+        >
+          AI Studio
+        </Link>
         .
       </p>
       <DataTableShell
@@ -85,9 +92,14 @@ export default async function AdminPagesPage() {
           rows.map((row) => (
             <tr key={row.id}>
               <td className="px-4 py-3 font-mono text-xs">
-                {["about", "contact", "services", "enterprise", "faq"].includes(
-                  row.slug,
-                ) ? (
+                {[
+                  "about",
+                  "contact",
+                  "services",
+                  "enterprise",
+                  "faq",
+                  "ai-studio",
+                ].includes(row.slug) ? (
                   <Link
                     href={`/admin/pages/${row.slug}`}
                     className="text-[var(--admin-primary)] underline-offset-2 hover:underline"

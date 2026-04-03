@@ -1196,8 +1196,14 @@ export function MarketingPageEditor({
                   className="mt-1 w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)]"
                   value={mapEmbedUrl}
                   onChange={(e) => setMapEmbedUrl(e.target.value)}
-                  placeholder="https://www.google.com/maps/embed?…"
+                  placeholder="https://www.google.com/maps/embed?pb=…"
                 />
+                <span className="mt-1 block text-[10px] text-[var(--admin-muted)]">
+                  Must be an <span className="font-mono">/maps/embed?…</span> URL from
+                  Google’s “Share → Embed a map”. Short links (maps.app.goo.gl) and
+                  normal Maps URLs will not load in an iframe — use Map link below
+                  instead.
+                </span>
               </label>
               <label className="block sm:col-span-2">
                 <span className="text-xs font-medium text-[var(--admin-muted)]">
@@ -1207,10 +1213,11 @@ export function MarketingPageEditor({
                   className="mt-1 w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm text-[var(--admin-text)]"
                   value={mapLinkUrl}
                   onChange={(e) => setMapLinkUrl(e.target.value)}
-                  placeholder="https://maps.google.com/?q=…"
+                  placeholder="https://maps.app.goo.gl/…"
                 />
                 <span className="mt-1 block text-[10px] text-[var(--admin-muted)]">
-                  Public “open in maps” link; separate from iframe embed above.
+                  Public “open in maps” link on the contact page; share links are OK
+                  here.
                 </span>
               </label>
 

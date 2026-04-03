@@ -444,6 +444,91 @@ export function LeadDetailView({ leadId }: { leadId: string }) {
           </p>
         </section>
       )}
+
+      <ClassificationPanel activities={lead.activities} notes={lead.notes} />
     </div>
+  );
+}
+
+function ClassificationPanel({
+  activities,
+  notes,
+}: {
+  activities: { id: string; type: string; payload: unknown; createdAt: string }[];
+  notes: { id: string; body: string; createdAt: string }[];
+}) {
+  const classificationActivity = activities.find(
+    (a) =>
+      a.type === "AUTOMATION" &&
+      (a.payload as Record<string, unknown>)?.kind === "CLASSIFICATION",
+  );
+
+  const classificationNote = notes.find((n) =>
+    n.body.startsWith("[AUTO-CLASSIFICATION]"),
+  );
+
+  if (!classificationActivity && !classificationNote) return null;
+
+  const payload = classificationActivity?.payload as Record<string, unknown> | undefined;
+  const classification = payload?.classification as string | undefined;
+  const nextAction = payload?.nextAction as string | undefined;
+  const dealPath = payload?.dealPath as string | undefined;
+  const urgency = payload?.urgency as string | undefined;
+  const missingFields = payload?.missingFields as string[] | undefined;
+
+  const classColors: Record<string, string> = {
+    READY: "border-green-600/40 bg-green-950/20",
+    CLARIFY: "border-amber-600/40 bg-amber-950/20",
+    REJECT: "border-red-600/40 bg-red-950/20",
+  };
+
+  const classLabels: Record<string, string> = {
+    READY: "QUALIFIED — Ready for scoping",
+    CLARIFY: "INCOMPLETE — Clarification required",
+    REJECT: "DECLINED — Below threshold",
+  };
+
+  return (
+    <section
+      className={`rounded-lg border p-4 ${classColors[classification ?? ""] ?? "border-[var(--admin-border)]"}`}
+    >
+      <h2 className="text-xs font-semibold uppercase text-[var(--admin-muted)]">
+        Auto-classification
+      </h2>
+      {classification ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-sm font-semibold text-[var(--admin-text)]">
+            {classLabels[classification] ?? classification}
+          </p>
+          <div className="grid gap-2 text-xs text-[var(--admin-muted)] sm:grid-cols-2">
+            <p>
+              <span className="font-medium text-[var(--admin-text)]">Next action:</span>{" "}
+              {nextAction?.replace(/_/g, " ")}
+            </p>
+            <p>
+              <span className="font-medium text-[var(--admin-text)]">Urgency:</span>{" "}
+              {urgency?.replace(/_/g, " ")}
+            </p>
+            {dealPath ? (
+              <p>
+                <span className="font-medium text-[var(--admin-text)]">Deal path:</span>{" "}
+                {dealPath.replace(/_/g, " ")}
+              </p>
+            ) : null}
+            {missingFields && missingFields.length > 0 ? (
+              <p>
+                <span className="font-medium text-[var(--admin-text)]">Missing:</span>{" "}
+                {missingFields.join(", ")}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+      {classificationNote ? (
+        <pre className="mt-3 max-h-40 overflow-auto rounded bg-[var(--admin-surface-muted)] p-3 font-mono text-[0.65rem] text-[var(--admin-muted)]">
+          {classificationNote.body}
+        </pre>
+      ) : null}
+    </section>
   );
 }

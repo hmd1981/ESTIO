@@ -1,12 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { CreateMessageTemplateDto } from './dto/create-message-template.dto';
 import type { PatchMessageTemplateDto } from './dto/patch-message-template.dto';
+import { DEFAULT_RESPONSE_TEMPLATES } from './default-templates';
 
 @Injectable()
 export class MessageTemplatesService {
+  private readonly logger = new Logger(MessageTemplatesService.name);
+
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Seeds default response templates if none exist.
+   * Called on module init to ensure the conversion system has templates ready.
+   */
+  async seedDefaults() {
+    const count = await this.prisma.messageTemplate.count();
+    if (count > 0) return;
+
+    this.logger.log(
+      `Seeding ${DEFAULT_RESPONSE_TEMPLATES.length} default response templates`,
+    );
+
+    for (const tpl of DEFAULT_RESPONSE_TEMPLATES) {
+      await this.prisma.messageTemplate.create({
+        data: {
+          name: tpl.name,
+          channel: tpl.channel,
+          subject: tpl.subject,
+          body: tpl.body,
+        },
+      });
+    }
+  }
 
   findAll() {
     return this.prisma.messageTemplate.findMany({

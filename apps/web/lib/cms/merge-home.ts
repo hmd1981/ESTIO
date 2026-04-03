@@ -132,8 +132,8 @@ function itemLine(it: HomeListItem | undefined): string {
 }
 
 /**
- * Merge homepage sections. When `locale === "ar"`, pass English home `sections` as `cmsEn`
- * so empty AR fields can fall back to EN CMS before static defaults.
+ * Merge homepage sections. Pass English `cmsEn` for `/ar` **media only** (hero video, images,
+ * guided tiles). Arabic **copy** falls back to `home-ar` / messages — never to English CMS text.
  */
 export function mergeHomeSections(
   cms: HomeSectionsCMS,
@@ -154,12 +154,13 @@ export function mergeHomeSections(
   const FC = locale === "ar" ? finalCtaAr : finalCta;
 
   const en = cmsEn;
+  const skipEnCopy = locale === "ar";
 
   const defaultHeroImage = "/images/hero-home.png";
   const defaultHeroAlt =
     locale === "ar"
-      ? "فريق مهني في بيئة عمل رقمية — إستيو، مسقط، عُمان"
-      : "Professional team in a modern technology office — Estio, Muscat, Oman";
+      ? "صورة توضيحية لسياق التسليم الرقمي والأنظمة التشغيلية — إستيو، مسقط (ليست بيئة عميل فعلية)."
+      : "Homepage visual: operational context for digital delivery and systems work — Estio, Muscat (illustrative, not a client environment).";
 
   const heroImage = firstNonEmpty(
     cms.hero?.imageUrl,
@@ -180,35 +181,35 @@ export function mergeHomeSections(
   const hero: MergedHero = {
     eyebrow: firstNonEmpty(
       cms.hero?.eyebrow,
-      locale === "ar" ? en?.hero?.eyebrow : undefined,
+      skipEnCopy ? undefined : en?.hero?.eyebrow,
       locale === "ar"
         ? "رقمنة وتشغيل ذكي — مسقط · الخليج"
-        : "Premium digital services · Applied AI · Muscat, Oman",
+        : "Scoped delivery · Production systems · Muscat, Oman",
     ),
     headline: firstNonEmpty(
       cms.hero?.headline,
       cms.hero?.title,
-      locale === "ar" ? en?.hero?.headline : undefined,
-      locale === "ar" ? en?.hero?.title : undefined,
+      skipEnCopy ? undefined : en?.hero?.headline,
+      skipEnCopy ? undefined : en?.hero?.title,
       HH.headline,
     ),
     subheadline: firstNonEmpty(
       cms.hero?.subheadline,
       cms.hero?.body,
-      locale === "ar" ? en?.hero?.subheadline : undefined,
-      locale === "ar" ? en?.hero?.body : undefined,
+      skipEnCopy ? undefined : en?.hero?.subheadline,
+      skipEnCopy ? undefined : en?.hero?.body,
       HH.subheadline,
     ),
     primaryCta: {
       label: firstNonEmpty(
         cms.hero?.primaryCta?.label,
-        locale === "ar" ? en?.hero?.primaryCta?.label : undefined,
+        skipEnCopy ? undefined : en?.hero?.primaryCta?.label,
         HH.primaryCta.label,
       ),
       href: withLocale(
         firstNonEmpty(
           cms.hero?.primaryCta?.href,
-          locale === "ar" ? en?.hero?.primaryCta?.href : undefined,
+          skipEnCopy ? undefined : en?.hero?.primaryCta?.href,
           HH.primaryCta.href,
         ),
         locale,
@@ -217,13 +218,13 @@ export function mergeHomeSections(
     secondaryCta: {
       label: firstNonEmpty(
         cms.hero?.secondaryCta?.label,
-        locale === "ar" ? en?.hero?.secondaryCta?.label : undefined,
+        skipEnCopy ? undefined : en?.hero?.secondaryCta?.label,
         HH.secondaryCta.label,
       ),
       href: withLocale(
         firstNonEmpty(
           cms.hero?.secondaryCta?.href,
-          locale === "ar" ? en?.hero?.secondaryCta?.href : undefined,
+          skipEnCopy ? undefined : en?.hero?.secondaryCta?.href,
           HH.secondaryCta.href,
         ),
         locale,
@@ -241,11 +242,13 @@ export function mergeHomeSections(
   };
 
   const guidedDefaultTitle =
-    locale === "ar" ? "ما الذي تريدون تنفيذه؟" : "What are you looking for?";
+    locale === "ar"
+      ? "اختر المسار الأقرب لقيودكم التشغيلية"
+      : "Pick the engagement path that matches your constraint";
   const guidedDefaultDesc =
     locale === "ar"
-      ? "اختاروا المسار الأقرب؛ يتابع معكم مسؤول مباشر عن النطاق والجدول وأصحاب القرار — من دون ردود آلية."
-      : "Select the closest path. A senior owner follows up on scope, timeline, and stakeholders — no automated responses.";
+      ? "كل بطاقة تقود إلى ممارسة محدودة النطاق أو ملحق المؤسسات. الاختيار لا يلزمكم تعاقدياً — يحدد فقط كيف نصنّف موجزكم في مسار التأهيل."
+      : "Each tile routes to a scoped practice or the enterprise annex. Selection is not commitment — it sets how we classify your brief in qualification.";
 
   const g = cms.guided;
   const gEn = locale === "ar" ? en?.guided : undefined;
@@ -254,27 +257,39 @@ export function mergeHomeSections(
 
   const guidedTitle = firstNonEmpty(
     g?.title,
-    gEn?.title,
+    skipEnCopy ? undefined : gEn?.title,
     gi?.title,
-    giEn?.title,
+    skipEnCopy ? undefined : giEn?.title,
     guidedDefaultTitle,
   );
-  const guidedSubtitle = firstNonEmpty(g?.subtitle, gEn?.subtitle);
+  const guidedSubtitle = firstNonEmpty(
+    g?.subtitle,
+    skipEnCopy ? undefined : gEn?.subtitle,
+  );
   const guidedBody = firstNonEmpty(
     g?.body,
-    gEn?.body,
+    skipEnCopy ? undefined : gEn?.body,
     gi?.description,
-    giEn?.description,
+    skipEnCopy ? undefined : giEn?.description,
     guidedDefaultDesc,
   );
 
   const guidedSectionImg = visualFrom(g, gEn);
   const guidedCta =
-    g?.ctaLabel || g?.ctaHref || gEn?.ctaLabel || gEn?.ctaHref
+    g?.ctaLabel ||
+    g?.ctaHref ||
+    (!skipEnCopy && (gEn?.ctaLabel || gEn?.ctaHref))
       ? {
-          label: firstNonEmpty(g?.ctaLabel, gEn?.ctaLabel),
+          label: firstNonEmpty(
+            g?.ctaLabel,
+            skipEnCopy ? undefined : gEn?.ctaLabel,
+          ),
           href: withLocale(
-            firstNonEmpty(g?.ctaHref, gEn?.ctaHref, "/contact"),
+            firstNonEmpty(
+              g?.ctaHref,
+              skipEnCopy ? undefined : gEn?.ctaHref,
+              "/contact",
+            ),
             locale,
           ),
         }
@@ -304,16 +319,16 @@ export function mergeHomeSections(
           : undefined;
       const label = firstNonEmpty(
         itemLine(fromNew),
-        itemLine(fromNewEn),
+        skipEnCopy ? undefined : itemLine(fromNewEn),
         fromOld?.label,
-        fromOldEn?.label,
+        skipEnCopy ? undefined : fromOldEn?.label,
         def.label,
       );
       const hrefRaw = firstNonEmpty(
         fromNew?.href,
-        fromNewEn?.href,
+        skipEnCopy ? undefined : fromNewEn?.href,
         fromOld?.href,
-        fromOldEn?.href,
+        skipEnCopy ? undefined : fromOldEn?.href,
         def.href,
       );
       return {
@@ -350,18 +365,18 @@ export function mergeHomeSections(
   const trustIntro = {
     title: firstNonEmpty(
       t?.title,
-      tEn?.title,
+      skipEnCopy ? undefined : tEn?.title,
       tsi?.title,
-      tsiEn?.title,
+      skipEnCopy ? undefined : tsiEn?.title,
       TSI.title,
     ),
     description: firstNonEmpty(
       t?.body,
-      tEn?.body,
+      skipEnCopy ? undefined : tEn?.body,
       t?.subtitle,
-      tEn?.subtitle,
+      skipEnCopy ? undefined : tEn?.subtitle,
       tsi?.description,
-      tsiEn?.description,
+      skipEnCopy ? undefined : tsiEn?.description,
       TSI.description,
     ),
     imageUrl: firstNonEmpty(t?.imageUrl, tEn?.imageUrl),
@@ -401,12 +416,12 @@ export function mergeHomeSections(
         ? cms.trustPoints.map((p, i) => ({
             title: firstNonEmpty(
               p.title,
-              locale === "ar" ? en?.trustPoints?.[i]?.title : undefined,
+              skipEnCopy ? undefined : en?.trustPoints?.[i]?.title,
               TP[i]?.title ?? "",
             ),
             body: firstNonEmpty(
               p.body,
-              locale === "ar" ? en?.trustPoints?.[i]?.body : undefined,
+              skipEnCopy ? undefined : en?.trustPoints?.[i]?.body,
               TP[i]?.body ?? "",
             ),
             imageUrl: firstNonEmpty(
@@ -432,18 +447,18 @@ export function mergeHomeSections(
   const svcIntro = {
     title: firstNonEmpty(
       s?.title,
-      sEn?.title,
+      skipEnCopy ? undefined : sEn?.title,
       ssi?.title,
-      ssiEn?.title,
+      skipEnCopy ? undefined : ssiEn?.title,
       SSI.title,
     ),
     description: firstNonEmpty(
       s?.body,
-      sEn?.body,
+      skipEnCopy ? undefined : sEn?.body,
       s?.subtitle,
-      sEn?.subtitle,
+      skipEnCopy ? undefined : sEn?.subtitle,
       ssi?.description,
-      ssiEn?.description,
+      skipEnCopy ? undefined : ssiEn?.description,
       SSI.description,
     ),
     imageUrl: firstNonEmpty(s?.imageUrl, sEn?.imageUrl),
@@ -485,18 +500,18 @@ export function mergeHomeSections(
             id: String(c.id ?? PS[i]?.id ?? i),
             title: firstNonEmpty(
               c.title,
-              locale === "ar" ? en?.pillarServices?.[i]?.title : undefined,
+              skipEnCopy ? undefined : en?.pillarServices?.[i]?.title,
               PS[i]?.title ?? "",
             ),
             description: firstNonEmpty(
               c.description,
-              locale === "ar" ? en?.pillarServices?.[i]?.description : undefined,
+              skipEnCopy ? undefined : en?.pillarServices?.[i]?.description,
               PS[i]?.description ?? "",
             ),
             href: withLocale(
               firstNonEmpty(
                 c.href,
-                locale === "ar" ? en?.pillarServices?.[i]?.href : undefined,
+                skipEnCopy ? undefined : en?.pillarServices?.[i]?.href,
                 PS[i]?.href ?? "/services",
               ),
               locale,
@@ -529,23 +544,23 @@ export function mergeHomeSections(
   const ent = {
     headline: firstNonEmpty(
       entCms?.title,
-      entCmsEn?.title,
+      skipEnCopy ? undefined : entCmsEn?.title,
       eh?.headline,
-      ehEn?.headline,
+      skipEnCopy ? undefined : ehEn?.headline,
       EH.headline,
     ),
     body: firstNonEmpty(
       entCms?.body,
-      entCmsEn?.body,
+      skipEnCopy ? undefined : entCmsEn?.body,
       eh?.body,
-      ehEn?.body,
+      skipEnCopy ? undefined : ehEn?.body,
       EH.body,
     ),
     subtitle: firstNonEmpty(
       entCms?.subtitle,
-      entCmsEn?.subtitle,
+      skipEnCopy ? undefined : entCmsEn?.subtitle,
       eh?.subtitle,
-      ehEn?.subtitle,
+      skipEnCopy ? undefined : ehEn?.subtitle,
     ),
     imageUrl: firstNonEmpty(
       entCms?.imageUrl,
@@ -591,12 +606,12 @@ export function mergeHomeSections(
           ? eh.bullets.map((b, i) => ({
               title: firstNonEmpty(
                 b.title,
-                locale === "ar" ? ehEn?.bullets?.[i]?.title : undefined,
+                skipEnCopy ? undefined : ehEn?.bullets?.[i]?.title,
                 EH.bullets[i]?.title ?? "",
               ),
               text: firstNonEmpty(
                 b.text,
-                locale === "ar" ? ehEn?.bullets?.[i]?.text : undefined,
+                skipEnCopy ? undefined : ehEn?.bullets?.[i]?.text,
                 EH.bullets[i]?.text ?? "",
               ),
               imageUrl: firstNonEmpty(
@@ -619,17 +634,17 @@ export function mergeHomeSections(
     cta: {
       label: firstNonEmpty(
         entCms?.ctaLabel,
-        entCmsEn?.ctaLabel,
+        skipEnCopy ? undefined : entCmsEn?.ctaLabel,
         eh?.cta?.label,
-        ehEn?.cta?.label,
+        skipEnCopy ? undefined : ehEn?.cta?.label,
         EH.cta.label,
       ),
       href: withLocale(
         firstNonEmpty(
           entCms?.ctaHref,
-          entCmsEn?.ctaHref,
+          skipEnCopy ? undefined : entCmsEn?.ctaHref,
           eh?.cta?.href,
-          ehEn?.cta?.href,
+          skipEnCopy ? undefined : ehEn?.cta?.href,
           EH.cta.href,
         ),
         locale,
@@ -645,18 +660,18 @@ export function mergeHomeSections(
   const indIntro = {
     title: firstNonEmpty(
       indBlock?.title,
-      indBlockEn?.title,
+      skipEnCopy ? undefined : indBlockEn?.title,
       isi?.title,
-      isiEn?.title,
+      skipEnCopy ? undefined : isiEn?.title,
       ISI.title,
     ),
     description: firstNonEmpty(
       indBlock?.body,
-      indBlockEn?.body,
+      skipEnCopy ? undefined : indBlockEn?.body,
       indBlock?.subtitle,
-      indBlockEn?.subtitle,
+      skipEnCopy ? undefined : indBlockEn?.subtitle,
       isi?.description,
-      isiEn?.description,
+      skipEnCopy ? undefined : isiEn?.description,
       ISI.description,
     ),
     imageUrl: firstNonEmpty(
@@ -707,12 +722,12 @@ export function mergeHomeSections(
         ? cms.industries.map((row, i) => ({
             label: firstNonEmpty(
               row.name,
-              locale === "ar" ? en?.industries?.[i]?.name : undefined,
+              skipEnCopy ? undefined : en?.industries?.[i]?.name,
               IND[i]?.label ?? "",
             ),
             description: firstNonEmpty(
               row.detail,
-              locale === "ar" ? en?.industries?.[i]?.detail : undefined,
+              skipEnCopy ? undefined : en?.industries?.[i]?.detail,
               IND[i]?.description ?? "",
             ),
             imageUrl: firstNonEmpty(row.imageUrl),
@@ -732,33 +747,33 @@ export function mergeHomeSections(
   const cta: MergedCta = {
     headline: firstNonEmpty(
       c?.title,
-      cEn?.title,
+      skipEnCopy ? undefined : cEn?.title,
       cs?.title,
-      csEn?.title,
+      skipEnCopy ? undefined : csEn?.title,
       FC.headline,
     ),
     body: firstNonEmpty(
       c?.body,
-      cEn?.body,
+      skipEnCopy ? undefined : cEn?.body,
       c?.subtitle,
-      cEn?.subtitle,
+      skipEnCopy ? undefined : cEn?.subtitle,
       cs?.body,
-      csEn?.body,
+      skipEnCopy ? undefined : csEn?.body,
       FC.body,
     ),
     buttonLabel: firstNonEmpty(
       c?.ctaLabel,
-      cEn?.ctaLabel,
+      skipEnCopy ? undefined : cEn?.ctaLabel,
       cs?.cta?.label,
-      csEn?.cta?.label,
+      skipEnCopy ? undefined : csEn?.cta?.label,
       FC.buttonLabel,
     ),
     href: withLocale(
       firstNonEmpty(
         c?.ctaHref,
-        cEn?.ctaHref,
+        skipEnCopy ? undefined : cEn?.ctaHref,
         cs?.cta?.href,
-        csEn?.cta?.href,
+        skipEnCopy ? undefined : csEn?.cta?.href,
         FC.href,
       ),
       locale,

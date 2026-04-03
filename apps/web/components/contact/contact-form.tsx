@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { MarketingMessages } from "@/lib/i18n/messages";
 import type { LeadSource } from "@/lib/leads/api";
+import {
+  getPreNavIntent,
+  getStudioSessionId,
+  postCrmLeadFromAiStudio,
+} from "@/components/ai-studio/ai-studio-analytics";
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -21,16 +26,32 @@ export function ContactForm({
   copy,
   source,
   initialValues = {},
+  aiStudioContext,
 }: {
   copy: ContactFormCopy;
   source: LeadSource;
   initialValues?: ContactFormInitialValues;
+  aiStudioContext?: { locale: string; initialGoal?: string };
 }) {
   const [state, setState] = useState<FormState>("idle");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [serviceInterest, setServiceInterest] = useState(
     initialValues.serviceInterest ?? "",
   );
+  const studioLeadPosted = useRef(false);
+
+  useEffect(() => {
+    if (!aiStudioContext || studioLeadPosted.current) return;
+    studioLeadPosted.current = true;
+    const intent = getPreNavIntent() ?? "brand";
+    void postCrmLeadFromAiStudio({
+      intent,
+      sessionId: getStudioSessionId(),
+      goalText: aiStudioContext.initialGoal,
+      source: "contact_form",
+      locale: aiStudioContext.locale,
+    });
+  }, [aiStudioContext]);
   const qualificationPack =
     serviceInterest && copy.qualificationByIntent[serviceInterest]
       ? copy.qualificationByIntent[serviceInterest]

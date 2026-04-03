@@ -15,7 +15,9 @@ import { marketingDetailMetadata } from "@/lib/seo/metadata-builders";
 import { brand, contactPlacements } from "@/lib/content/site";
 import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
+import { toArabicUiNumerals } from "@/lib/i18n/numerals";
 import { resolveCmsVisual } from "@/lib/cms/resolve-image";
+import { isAllowedGoogleMapsEmbedUrl } from "@/lib/maps/allowed-map-embed";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -87,10 +89,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           ?.sections ?? {}) as MarketingPageSectionsCMS)
       : undefined;
   const c = getMessages(raw).contact;
+  const seoTitle =
+    cms.seoTitle?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoTitle?.trim()) ||
+    c.seoTitle;
+  const seoDesc =
+    cms.seoDescription?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoDescription?.trim()) ||
+    c.seoDescription;
   return marketingDetailMetadata(
     {
-      title: cms.seoTitle ?? cmsEn?.seoTitle ?? c.seoTitle,
-      description: cms.seoDescription ?? cmsEn?.seoDescription ?? c.seoDescription,
+      title: seoTitle,
+      description: seoDesc,
     },
     `/${raw}/contact`,
   );
@@ -116,11 +126,13 @@ export default async function ContactPage({ params, searchParams }: Props) {
     phone: queryValue(sp.phone),
     company: queryValue(sp.company),
     serviceInterest: queryValue(sp.interest),
-    message: queryValue(sp.message),
+    message: queryValue(sp.message) ?? queryValue(sp.goal),
   };
   const ui = getMessages(raw);
   const c = ui.contact;
   const cp = placementsFromSettings(bundle.settings);
+  const phoneDisplayUi =
+    raw === "ar" ? toArabicUiNumerals(cp.phoneDisplay) : cp.phoneDisplay;
   const hero = mergeMarketingHero(
     cms,
     {
@@ -219,6 +231,14 @@ export default async function ContactPage({ params, searchParams }: Props) {
                 copy={ui.contactForm}
                 source={formSource}
                 initialValues={formInitialValues}
+                aiStudioContext={
+                  formInitialValues.serviceInterest === "AI_STUDIO"
+                    ? {
+                        locale: raw,
+                        initialGoal: formInitialValues.message,
+                      }
+                    : undefined
+                }
               />
             </div>
 
@@ -263,7 +283,7 @@ export default async function ContactPage({ params, searchParams }: Props) {
                       >
                         <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
                       </svg>
-                      {cp.phoneDisplay}
+                      {phoneDisplayUi}
                     </a>
                     <a
                       href={cp.emailHref}
@@ -308,10 +328,23 @@ export default async function ContactPage({ params, searchParams }: Props) {
                       {brand.name}
                     </p>
                     <p className="mt-1">{cp.cityLine}</p>
+                    {contactBlocks.mapLinkUrl ? (
+                      <p className="mt-3">
+                        <a
+                          href={contactBlocks.mapLinkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                        >
+                          {c.openInGoogleMaps}
+                        </a>
+                      </p>
+                    ) : null}
                   </address>
                 </div>
 
-                {contactBlocks.mapEmbedUrl ? (
+                {contactBlocks.mapEmbedUrl &&
+                isAllowedGoogleMapsEmbedUrl(contactBlocks.mapEmbedUrl) ? (
                   <div className="overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)]">
                     <iframe
                       title={ui.contact.mapIframeTitle}
@@ -335,7 +368,9 @@ export default async function ContactPage({ params, searchParams }: Props) {
                         className="flex gap-3 text-sm leading-relaxed text-[var(--text-body)]"
                       >
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--accent)] text-xs font-semibold text-[var(--accent)]">
-                          {i + 1}
+                          {raw === "ar"
+                            ? toArabicUiNumerals(String(i + 1))
+                            : i + 1}
                         </span>
                         {text}
                       </li>

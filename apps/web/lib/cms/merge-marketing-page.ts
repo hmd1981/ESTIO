@@ -6,7 +6,7 @@ import type {
   HomeListItem,
   MarketingPageSectionsCMS,
 } from "@/lib/cms/types";
-import { brand } from "@/lib/content/site";
+import { brand, contactPlacements } from "@/lib/content/site";
 import type { AppLocale } from "@/lib/i18n/config";
 
 function firstNonEmpty(...candidates: (string | undefined)[]): string {
@@ -17,7 +17,10 @@ function firstNonEmpty(...candidates: (string | undefined)[]): string {
   return "";
 }
 
-/** Merge CMS hero copy with i18n fallbacks (about/contact/services intros). */
+/**
+ * Merge CMS hero with i18n fallbacks (about/contact/services intros).
+ * On `/ar`, English CMS is not used for visible copy — only AR CMS, then `fallback`.
+ */
 export function mergeMarketingHero(
   cms: MarketingPageSectionsCMS | undefined,
   fallback: {
@@ -33,43 +36,45 @@ export function mergeMarketingHero(
 ) {
   const cmsEn = options?.cmsEn;
   const locale = options?.locale;
+  /** Arabic routes: never show English CMS copy when AR CMS is empty — use `fallback` (i18n). */
+  const skipEn = locale === "ar";
   const h1Raw = firstNonEmpty(
     cms?.title,
-    locale === "ar" ? cmsEn?.title : undefined,
+    skipEn ? undefined : cmsEn?.title,
     fallback.h1,
   );
   const lead1 = firstNonEmpty(
     cms?.lead,
-    locale === "ar" ? cmsEn?.lead : undefined,
+    skipEn ? undefined : cmsEn?.lead,
     fallback.leadP1,
   );
   const lead2 = firstNonEmpty(
     cms?.body,
-    locale === "ar" ? cmsEn?.body : undefined,
+    skipEn ? undefined : cmsEn?.body,
     fallback.leadP2 ?? "",
   );
   const kicker = firstNonEmpty(
     cms?.kicker,
-    locale === "ar" ? cmsEn?.kicker : undefined,
+    skipEn ? undefined : cmsEn?.kicker,
     fallback.kicker,
   );
   const subtitle = firstNonEmpty(
     cms?.subtitle,
-    locale === "ar" ? cmsEn?.subtitle : undefined,
+    skipEn ? undefined : cmsEn?.subtitle,
   );
 
   const heroVisual = {
     imageUrl: firstNonEmpty(
       cms?.heroVisual?.imageUrl,
-      locale === "ar" ? cmsEn?.heroVisual?.imageUrl : undefined,
+      skipEn ? cmsEn?.heroVisual?.imageUrl : undefined,
     ),
     imageAlt: firstNonEmpty(
       cms?.heroVisual?.imageAlt,
-      locale === "ar" ? cmsEn?.heroVisual?.imageAlt : undefined,
+      skipEn ? cmsEn?.heroVisual?.imageAlt : undefined,
     ),
     imageMediaAssetId: firstNonEmpty(
       cms?.heroVisual?.imageMediaAssetId,
-      locale === "ar" ? cmsEn?.heroVisual?.imageMediaAssetId : undefined,
+      skipEn ? cmsEn?.heroVisual?.imageMediaAssetId : undefined,
     ),
   };
 
@@ -125,6 +130,11 @@ export function mergeMarketingContactBlocks(
       cms?.mapEmbedUrl,
       locale === "ar" ? cmsEn?.mapEmbedUrl : undefined,
     ),
+    mapLinkUrl: firstNonEmpty(
+      cms?.mapLinkUrl,
+      locale === "ar" ? cmsEn?.mapLinkUrl : undefined,
+      contactPlacements.googleMapsUrl,
+    ),
   };
 }
 
@@ -176,6 +186,7 @@ export function mergeMarketingServiceGroups(
   groupIds: string[],
 ): Record<string, MergedServiceGroupVisual> {
   const out: Record<string, MergedServiceGroupVisual> = {};
+  const skipEn = locale === "ar";
   for (const groupId of groupIds) {
     const g = cms?.serviceGroups?.find((x) => x.groupId === groupId);
     const ge =
@@ -195,9 +206,12 @@ export function mergeMarketingServiceGroups(
         description?: string;
         href?: string;
       } = {
-        title: firstNonEmpty(ii?.title, iie?.title),
-        description: firstNonEmpty(ii?.description, iie?.description),
-        href: firstNonEmpty(ii?.href, iie?.href),
+        title: firstNonEmpty(ii?.title, skipEn ? undefined : iie?.title),
+        description: firstNonEmpty(
+          ii?.description,
+          skipEn ? undefined : iie?.description,
+        ),
+        href: firstNonEmpty(ii?.href, skipEn ? undefined : iie?.href),
         imageUrl: firstNonEmpty(ii?.imageUrl, iie?.imageUrl),
         imageAlt: firstNonEmpty(ii?.imageAlt, iie?.imageAlt),
         imageMediaAssetId: firstNonEmpty(
@@ -218,8 +232,11 @@ export function mergeMarketingServiceGroups(
     }
     out[groupId] = {
       groupId,
-      title: firstNonEmpty(g?.title, ge?.title),
-      description: firstNonEmpty(g?.description, ge?.description),
+      title: firstNonEmpty(g?.title, skipEn ? undefined : ge?.title),
+      description: firstNonEmpty(
+        g?.description,
+        skipEn ? undefined : ge?.description,
+      ),
       imageUrl: firstNonEmpty(g?.imageUrl, ge?.imageUrl),
       imageAlt: firstNonEmpty(g?.imageAlt, ge?.imageAlt),
       imageMediaAssetId: firstNonEmpty(g?.imageMediaAssetId, ge?.imageMediaAssetId),
@@ -276,17 +293,23 @@ export function mergeEnterpriseVisuals(
   const pcE = evEn?.programCards ?? [];
   const len = Math.max(pcA.length, pcE.length);
   const programCards: HomeListItem[] = [];
+  const skipEn = locale === "ar";
   for (let i = 0; i < len; i++) {
     const a = pcA[i];
     const e = pcE[i];
     const card: HomeListItem = {
-      title: firstNonEmpty(a?.title, a?.label, locale === "ar" ? e?.title : undefined, e?.label),
-      label: firstNonEmpty(a?.label, locale === "ar" ? e?.label : undefined),
+      title: firstNonEmpty(
+        a?.title,
+        a?.label,
+        skipEn ? undefined : e?.title,
+        skipEn ? undefined : e?.label,
+      ),
+      label: firstNonEmpty(a?.label, skipEn ? undefined : e?.label),
       description: firstNonEmpty(
         a?.description,
-        locale === "ar" ? e?.description : undefined,
+        skipEn ? undefined : e?.description,
       ),
-      href: firstNonEmpty(a?.href, locale === "ar" ? e?.href : undefined),
+      href: firstNonEmpty(a?.href, skipEn ? undefined : e?.href),
       imageUrl: firstNonEmpty(a?.imageUrl, locale === "ar" ? e?.imageUrl : undefined),
       imageAlt: firstNonEmpty(a?.imageAlt, locale === "ar" ? e?.imageAlt : undefined),
       imageMediaAssetId: firstNonEmpty(
@@ -642,6 +665,7 @@ export function mergeEnterpriseLandingSections(
     fit: EnterpriseFitMerged;
   },
 ): MergedEnterpriseLanding {
+  const skipEnCopy = locale === "ar";
   const p = cms?.enterprisePractice;
   const pr = cms?.enterpriseProof;
   const prEn = locale === "ar" ? cmsEn?.enterpriseProof : undefined;
@@ -660,7 +684,7 @@ export function mergeEnterpriseLandingSections(
 
   const audienceLine = firstNonEmpty(
     cms?.enterpriseAudience,
-    locale === "ar" ? cmsEn?.enterpriseAudience : undefined,
+    skipEnCopy ? undefined : cmsEn?.enterpriseAudience,
     defaults.audienceLine,
   );
 
@@ -669,29 +693,29 @@ export function mergeEnterpriseLandingSections(
   const decisionSummary: EnterpriseDecisionSummaryMerged = {
     forTeams: firstNonEmpty(
       ds?.forTeams,
-      dsEn?.forTeams,
+      skipEnCopy ? undefined : dsEn?.forTeams,
       defaults.decisionSummary.forTeams,
     ),
     requires: firstNonEmpty(
       ds?.requires,
-      dsEn?.requires,
+      skipEnCopy ? undefined : dsEn?.requires,
       defaults.decisionSummary.requires,
     ),
     delivers: firstNonEmpty(
       ds?.delivers,
-      dsEn?.delivers,
+      skipEnCopy ? undefined : dsEn?.delivers,
       defaults.decisionSummary.delivers,
     ),
   };
 
   const practiceTitle = firstNonEmpty(
     p?.title,
-    locale === "ar" ? cmsEn?.enterprisePractice?.title : undefined,
+    skipEnCopy ? undefined : cmsEn?.enterprisePractice?.title,
     defaults.practice.title,
   );
   const practiceLead = firstNonEmpty(
     p?.lead,
-    locale === "ar" ? cmsEn?.enterprisePractice?.lead : undefined,
+    skipEnCopy ? undefined : cmsEn?.enterprisePractice?.lead,
     defaults.practice.lead,
   );
 
@@ -704,8 +728,8 @@ export function mergeEnterpriseLandingSections(
     const a = p?.blocks?.[i];
     const e = locale === "ar" ? cmsEn?.enterprisePractice?.blocks?.[i] : undefined;
     blocks.push({
-      title: firstNonEmpty(a?.title, e?.title, def.title),
-      body: firstNonEmpty(a?.body, e?.body, def.body),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
+      body: firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body, def.body),
       imageUrl: firstNonEmpty(a?.imageUrl, e?.imageUrl),
       imageAlt: firstNonEmpty(a?.imageAlt, e?.imageAlt),
       imageMediaAssetId: firstNonEmpty(
@@ -720,7 +744,7 @@ export function mergeEnterpriseLandingSections(
 
   const proofTitle = firstNonEmpty(
     pr?.title,
-    prEn?.title,
+    skipEnCopy ? undefined : prEn?.title,
     defaults.proof.title,
   );
 
@@ -730,14 +754,14 @@ export function mergeEnterpriseLandingSections(
     const a = pr?.items?.[i];
     const e = locale === "ar" ? prEn?.items?.[i] : undefined;
     proofItems.push({
-      title: firstNonEmpty(a?.title, e?.title, def.title),
-      body: firstNonEmpty(a?.body, e?.body, def.body),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
+      body: firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body, def.body),
     });
   }
 
   const proofEngineTitle = firstNonEmpty(
     pe?.title,
-    peEn?.title,
+    skipEnCopy ? undefined : peEn?.title,
     defaults.proofEngine.title,
     proofTitle,
   );
@@ -747,18 +771,18 @@ export function mergeEnterpriseLandingSections(
   for (let i = 0; i < peLen; i++) {
     const a = pe?.items?.[i];
     const e = locale === "ar" ? peEn?.items?.[i] : undefined;
-    const claim = firstNonEmpty(a?.claim, e?.claim);
-    const metric = firstNonEmpty(a?.metric, e?.metric);
+    const claim = firstNonEmpty(a?.claim, skipEnCopy ? undefined : e?.claim);
+    const metric = firstNonEmpty(a?.metric, skipEnCopy ? undefined : e?.metric);
     const evidenceType = normalizeEvidence(
-      firstNonEmpty(a?.evidenceType, e?.evidenceType),
+      firstNonEmpty(a?.evidenceType, skipEnCopy ? undefined : e?.evidenceType),
     );
     const visual = mergeVisualPartial(a?.visual, e?.visual, locale);
     const verA = a?.verification;
     const verE = e?.verification;
     const vLevel = normalizeVerificationLevel(
-      firstNonEmpty(verA?.level, verE?.level),
+      firstNonEmpty(verA?.level, skipEnCopy ? undefined : verE?.level),
     );
-    const vNote = firstNonEmpty(verA?.note, verE?.note);
+    const vNote = firstNonEmpty(verA?.note, skipEnCopy ? undefined : verE?.note);
     if (claim.trim() && metric.trim()) {
       cmsEngineItems.push({
         claim,
@@ -781,52 +805,60 @@ export function mergeEnterpriseLandingSections(
           verification: { level: "internal" as EnterpriseVerificationLevel, note: "" },
         }));
 
-  const caseStudiesTitle = firstNonEmpty(cs?.title, csEn?.title, defaults.caseStudies.title);
-  const caseStudiesLead = firstNonEmpty(cs?.lead, csEn?.lead, defaults.caseStudies.lead);
+  const caseStudiesTitle = firstNonEmpty(
+    cs?.title,
+    skipEnCopy ? undefined : csEn?.title,
+    defaults.caseStudies.title,
+  );
+  const caseStudiesLead = firstNonEmpty(
+    cs?.lead,
+    skipEnCopy ? undefined : csEn?.lead,
+    defaults.caseStudies.lead,
+  );
   const caseStudiesLabels = {
     situation: firstNonEmpty(
       cs?.labels?.situation,
-      csEn?.labels?.situation,
+      skipEnCopy ? undefined : csEn?.labels?.situation,
       defaults.caseStudies.labels.situation,
     ),
     systems: firstNonEmpty(
       cs?.labels?.systems,
-      csEn?.labels?.systems,
+      skipEnCopy ? undefined : csEn?.labels?.systems,
       defaults.caseStudies.labels.systems,
     ),
     proof: firstNonEmpty(
       cs?.labels?.proof,
-      csEn?.labels?.proof,
+      skipEnCopy ? undefined : csEn?.labels?.proof,
       defaults.caseStudies.labels.proof,
     ),
     commercial: firstNonEmpty(
       cs?.labels?.commercial,
-      csEn?.labels?.commercial,
+      skipEnCopy ? undefined : csEn?.labels?.commercial,
       defaults.caseStudies.labels.commercial,
     ),
     problem: firstNonEmpty(
       cs?.labels?.problem,
-      csEn?.labels?.problem,
+      skipEnCopy ? undefined : csEn?.labels?.problem,
       defaults.caseStudies.labels.problem,
     ),
     systemBuilt: firstNonEmpty(
       cs?.labels?.systemBuilt,
-      csEn?.labels?.systemBuilt,
+      skipEnCopy ? undefined : csEn?.labels?.systemBuilt,
       defaults.caseStudies.labels.systemBuilt,
     ),
     outcome: firstNonEmpty(
       cs?.labels?.outcome,
-      csEn?.labels?.outcome,
+      skipEnCopy ? undefined : csEn?.labels?.outcome,
       defaults.caseStudies.labels.outcome,
     ),
     metrics: firstNonEmpty(
       cs?.labels?.metrics,
-      csEn?.labels?.metrics,
+      skipEnCopy ? undefined : csEn?.labels?.metrics,
       defaults.caseStudies.labels.metrics,
     ),
     decisionImpact: firstNonEmpty(
       cs?.labels?.decisionImpact,
-      csEn?.labels?.decisionImpact,
+      skipEnCopy ? undefined : csEn?.labels?.decisionImpact,
       defaults.caseStudies.labels.decisionImpact,
     ),
   };
@@ -854,48 +886,55 @@ export function mergeEnterpriseLandingSections(
     };
     const a = cs?.items?.[i];
     const e = csEn?.items?.[i];
-    const body = firstNonEmpty(a?.body, e?.body, def.body);
+    const body = firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body, def.body);
     const preferSimpleBody = Boolean(body);
     const problem = firstNonEmpty(
       a?.problem,
-      e?.problem,
+      skipEnCopy ? undefined : e?.problem,
       a?.situation,
-      e?.situation,
+      skipEnCopy ? undefined : e?.situation,
       preferSimpleBody ? "" : def.problem,
     );
     const systemBuilt = firstNonEmpty(
       a?.systemBuilt,
-      e?.systemBuilt,
+      skipEnCopy ? undefined : e?.systemBuilt,
       a?.systems,
-      e?.systems,
+      skipEnCopy ? undefined : e?.systems,
       preferSimpleBody ? "" : def.systemBuilt,
     );
     const outcome = firstNonEmpty(
       a?.outcome,
-      e?.outcome,
+      skipEnCopy ? undefined : e?.outcome,
       a?.proof,
-      e?.proof,
+      skipEnCopy ? undefined : e?.proof,
       preferSimpleBody ? "" : def.outcome,
     );
-    const metricsRaw = a?.metrics ?? e?.metrics ?? (preferSimpleBody ? [] : def.metrics ?? []);
+    const metricsRaw =
+      a?.metrics ??
+      (skipEnCopy ? undefined : e?.metrics) ??
+      (preferSimpleBody ? [] : def.metrics ?? []);
     const metrics: string[] = [];
     for (const m of metricsRaw) {
       const line = metricLineFromEntry(m);
       if (line) metrics.push(line);
     }
     if (metrics.length === 0) {
-      const fallback = firstNonEmpty(a?.commercial, e?.commercial, "");
+      const fallback = firstNonEmpty(
+        a?.commercial,
+        skipEnCopy ? undefined : e?.commercial,
+        "",
+      );
       if (fallback.trim()) metrics.push(fallback.trim());
     }
     const visual = mergeVisualPartial(a?.visual, e?.visual, locale);
     const decisionImpact = firstNonEmpty(
       a?.decisionImpact,
-      e?.decisionImpact,
+      skipEnCopy ? undefined : e?.decisionImpact,
       def.decisionImpact,
     );
     const item = {
-      kicker: firstNonEmpty(a?.kicker, e?.kicker, def.kicker),
-      title: firstNonEmpty(a?.title, e?.title, def.title),
+      kicker: firstNonEmpty(a?.kicker, skipEnCopy ? undefined : e?.kicker, def.kicker),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
       body,
       problem,
       systemBuilt,
@@ -920,8 +959,16 @@ export function mergeEnterpriseLandingSections(
     }
   }
 
-  const diagramsTitle = firstNonEmpty(dg?.title, dgEn?.title, defaults.diagrams.title);
-  const diagramsLead = firstNonEmpty(dg?.lead, dgEn?.lead, defaults.diagrams.lead);
+  const diagramsTitle = firstNonEmpty(
+    dg?.title,
+    skipEnCopy ? undefined : dgEn?.title,
+    defaults.diagrams.title,
+  );
+  const diagramsLead = firstNonEmpty(
+    dg?.lead,
+    skipEnCopy ? undefined : dgEn?.lead,
+    defaults.diagrams.lead,
+  );
   const diagrams: EnterpriseDiagramMerged[] = [];
   for (
     let i = 0;
@@ -943,15 +990,23 @@ export function mergeEnterpriseLandingSections(
     };
     const a = dg?.items?.[i];
     const e = dgEn?.items?.[i];
-    const diagramBody = firstNonEmpty(a?.body, e?.body, def.body);
+    const diagramBody = firstNonEmpty(
+      a?.body,
+      skipEnCopy ? undefined : e?.body,
+      def.body,
+    );
     const explanation = firstNonEmpty(
       a?.explanation,
-      e?.explanation,
+      skipEnCopy ? undefined : e?.explanation,
       def.explanation,
       diagramBody,
     );
     const diagramType = normalizeDiagramType(
-      firstNonEmpty(a?.diagramType, e?.diagramType, def.diagramType),
+      firstNonEmpty(
+        a?.diagramType,
+        skipEnCopy ? undefined : e?.diagramType,
+        def.diagramType,
+      ),
     );
     const preferSimpleDiagram =
       Boolean(diagramBody) &&
@@ -971,17 +1026,29 @@ export function mergeEnterpriseLandingSections(
       const colA = a?.columns?.[j];
       const colE = e?.columns?.[j];
       const column = {
-        label: firstNonEmpty(colA?.label, colE?.label, colDef.label),
-        body: firstNonEmpty(colA?.body, colE?.body, colDef.body),
+        label: firstNonEmpty(
+          colA?.label,
+          skipEnCopy ? undefined : colE?.label,
+          colDef.label,
+        ),
+        body: firstNonEmpty(
+          colA?.body,
+          skipEnCopy ? undefined : colE?.body,
+          colDef.body,
+        ),
       };
       if (column.label || column.body) columns.push(column);
     }
     const item = {
-      title: firstNonEmpty(a?.title, e?.title, def.title),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
       body: diagramBody,
       explanation,
       diagramType,
-      footer: firstNonEmpty(a?.footer, e?.footer, preferSimpleDiagram ? "" : def.footer),
+      footer: firstNonEmpty(
+        a?.footer,
+        skipEnCopy ? undefined : e?.footer,
+        preferSimpleDiagram ? "" : def.footer,
+      ),
       columns,
     };
     if (item.title || item.body || item.explanation || item.footer || item.columns.length > 0) {
@@ -989,22 +1056,31 @@ export function mergeEnterpriseLandingSections(
     }
   }
 
-  const roiTitle = firstNonEmpty(roi?.title, roiEn?.title, defaults.roi.title);
-  const roiLead = firstNonEmpty(roi?.lead, roiEn?.lead, defaults.roi.lead);
-  const hasCmsRoiItems = (roi?.items?.length ?? 0) > 0 || (roiEn?.items?.length ?? 0) > 0;
+  const roiTitle = firstNonEmpty(
+    roi?.title,
+    skipEnCopy ? undefined : roiEn?.title,
+    defaults.roi.title,
+  );
+  const roiLead = firstNonEmpty(
+    roi?.lead,
+    skipEnCopy ? undefined : roiEn?.lead,
+    defaults.roi.lead,
+  );
+  const hasCmsRoiItems =
+    (roi?.items?.length ?? 0) > 0 || (roiEn?.items?.length ?? 0) > 0;
   const roiFormulaLabel = firstNonEmpty(
     roi?.formulaLabel,
-    roiEn?.formulaLabel,
+    skipEnCopy ? undefined : roiEn?.formulaLabel,
     hasCmsRoiItems ? "" : defaults.roi.formulaLabel,
   );
   const roiFormula = firstNonEmpty(
     roi?.formula,
-    roiEn?.formula,
+    skipEnCopy ? undefined : roiEn?.formula,
     hasCmsRoiItems ? "" : defaults.roi.formula,
   );
   const roiInputsTitle = firstNonEmpty(
     roi?.inputsTitle,
-    roiEn?.inputsTitle,
+    skipEnCopy ? undefined : roiEn?.inputsTitle,
     hasCmsRoiItems ? "" : defaults.roi.inputsTitle,
   );
   const roiInputs: string[] = [];
@@ -1020,7 +1096,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(roi?.inputs?.[i]),
-      textValue(roiEn?.inputs?.[i]),
+      skipEnCopy ? undefined : textValue(roiEn?.inputs?.[i]),
       defaults.roi.inputs[i] ?? "",
     );
     if (value) roiInputs.push(value);
@@ -1034,9 +1110,14 @@ export function mergeEnterpriseLandingSections(
     const a = roi?.items?.[i];
     const e = roiEn?.items?.[i];
     const item = {
-      metric: firstNonEmpty(a?.metric, e?.metric, a?.title, e?.title),
-      value: firstNonEmpty(a?.value, e?.value),
-      body: firstNonEmpty(a?.body, e?.body),
+      metric: firstNonEmpty(
+        a?.metric,
+        skipEnCopy ? undefined : e?.metric,
+        a?.title,
+        skipEnCopy ? undefined : e?.title,
+      ),
+      value: firstNonEmpty(a?.value, skipEnCopy ? undefined : e?.value),
+      body: firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body),
     };
     if (item.metric || item.value || item.body) roiMetrics.push(item);
   }
@@ -1055,25 +1136,25 @@ export function mergeEnterpriseLandingSections(
     const a = roi?.cards?.[i];
     const e = roiEn?.cards?.[i];
     const item = {
-      title: firstNonEmpty(a?.title, e?.title, def.title),
-      body: firstNonEmpty(a?.body, e?.body, def.body),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
+      body: firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body, def.body),
     };
     if (item.title || item.body) roiCards.push(item);
   }
 
   const roiReducedTitle = firstNonEmpty(
     roi?.reducedTitle,
-    roiEn?.reducedTitle,
+    skipEnCopy ? undefined : roiEn?.reducedTitle,
     hasCmsRoiItems ? "" : defaults.roi.reducedTitle,
   );
   const roiAutomatedTitle = firstNonEmpty(
     roi?.automatedTitle,
-    roiEn?.automatedTitle,
+    skipEnCopy ? undefined : roiEn?.automatedTitle,
     hasCmsRoiItems ? "" : defaults.roi.automatedTitle,
   );
   const roiGainedTitle = firstNonEmpty(
     roi?.gainedTitle,
-    roiEn?.gainedTitle,
+    skipEnCopy ? undefined : roiEn?.gainedTitle,
     hasCmsRoiItems ? "" : defaults.roi.gainedTitle,
   );
   const roiReduced: string[] = [];
@@ -1089,7 +1170,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(roi?.reduced?.[i]),
-      textValue(roiEn?.reduced?.[i]),
+      skipEnCopy ? undefined : textValue(roiEn?.reduced?.[i]),
       defaults.roi.reduced[i] ?? "",
     );
     if (value) roiReduced.push(value);
@@ -1107,7 +1188,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(roi?.automated?.[i]),
-      textValue(roiEn?.automated?.[i]),
+      skipEnCopy ? undefined : textValue(roiEn?.automated?.[i]),
       defaults.roi.automated[i] ?? "",
     );
     if (value) roiAutomated.push(value);
@@ -1125,7 +1206,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(roi?.gained?.[i]),
-      textValue(roiEn?.gained?.[i]),
+      skipEnCopy ? undefined : textValue(roiEn?.gained?.[i]),
       defaults.roi.gained[i] ?? "",
     );
     if (value) roiGained.push(value);
@@ -1133,7 +1214,7 @@ export function mergeEnterpriseLandingSections(
 
   const investmentScope = firstNonEmpty(
     roi?.investmentProfile?.scope,
-    roiEn?.investmentProfile?.scope,
+    skipEnCopy ? undefined : roiEn?.investmentProfile?.scope,
     defaults.roi.investmentProfile.scope,
   );
   const investmentVariables: string[] = [];
@@ -1149,56 +1230,64 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(roi?.investmentProfile?.variables?.[i]),
-      textValue(roiEn?.investmentProfile?.variables?.[i]),
+      skipEnCopy ? undefined : textValue(roiEn?.investmentProfile?.variables?.[i]),
       defaults.roi.investmentProfile.variables[i] ?? "",
     );
     if (value) investmentVariables.push(value);
   }
 
-  const dealEntryTitle = firstNonEmpty(de?.title, deEn?.title, defaults.dealEntry.title);
+  const dealEntryTitle = firstNonEmpty(
+    de?.title,
+    skipEnCopy ? undefined : deEn?.title,
+    defaults.dealEntry.title,
+  );
   const hasSimpleDealEntry =
     !((de?.items?.length ?? 0) > 0 || (deEn?.items?.length ?? 0) > 0) &&
     Boolean(
       de?.body ||
-        deEn?.body ||
+        (!skipEnCopy && deEn?.body) ||
         de?.primaryCta?.label ||
-        deEn?.primaryCta?.label ||
+        (!skipEnCopy && deEn?.primaryCta?.label) ||
         de?.primaryCta?.href ||
-        deEn?.primaryCta?.href ||
+        (!skipEnCopy && deEn?.primaryCta?.href) ||
         de?.secondaryCta?.label ||
-        deEn?.secondaryCta?.label ||
+        (!skipEnCopy && deEn?.secondaryCta?.label) ||
         de?.secondaryCta?.href ||
-        deEn?.secondaryCta?.href,
+        (!skipEnCopy && deEn?.secondaryCta?.href),
     );
   const dealEntryBody = firstNonEmpty(
     de?.body,
-    deEn?.body,
+    skipEnCopy ? undefined : deEn?.body,
     defaults.dealEntry.body ?? "",
   );
-  const dealEntryLead = firstNonEmpty(de?.lead, deEn?.lead, defaults.dealEntry.lead);
+  const dealEntryLead = firstNonEmpty(
+    de?.lead,
+    skipEnCopy ? undefined : deEn?.lead,
+    defaults.dealEntry.lead,
+  );
   const dealEntryChecklistLabel = firstNonEmpty(
     de?.checklistLabel,
-    deEn?.checklistLabel,
+    skipEnCopy ? undefined : deEn?.checklistLabel,
     defaults.dealEntry.checklistLabel,
   );
   const primaryCtaLabel = firstNonEmpty(
     de?.primaryCta?.label,
-    deEn?.primaryCta?.label,
+    skipEnCopy ? undefined : deEn?.primaryCta?.label,
     defaults.dealEntry.primaryCta?.label,
   );
   const primaryCtaHref = firstNonEmpty(
     de?.primaryCta?.href,
-    deEn?.primaryCta?.href,
+    skipEnCopy ? undefined : deEn?.primaryCta?.href,
     defaults.dealEntry.primaryCta?.href,
   );
   const secondaryCtaLabel = firstNonEmpty(
     de?.secondaryCta?.label,
-    deEn?.secondaryCta?.label,
+    skipEnCopy ? undefined : deEn?.secondaryCta?.label,
     defaults.dealEntry.secondaryCta?.label,
   );
   const secondaryCtaHref = firstNonEmpty(
     de?.secondaryCta?.href,
-    deEn?.secondaryCta?.href,
+    skipEnCopy ? undefined : deEn?.secondaryCta?.href,
     defaults.dealEntry.secondaryCta?.href,
   );
   const dealEntryItems: EnterpriseDealEntryMerged[] = [];
@@ -1236,7 +1325,7 @@ export function mergeEnterpriseLandingSections(
     ) {
       const value = firstNonEmpty(
         textValue(a?.checklist?.[j]),
-        textValue(e?.checklist?.[j]),
+        skipEnCopy ? undefined : textValue(e?.checklist?.[j]),
         def.checklist[j] ?? "",
       );
       if (value) checklist.push(value);
@@ -1255,7 +1344,7 @@ export function mergeEnterpriseLandingSections(
     ) {
       const value = firstNonEmpty(
         textValue(a?.qualification?.required?.[j]),
-        textValue(e?.qualification?.required?.[j]),
+        skipEnCopy ? undefined : textValue(e?.qualification?.required?.[j]),
         defQual.required[j] ?? "",
       );
       if (value) qualRequired.push(value);
@@ -1273,22 +1362,26 @@ export function mergeEnterpriseLandingSections(
     ) {
       const value = firstNonEmpty(
         textValue(a?.qualification?.optional?.[j]),
-        textValue(e?.qualification?.optional?.[j]),
+        skipEnCopy ? undefined : textValue(e?.qualification?.optional?.[j]),
         defQual.optional[j] ?? "",
       );
       if (value) qualOptional.push(value);
     }
     const item = {
-      title: firstNonEmpty(a?.title, e?.title, def.title),
-      body: firstNonEmpty(a?.body, e?.body, def.body),
+      title: firstNonEmpty(a?.title, skipEnCopy ? undefined : e?.title, def.title),
+      body: firstNonEmpty(a?.body, skipEnCopy ? undefined : e?.body, def.body),
       checklist,
-      ctaLabel: firstNonEmpty(a?.ctaLabel, e?.ctaLabel, def.ctaLabel),
+      ctaLabel: firstNonEmpty(
+        a?.ctaLabel,
+        skipEnCopy ? undefined : e?.ctaLabel,
+        def.ctaLabel,
+      ),
       messageTemplate: firstNonEmpty(
         a?.messageTemplate,
-        e?.messageTemplate,
+        skipEnCopy ? undefined : e?.messageTemplate,
         def.messageTemplate,
       ),
-      intent: firstNonEmpty(a?.intent, e?.intent, def.intent),
+      intent: firstNonEmpty(a?.intent, skipEnCopy ? undefined : e?.intent, def.intent),
       qualification: {
         required: qualRequired,
         optional: qualOptional,
@@ -1308,16 +1401,24 @@ export function mergeEnterpriseLandingSections(
   }
 
   const fitMerged: EnterpriseFitMerged = {
-    title: firstNonEmpty(fit?.title, fitEn?.title, defaults.fit.title),
-    lead: firstNonEmpty(fit?.lead, fitEn?.lead, defaults.fit.lead),
+    title: firstNonEmpty(
+      fit?.title,
+      skipEnCopy ? undefined : fitEn?.title,
+      defaults.fit.title,
+    ),
+    lead: firstNonEmpty(
+      fit?.lead,
+      skipEnCopy ? undefined : fitEn?.lead,
+      defaults.fit.lead,
+    ),
     fitTitle: firstNonEmpty(
       fit?.fitTitle,
-      fitEn?.fitTitle,
+      skipEnCopy ? undefined : fitEn?.fitTitle,
       defaults.fit.fitTitle,
     ),
     nonFitTitle: firstNonEmpty(
       fit?.nonFitTitle,
-      fitEn?.nonFitTitle,
+      skipEnCopy ? undefined : fitEn?.nonFitTitle,
       defaults.fit.nonFitTitle,
     ),
     fit: [],
@@ -1335,7 +1436,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(fit?.fit?.[i]),
-      textValue(fitEn?.fit?.[i]),
+      skipEnCopy ? undefined : textValue(fitEn?.fit?.[i]),
       defaults.fit.fit[i] ?? "",
     );
     if (value) fitMerged.fit.push(value);
@@ -1352,7 +1453,7 @@ export function mergeEnterpriseLandingSections(
   ) {
     const value = firstNonEmpty(
       textValue(fit?.nonFit?.[i]),
-      textValue(fitEn?.nonFit?.[i]),
+      skipEnCopy ? undefined : textValue(fitEn?.nonFit?.[i]),
       defaults.fit.nonFit[i] ?? "",
     );
     if (value) fitMerged.nonFit.push(value);

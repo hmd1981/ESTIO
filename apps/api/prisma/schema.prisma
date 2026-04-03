@@ -73,6 +73,7 @@ enum CrmLeadSource {
   REFERRAL
   PARTNER
   OTHER
+  AI_STUDIO
 }
 
 enum CrmPriority {
@@ -259,6 +260,12 @@ model Lead {
   lostReason       CrmLostReason    @default(UNSPECIFIED)
   wonValue         Decimal?         @db.Decimal(14, 2)
   source           CrmLeadSource
+  /// AI Studio funnel: images | video | brand
+  studioIntent     String?          @db.VarChar(32)
+  offerType        String?          @db.VarChar(256)
+  estimatedValue   Decimal?         @db.Decimal(14, 2)
+  /// sessionId, device, locale, ctaPosition, analyticsSessionId, pricingHint, etc.
+  crmMetadata      Json?
   locale           SiteLocale?
   referrer         String?          @db.Text
   landingPage      String?          @db.Text
@@ -425,9 +432,20 @@ model ProposalRecord {
 /// Singleton-style row (ensure one via service); JSON for rule weights.
 model SalesSettings {
   id                      String   @id @default("default")
+  isActive                Boolean  @default(true)
   scoringRules            Json?
   automationRules         Json?
   defaultOwnerUserId      String?
+  /// Intent → offer label (CRM)
+  intentMapping           Json?
+  /// Intent → priority (high | medium | low)
+  priorityMapping         Json?
+  /// Intent → routing key: "owner" | "sales" | CrmUser id
+  routingMapping          Json?
+  /// Intent → pricing hint string
+  pricingHints            Json?
+  /// Pipeline stage key: NEW → INBOX, QUALIFIED → DISCOVERY, etc.
+  defaultStage            String   @default("NEW") @db.VarChar(64)
   staleLeadDays           Int      @default(14)
   followUpReminderHours   Int      @default(48)
   proposalFollowUpDays    Int      @default(7)
@@ -532,6 +550,50 @@ model MediaAsset {
   placements   MediaPlacement[]
 
   @@index([category])
+}
+
+// --- Studio analytics ---
+
+/// Raw behavioural events from the AI Studio conversion layer.
+model StudioEvent {
+  id            String   @id @default(cuid())
+  sessionId     String   @db.VarChar(64)
+  eventType     String   @db.VarChar(40)
+  intent        String?  @db.VarChar(16)
+  source        String?  @db.VarChar(16)
+  quality       Float?
+  ctaPosition   String?  @db.VarChar(16)
+  clicked       Boolean  @default(false)
+  converted     Boolean  @default(false)
+  hoverDuration Int?
+  exitGoal      String?  @db.Text
+  region        String?  @db.VarChar(10)
+  device        String?  @db.VarChar(16)
+  locale        String?  @db.VarChar(4)
+  createdAt     DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([eventType, createdAt])
+  @@index([intent, eventType, createdAt])
+  @@index([intent, clicked])
+  @@index([device, region, intent])
+}
+
+/// Daily pre-aggregates for Studio analytics (UTC `day`). Built by rollup job from `StudioEvent`.
+model StudioAnalyticsRollupDay {
+  id           String   @id @default(cuid())
+  day          DateTime @db.Date
+  locale       String   @default("") @db.VarChar(4)
+  device       String   @default("") @db.VarChar(16)
+  eventType    String   @db.VarChar(40)
+  intent       String   @default("") @db.VarChar(16)
+  source       String   @default("") @db.VarChar(16)
+  eventCount   Int      @default(0)
+  clickCount   Int      @default(0)
+  sessionCount Int      @default(0)
+
+  @@unique([day, locale, device, eventType, intent, source])
+  @@index([day])
 }
 
 /// Where a media asset appears on the marketing site (synced from page sections).

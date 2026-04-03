@@ -86,21 +86,27 @@ export function EnterpriseLandingPage({
     href: withLocale(p.href, locale),
   }));
 
+  const skipEn = locale === "ar";
   const heroKicker = firstNonEmpty(
     cms.kicker,
-    locale === "ar" ? cmsEn?.kicker : undefined,
+    skipEn ? undefined : cmsEn?.kicker,
     el.heroKicker,
   );
   const audienceLine = landing.audienceLine;
   const heroLead = firstNonEmpty(
     cms.lead,
-    locale === "ar" ? cmsEn?.lead : undefined,
+    skipEn ? undefined : cmsEn?.lead,
     content.summary,
   );
   const heroSubtitle = firstNonEmpty(
     cms.subtitle,
-    locale === "ar" ? cmsEn?.subtitle : undefined,
+    skipEn ? undefined : cmsEn?.subtitle,
   );
+
+  const compact = (s: string) => s.replace(/\s+/g, " ").trim();
+  const showAfterHeroMicro =
+    el.salesMicro.afterHero.trim().length > 0 &&
+    compact(el.salesMicro.afterHero) !== compact(heroLead);
 
   const panelClass =
     "rounded-sm border border-[color-mix(in_srgb,var(--border)_92%,var(--accent)_8%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] shadow-[0_1px_0_rgba(212,175,55,0.06)]";
@@ -147,9 +153,18 @@ export function EnterpriseLandingPage({
                 {heroLead}
               </p>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-                <ButtonLink href={dealEntryAnchorHref}>{content.cta.buttonLabel}</ButtonLink>
-                <ButtonLink href={programsAnchorHref} variant="secondary">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-4">
+                <ButtonLink
+                  href={dealEntryAnchorHref}
+                  className="w-full shrink-0 sm:w-auto sm:self-center"
+                >
+                  {content.cta.buttonLabel}
+                </ButtonLink>
+                <ButtonLink
+                  href={programsAnchorHref}
+                  variant="secondary"
+                  className="w-full shrink-0 sm:w-auto sm:self-center"
+                >
                   {el.secondaryCtaLabel}
                 </ButtonLink>
               </div>
@@ -168,7 +183,9 @@ export function EnterpriseLandingPage({
               />
             </div>
           </div>
-          <SalesMicroLine text={el.salesMicro.afterHero} />
+          {showAfterHeroMicro ? (
+            <SalesMicroLine text={el.salesMicro.afterHero} />
+          ) : null}
         </Container>
       </section>
 
@@ -226,6 +243,45 @@ export function EnterpriseLandingPage({
               </li>
             ))}
           </ul>
+
+          <div className={`mt-14 ${panelClass} p-6 sm:p-8`}>
+            <h3 className="font-display text-lg font-semibold tracking-tight text-[var(--text)] sm:text-xl">
+              {el.integrationSurfacesTitle}
+            </h3>
+            <p className="mt-4 max-w-3xl text-sm leading-[1.75] text-[var(--text-body)]">
+              {el.integrationSurfacesIntro}
+            </p>
+            <dl className="mt-8 space-y-6 border-t border-[var(--border)] pt-8">
+              {el.integrationSurfacesGroups.map((group, i) => (
+                <div key={`${group.heading}-${i}`}>
+                  <dt className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
+                    {group.heading}
+                  </dt>
+                  <dd className="mt-2 text-sm leading-[1.7] text-[var(--muted)]">{group.examples}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-10 border-t border-[var(--border)] pt-8">
+              <h4 className="text-sm font-semibold text-[var(--text)]">
+                {el.integrationNamedSystemsTitle}
+              </h4>
+              <dl className="mt-5 space-y-4">
+                {el.integrationNamedSystems.map((sys, i) => (
+                  <div key={`named-sys-${sys.category}-${i}`} className="flex gap-3">
+                    <dt className="w-20 shrink-0 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+                      {sys.category}
+                    </dt>
+                    <dd className="text-sm leading-[1.7] text-[var(--muted)]">{sys.examples}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-5 text-xs leading-relaxed text-[var(--muted)]">
+                {el.integrationNamedSystemsFooter}
+              </p>
+            </div>
+          </div>
+
           <SalesMicroLine text={el.salesMicro.afterPractice} />
         </Container>
       </section>
@@ -250,105 +306,6 @@ export function EnterpriseLandingPage({
             mediaAssets={mediaAssets}
           />
           <SalesMicroLine text={el.salesMicro.afterProof} />
-        </Container>
-      </section>
-
-      <section
-        id="enterprise-case-studies"
-        className={sectionClassName(
-          "enterprise-case-studies",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
-        data-estio-section="enterprise-case-studies"
-      >
-        <Container as="div" className="py-16 sm:py-20 lg:py-24">
-          <EnterpriseCaseStack
-            landing={landing.caseStudies}
-            mediaPlaceholder={el.mediaPlaceholder}
-            mediaAssets={mediaAssets}
-            blockClass={blockClass}
-          />
-          <SalesMicroLine text={el.salesMicro.afterCases} />
-        </Container>
-      </section>
-
-      {(landing.fit.title ||
-        landing.fit.lead ||
-        landing.fit.fit.length > 0 ||
-        landing.fit.nonFit.length > 0) && (
-        <section
-          id="enterprise-fit"
-          className={sectionClassName(
-            "enterprise-fit",
-            "border-b border-[var(--border)] bg-[#050505]",
-            highlightSection,
-          )}
-          data-estio-section="enterprise-fit"
-        >
-          <Container as="div" className="py-16 sm:py-20 lg:py-24">
-            <EnterpriseFitMatrix fit={landing.fit} panelClass={panelClass} />
-            <SalesMicroLine text={el.salesMicro.afterFit} />
-          </Container>
-        </section>
-      )}
-
-      <section
-        id="enterprise-programs"
-        className={sectionClassName(
-          "enterprise-programs",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
-        data-estio-section="enterprise-programs"
-      >
-        <Container as="div" className="py-16 sm:py-20">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            {programsSectionTitle}
-          </p>
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2">
-            {programRows.map((row, i) => (
-              <li key={`${row.href}-${i}`}>
-                <Link
-                  href={withLocale(row.href, locale)}
-                  className={`group flex h-full flex-col overflow-hidden ${panelClass} text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_42%,var(--border)_58%)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
-                >
-                  <PremiumMediaFrame
-                    aspect="2/1"
-                    imageRef={{
-                      imageUrl: row.imageUrl,
-                      imageAlt: row.imageAlt,
-                      imageMediaAssetId: row.imageMediaAssetId,
-                    }}
-                    mediaAssets={mediaAssets}
-                    placeholderLabel={el.mediaPlaceholder}
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                    imageClassName="transition-transform duration-300 group-hover:scale-[1.02]"
-                    videoClassName="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    className="rounded-none border-x-0 border-t-0 shadow-none"
-                  />
-                  <div className="flex flex-1 flex-col px-6 py-6">
-                    <span className="font-display text-lg font-semibold text-[var(--text)] group-hover:text-[var(--accent)]">
-                      {row.label}
-                    </span>
-                    <p className="mt-3 flex-1 text-sm leading-[1.65] text-[var(--muted)]">
-                      {row.description}
-                    </p>
-                    <span className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                      {el.programCardContinue}
-                      <span
-                        className="inline-block transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
-                        aria-hidden
-                      >
-                        →
-                      </span>
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <SalesMicroLine text={el.salesMicro.afterPrograms} />
         </Container>
       </section>
 
@@ -457,7 +414,78 @@ export function EnterpriseLandingPage({
               </div>
             ))}
           </div>
+
+          <div className={`mt-12 ${panelClass} overflow-hidden`}>
+            <div className="border-b border-[var(--border)] px-6 py-5 sm:px-8">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                Trace
+              </p>
+              <h3 className="font-display mt-3 text-xl font-semibold text-[var(--text)] sm:text-2xl">
+                {el.executionTrace.title}
+              </h3>
+            </div>
+            <div className="grid gap-6 px-6 py-6 sm:px-8 md:grid-cols-2">
+              <div className="rounded-sm border border-[var(--border)] bg-[color-mix(in_srgb,var(--canvas)_90%,#000_10%)] px-5 py-5">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
+                  {el.executionTrace.happyPath.label}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {el.executionTrace.happyPath.steps.map((step, i) => (
+                    <span key={`hp-${step}-${i}`} className="flex items-center gap-2">
+                      <span className="rounded-sm border border-[color-mix(in_srgb,var(--accent)_30%,var(--border)_70%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] px-2.5 py-1 text-xs font-medium text-[var(--text)]">
+                        {step}
+                      </span>
+                      {i < el.executionTrace.happyPath.steps.length - 1 && (
+                        <span className="text-[0.6rem] text-[var(--accent)]" aria-hidden>→</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-sm border border-[color-mix(in_srgb,#c53030_20%,var(--border)_80%)] bg-[color-mix(in_srgb,var(--canvas)_90%,#000_10%)] px-5 py-5">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#c53030]">
+                  {el.executionTrace.failurePath.label}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {el.executionTrace.failurePath.steps.map((step, i) => (
+                    <span key={`fp-${step}-${i}`} className="flex items-center gap-2">
+                      <span className="rounded-sm border border-[color-mix(in_srgb,#c53030_25%,var(--border)_75%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] px-2.5 py-1 text-xs font-medium text-[var(--text)]">
+                        {step}
+                      </span>
+                      {i < el.executionTrace.failurePath.steps.length - 1 && (
+                        <span className="text-[0.6rem] text-[#c53030]" aria-hidden>→</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <p className="border-t border-[var(--border)] px-6 py-5 text-sm leading-[1.7] text-[var(--muted)] sm:px-8">
+              {el.executionTrace.footer}
+            </p>
+          </div>
+
           <SalesMicroLine text={el.salesMicro.afterDiagrams} />
+        </Container>
+      </section>
+
+      <section
+        id="enterprise-case-studies"
+        className={sectionClassName(
+          "enterprise-case-studies",
+          "border-b border-[var(--border)] bg-[var(--surface)]",
+          highlightSection,
+        )}
+        data-estio-section="enterprise-case-studies"
+      >
+        <Container as="div" className="py-16 sm:py-20 lg:py-24">
+          <EnterpriseCaseStack
+            landing={landing.caseStudies}
+            mediaPlaceholder={el.mediaPlaceholder}
+            mediaAssets={mediaAssets}
+            blockClass={blockClass}
+          />
+          <SalesMicroLine text={el.salesMicro.afterCases} />
         </Container>
       </section>
 
@@ -478,6 +506,85 @@ export function EnterpriseLandingPage({
             blockClass={blockClass}
           />
           <SalesMicroLine text={el.salesMicro.afterRoi} />
+        </Container>
+      </section>
+
+      {(landing.fit.title ||
+        landing.fit.lead ||
+        landing.fit.fit.length > 0 ||
+        landing.fit.nonFit.length > 0) && (
+        <section
+          id="enterprise-fit"
+          className={sectionClassName(
+            "enterprise-fit",
+            "border-b border-[var(--border)] bg-[#050505]",
+            highlightSection,
+          )}
+          data-estio-section="enterprise-fit"
+        >
+          <Container as="div" className="py-16 sm:py-20 lg:py-24">
+            <EnterpriseFitMatrix fit={landing.fit} panelClass={panelClass} />
+            <SalesMicroLine text={el.salesMicro.afterFit} />
+          </Container>
+        </section>
+      )}
+
+      <section
+        id="enterprise-programs"
+        className={sectionClassName(
+          "enterprise-programs",
+          "border-b border-[var(--border)] bg-[var(--surface)]",
+          highlightSection,
+        )}
+        data-estio-section="enterprise-programs"
+      >
+        <Container as="div" className="py-16 sm:py-20">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+            {programsSectionTitle}
+          </p>
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2">
+            {programRows.map((row, i) => (
+              <li key={`${row.href}-${i}`}>
+                <Link
+                  href={withLocale(row.href, locale)}
+                  className={`group flex h-full flex-col overflow-hidden ${panelClass} text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--accent)_42%,var(--border)_58%)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]`}
+                >
+                  <PremiumMediaFrame
+                    aspect="2/1"
+                    imageRef={{
+                      imageUrl: row.imageUrl,
+                      imageAlt: row.imageAlt,
+                      imageMediaAssetId: row.imageMediaAssetId,
+                    }}
+                    mediaAssets={mediaAssets}
+                    placeholderLabel={el.mediaPlaceholder}
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    imageClassName="transition-transform duration-300 group-hover:scale-[1.02]"
+                    videoClassName="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="rounded-none border-x-0 border-t-0 shadow-none"
+                  />
+                  <div className="flex flex-1 flex-col px-6 py-6">
+                    <span className="font-display text-lg font-semibold text-[var(--text)] group-hover:text-[var(--accent)]">
+                      {row.label}
+                    </span>
+                    <p className="mt-3 flex-1 text-sm leading-[1.65] text-[var(--muted)]">
+                      {row.description}
+                    </p>
+                    <span className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                      {el.programCardContinue}
+                      <span
+                        className="inline-block transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <SalesMicroLine text={el.salesMicro.afterPrograms} />
         </Container>
       </section>
 
@@ -692,6 +799,18 @@ export function EnterpriseLandingPage({
             blockClass={blockClass}
             panelClass={panelClass}
           />
+
+          <div className="mt-14 border-t border-[var(--accent)]/20 pt-10 text-center">
+            <p className="text-base font-semibold tracking-tight text-[var(--text)] sm:text-lg">
+              {el.closingPressure.title}
+            </p>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)]">
+              {el.closingPressure.body}
+            </p>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
+              {el.scopeControl}
+            </p>
+          </div>
         </Container>
       </section>
       {hasDecisionStrip ? <EnterpriseDecisionBar summary={landing.decisionSummary} /> : null}

@@ -1,9 +1,51 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminFetch } from "@/lib/admin-fetch";
+import { MediaPicker } from "@/components/media-picker";
+
+type CmsVisual = {
+  imageUrl?: string;
+  imageAlt?: string;
+  imageMediaAssetId?: string;
+};
+
+function toVisual(raw: unknown): CmsVisual {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const o = raw as Record<string, unknown>;
+  return {
+    imageUrl: String(o.imageUrl ?? ""),
+    imageAlt: String(o.imageAlt ?? ""),
+    imageMediaAssetId: String(o.imageMediaAssetId ?? ""),
+  };
+}
+
+function cmsVisualPayload(v: CmsVisual): CmsVisual | undefined {
+  const hasImg =
+    Boolean(v.imageUrl?.trim()) || Boolean(v.imageMediaAssetId?.trim());
+  if (!hasImg) return undefined;
+  const out: CmsVisual = {};
+  if (v.imageUrl?.trim()) out.imageUrl = v.imageUrl.trim();
+  if (v.imageAlt?.trim()) out.imageAlt = v.imageAlt.trim();
+  if (v.imageMediaAssetId?.trim())
+    out.imageMediaAssetId = v.imageMediaAssetId.trim();
+  return out;
+}
+
+function prevVisualHadAsset(prev: unknown): boolean {
+  if (!prev || typeof prev !== "object") return false;
+  const o = prev as Record<string, unknown>;
+  return (
+    Boolean(String(o.imageUrl ?? "").trim()) ||
+    Boolean(String(o.imageMediaAssetId ?? "").trim())
+  );
+}
+
+function shouldClearVisual(current: CmsVisual, prev: unknown): boolean {
+  return !cmsVisualPayload(current) && prevVisualHadAsset(prev);
+}
 
 const CATEGORIES = [
   "WEB_DESIGN_DEVELOPMENT",
@@ -42,8 +84,37 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
   const router = useRouter();
   const [row, setRow] = useState<ServiceRow | null>(null);
   const [detailBlocksJson, setDetailBlocksJson] = useState("");
+  const [heroVisual, setHeroVisual] = useState<CmsVisual>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const loadedHeroVisualRef = useRef<unknown>(undefined);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const applyHeroToDetailJson = useCallback((next: CmsVisual) => {
+    setDetailBlocksJson((prev) => {
+      try {
+        const p = JSON.parse(prev || "{}") as unknown;
+        if (
+          p === null ||
+          typeof p !== "object" ||
+          Array.isArray(p)
+        ) {
+          return prev;
+        }
+        const blocks = { ...(p as Record<string, unknown>) };
+        const payload = cmsVisualPayload(next);
+        if (payload) blocks.heroVisual = payload;
+        else if (shouldClearVisual(next, loadedHeroVisualRef.current)) {
+          blocks.heroVisual = null;
+        } else {
+          delete blocks.heroVisual;
+        }
+        return JSON.stringify(blocks, null, 2);
+      } catch {
+        return prev;
+      }
+    });
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,7 +126,23 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
       }
       const data = (await r.json()) as ServiceRow;
       setRow(data);
-      setDetailBlocksJson(stringifyBlocks(data.detailBlocks));
+      const json = stringifyBlocks(data.detailBlocks);
+      setDetailBlocksJson(json);
+      try {
+        const parsed = JSON.parse(json || "{}") as unknown;
+        const hv =
+          parsed &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed) &&
+          "heroVisual" in parsed
+            ? (parsed as Record<string, unknown>).heroVisual
+            : undefined;
+        loadedHeroVisualRef.current = hv;
+        setHeroVisual(toVisual(hv));
+      } catch {
+        loadedHeroVisualRef.current = undefined;
+        setHeroVisual({});
+      }
     } catch {
       setRow(null);
     } finally {
@@ -79,7 +166,14 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
         typeof parsed === "object" &&
         !Array.isArray(parsed)
       ) {
-        detailBlocks = parsed as Record<string, unknown>;
+        detailBlocks = { ...(parsed as Record<string, unknown>) };
+        const payload = cmsVisualPayload(heroVisual);
+        if (payload) detailBlocks.heroVisual = payload;
+        else if (shouldClearVisual(heroVisual, loadedHeroVisualRef.current)) {
+          detailBlocks.heroVisual = null;
+        } else {
+          delete detailBlocks.heroVisual;
+        }
       } else {
         setStatus("detailBlocks must be a JSON object.");
         return;
@@ -107,6 +201,7 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
         return;
       }
       setStatus("Saved.");
+      loadedHeroVisualRef.current = detailBlocks?.heroVisual;
       router.refresh();
     } catch (err) {
       setStatus(`Error: ${String(err)}`);
@@ -176,6 +271,85 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
           }
         />
       </label>
+
+      <div className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)]/40 p-4">
+        <h2 className="text-sm font-semibold text-[var(--admin-text)]">
+          Hero visual (right column)
+        </h2>
+        <p className="mt-1 text-xs text-[var(--admin-muted)]">
+          Shown on the service detail layout next to the title (e.g. AI Studio
+          subpages). Use a direct URL and/or a media library id. Video files in
+          the image slot play as a muted loop.
+        </p>
+        <div className="mt-3 space-y-3">
+          <label className="block">
+            <span className="text-xs font-medium text-[var(--admin-muted)]">
+              Image or video URL
+            </span>
+            <input
+              className="mt-1 w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm"
+              value={heroVisual.imageUrl ?? ""}
+              onChange={(e) => {
+                const next = { ...heroVisual, imageUrl: e.target.value };
+                setHeroVisual(next);
+                applyHeroToDetailJson(next);
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-[var(--admin-muted)]">
+              Alt text
+            </span>
+            <input
+              className="mt-1 w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 text-sm"
+              value={heroVisual.imageAlt ?? ""}
+              onChange={(e) => {
+                const next = { ...heroVisual, imageAlt: e.target.value };
+                setHeroVisual(next);
+                applyHeroToDetailJson(next);
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-[var(--admin-muted)]">
+              imageMediaAssetId
+            </span>
+            <input
+              className="mt-1 w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 font-mono text-xs"
+              value={heroVisual.imageMediaAssetId ?? ""}
+              onChange={(e) => {
+                const next = {
+                  ...heroVisual,
+                  imageMediaAssetId: e.target.value,
+                };
+                setHeroVisual(next);
+                applyHeroToDetailJson(next);
+              }}
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-1.5 text-xs font-medium"
+              onClick={() => setPickerOpen(true)}
+            >
+              Pick image or video…
+            </button>
+            <button
+              type="button"
+              className="rounded-md border border-[var(--admin-border)] px-3 py-1.5 text-xs text-[var(--admin-muted)]"
+              onClick={() => {
+                const next: CmsVisual = {};
+                setHeroVisual(next);
+                applyHeroToDetailJson(next);
+              }}
+            >
+              Clear hero visual
+            </button>
+          </div>
+        </div>
+      </div>
+
       <label className="block">
         <span className="text-xs font-medium text-[var(--admin-muted)]">
           Detail blocks (JSON)
@@ -186,15 +360,70 @@ export function ServiceEditor({ serviceId }: { serviceId: string }) {
           <code className="text-[0.65rem]">idealClients</code>,{" "}
           <code className="text-[0.65rem]">deliverables</code>,{" "}
           <code className="text-[0.65rem]">process</code>,{" "}
-          <code className="text-[0.65rem]">cta</code>.
+          <code className="text-[0.65rem]">cta</code>,{" "}
+          <code className="text-[0.65rem]">heroVisual</code> (also edited
+          above).
         </p>
         <textarea
           className="mt-2 min-h-[200px] w-full rounded-md border border-[var(--admin-border)] bg-[var(--admin-input-bg)] px-3 py-2 font-mono text-xs"
           value={detailBlocksJson}
-          onChange={(e) => setDetailBlocksJson(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            setDetailBlocksJson(v);
+            try {
+              const p = JSON.parse(v || "{}") as unknown;
+              if (p !== null && typeof p === "object" && !Array.isArray(p)) {
+                const rec = p as Record<string, unknown>;
+                if ("heroVisual" in rec) {
+                  setHeroVisual(toVisual(rec.heroVisual));
+                } else {
+                  setHeroVisual({});
+                }
+              }
+            } catch {
+              /* keep hero fields */
+            }
+          }}
+          onBlur={() => {
+            try {
+              const p = JSON.parse(detailBlocksJson || "{}") as unknown;
+              if (p !== null && typeof p === "object" && !Array.isArray(p)) {
+                const rec = p as Record<string, unknown>;
+                if ("heroVisual" in rec) {
+                  setHeroVisual(toVisual(rec.heroVisual));
+                } else {
+                  setHeroVisual({});
+                }
+              }
+            } catch {
+              /* invalid json */
+            }
+          }}
           spellCheck={false}
         />
       </label>
+
+      <MediaPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        filter="all"
+        title="Choose hero image or video"
+        onPick={(asset) => {
+          const next: CmsVisual = {
+            ...heroVisual,
+            imageMediaAssetId: asset.id,
+            imageUrl: asset.publicUrl?.trim() || heroVisual.imageUrl || "",
+            imageAlt:
+              heroVisual.imageAlt?.trim() ||
+              asset.altText?.trim() ||
+              asset.originalName ||
+              "",
+          };
+          setHeroVisual(next);
+          applyHeroToDetailJson(next);
+          setPickerOpen(false);
+        }}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="text-xs font-medium text-[var(--admin-muted)]">

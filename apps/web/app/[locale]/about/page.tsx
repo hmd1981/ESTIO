@@ -22,19 +22,30 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw } = await params;
   if (!isLocale(raw)) return {};
-  const bundle = await getSiteBundle(raw);
+  const [bundle, enPublished] = await Promise.all([
+    getSiteBundle(raw),
+    raw === "ar" ? getPublishedSiteBundle("en") : Promise.resolve(null),
+  ]);
   const cms = (bundle.marketingPages?.about?.sections ??
     {}) as MarketingPageSectionsCMS;
   const cmsEn =
     raw === "ar"
-      ? (((await getPublishedSiteBundle("en")).marketingPages?.about?.sections ??
+      ? ((enPublished?.marketingPages?.about?.sections ??
           {}) as MarketingPageSectionsCMS)
       : undefined;
   const a = getMessages(raw).about;
+  const seoTitle =
+    cms.seoTitle?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoTitle?.trim()) ||
+    a.seoTitle;
+  const seoDesc =
+    cms.seoDescription?.trim() ||
+    (raw === "ar" ? "" : cmsEn?.seoDescription?.trim()) ||
+    a.seoDescription;
   return marketingDetailMetadata(
     {
-      title: cms.seoTitle ?? cmsEn?.seoTitle ?? a.seoTitle,
-      description: cms.seoDescription ?? cmsEn?.seoDescription ?? a.seoDescription,
+      title: seoTitle,
+      description: seoDesc,
     },
     `/${raw}/about`,
   );
@@ -43,12 +54,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AboutPage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
-  const bundle = await getSiteBundle(raw);
+  const [bundle, enPublished] = await Promise.all([
+    getSiteBundle(raw),
+    raw === "ar" ? getPublishedSiteBundle("en") : Promise.resolve(null),
+  ]);
   const cms = (bundle.marketingPages?.about?.sections ??
     {}) as MarketingPageSectionsCMS;
   const cmsEn =
     raw === "ar"
-      ? (((await getPublishedSiteBundle("en")).marketingPages?.about?.sections ??
+      ? ((enPublished?.marketingPages?.about?.sections ??
           {}) as MarketingPageSectionsCMS)
       : undefined;
   const sp = (await searchParams) ?? {};

@@ -19,11 +19,16 @@ import { PatchLeadAdminDto } from './dto/patch-lead-admin.dto';
 import { PatchLeadStageDto } from './dto/patch-lead-stage.dto';
 import { PatchLeadStatusDto } from './dto/patch-lead-status.dto';
 import { LeadsService } from './leads.service';
+import { LeadClassificationService } from './lead-classification.service';
+import { DEAL_FLOW_GATES, nextStageRequirements } from './deal-flow';
 
 @Controller('admin/leads')
 @UseGuards(JwtAuthGuard)
 export class LeadsAdminController {
-  constructor(private readonly leadsService: LeadsService) {}
+  constructor(
+    private readonly leadsService: LeadsService,
+    private readonly classification: LeadClassificationService,
+  ) {}
 
   @Get()
   findAll(
@@ -71,6 +76,37 @@ export class LeadsAdminController {
   @Patch(':id/status')
   patchStatus(@Param('id') id: string, @Body() dto: PatchLeadStatusDto) {
     return this.leadsService.patchStatus(id, dto);
+  }
+
+  @Get(':id/classify')
+  async reclassify(@Param('id') id: string) {
+    const lead = await this.leadsService.findOne(id);
+    return this.classification.classify({
+      score: lead.score,
+      serviceType: lead.serviceType,
+      budgetRange: lead.budgetRange,
+      timeline: lead.timeline,
+      businessType: lead.businessType,
+      teamSize: lead.teamSize,
+      company: lead.company,
+      jobTitle: lead.jobTitle,
+      phone: lead.phone,
+      whatsapp: lead.whatsapp,
+      projectScope: lead.projectScope,
+      message: lead.message,
+      source: lead.source,
+    });
+  }
+
+  @Get(':id/deal-flow')
+  async dealFlow(@Param('id') id: string) {
+    const lead = await this.leadsService.findOne(id);
+    return {
+      currentStage: lead.stage,
+      currentStatus: lead.status,
+      gates: DEAL_FLOW_GATES,
+      nextRequirements: nextStageRequirements(lead.stage as CrmPipelineStage),
+    };
   }
 
   @Get(':id')

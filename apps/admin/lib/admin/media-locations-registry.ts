@@ -218,6 +218,67 @@ export const MEDIA_LOCATION_GROUPS: MediaLocationGroup[] = [
         fields: ["reassuranceCards[]"],
       },
       {
+        id: "mp-ai-studio-offer-cards",
+        title: "AI Studio — offer card images",
+        where: "Pages → ai-studio → Offer cards (MediaPicker)",
+        href: "/admin/pages/ai-studio",
+        fields: [
+          "sections.aiStudio.offerCards[].imageUrl",
+          "sections.aiStudio.offerCards[].imageMediaAssetId",
+          "sections.aiStudio.offerCards[].imageAlt",
+        ],
+        notes:
+          "Stored under Page.sections alongside seoTitle / seoDescription. Merge layer on the public site applies over static defaults.",
+      },
+      {
+        id: "mp-ai-studio-copy",
+        title: "AI Studio — structured copy",
+        where: "Pages → ai-studio → All sections below SEO",
+        href: "/admin/pages/ai-studio",
+        fields: [
+          "sections.aiStudio.hero",
+          "sections.aiStudio.studioOutputs",
+          "sections.aiStudio.separator",
+          "sections.aiStudio.valueProps",
+          "sections.aiStudio.offerCards",
+          "sections.aiStudio.deliverablesSnapshot",
+          "sections.aiStudio.whoThisIsFor",
+          "sections.aiStudio.howDeliveryWorks",
+          "sections.aiStudio.whyDifferent",
+          "sections.aiStudio.cta",
+          "sections.aiStudio.faq",
+        ],
+      },
+      {
+        id: "mp-ai-studio-backdrop",
+        title: "AI Studio — full-page backdrop video",
+        where: "Pages → ai-studio → Full-page backdrop video",
+        href: "/admin/pages/ai-studio",
+        fields: [
+          "sections.aiStudio.pageBackdrop.videoUrl",
+          "sections.aiStudio.pageBackdrop.videoMediaAssetId",
+          "sections.aiStudio.pageBackdrop.posterUrl",
+          "sections.aiStudio.pageBackdrop.posterAlt",
+          "sections.aiStudio.pageBackdrop.posterMediaAssetId",
+        ],
+        notes:
+          "Muted looping ambient layer. Poster while loading and when prefers-reduced-motion.",
+      },
+      {
+        id: "mp-ai-studio-hero-media",
+        title: "AI Studio — hero right column",
+        where: "Pages → ai-studio → Hero → Right column",
+        href: "/admin/pages/ai-studio",
+        fields: [
+          "sections.aiStudio.hero.imageUrl",
+          "sections.aiStudio.hero.imageMediaAssetId",
+          "sections.aiStudio.hero.videoUrl",
+          "sections.aiStudio.hero.videoMediaAssetId",
+        ],
+        notes:
+          "Explicit hero video overrides video in the image slot; still image can be the video poster.",
+      },
+      {
         id: "mp-advanced-json",
         title: "Advanced JSON",
         where: "Any marketing page → Advanced JSON",
@@ -243,11 +304,11 @@ export const MEDIA_LOCATION_GROUPS: MediaLocationGroup[] = [
       {
         id: "svc-detail",
         title: "Service detail record",
-        where: "Services → [service] → detailBlocks JSON",
+        where: "Services → [service] → detailBlocks JSON + Hero visual form",
         href: "/admin/services",
-        fields: ["detailBlocks (JSON)"],
+        fields: ["detailBlocks.heroVisual", "detailBlocks (JSON)"],
         notes:
-          "Structured copy lives in JSON. Hero/capability/process **images for enterprise programme pages** are not edited here — they are set under Pages → enterprise (`enterpriseVisuals`), shared across enterprise child routes.",
+          "Service detail layout: `detailBlocks.heroVisual` drives the right-column image/video (e.g. AI Studio subpages). Enterprise programme hero/capability/process strips are still under Pages → enterprise (`enterpriseVisuals`).",
       },
     ],
   },

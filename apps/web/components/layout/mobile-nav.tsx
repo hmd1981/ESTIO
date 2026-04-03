@@ -13,9 +13,11 @@ import { withLocale } from "@/lib/i18n/paths";
 type Props = {
   items?: NavItem[];
   contactHref?: string;
+  aiStudioHref?: string;
+  aiStudioLabel?: string;
 };
 
-export function MobileNav({ items, contactHref }: Props) {
+export function MobileNav({ items, contactHref, aiStudioHref, aiStudioLabel }: Props) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const bundle = useSiteBundle();
@@ -34,7 +36,7 @@ export function MobileNav({ items, contactHref }: Props) {
     (bundle.locale === "ar"
       ? (labels?.ar as Record<string, unknown> | undefined)?.primaryCta
       : (labels?.en as Record<string, unknown> | undefined)?.primaryCta) ??
-    (bundle.locale === "ar" ? "راسلونا" : "Get in touch");
+    (bundle.locale === "ar" ? "بدء التأهيل" : "Start qualification");
 
   useEffect(() => {
     if (!open) return;
@@ -117,7 +119,7 @@ export function MobileNav({ items, contactHref }: Props) {
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 flex flex-col gap-4 border-t border-[var(--border)] pt-6">
+              <div className="mt-6 flex flex-col gap-3 border-t border-[var(--border)] pt-6">
                 <div
                   dir="ltr"
                   className="flex items-center justify-between gap-4"
@@ -127,6 +129,16 @@ export function MobileNav({ items, contactHref }: Props) {
                   </span>
                   <LanguageSwitcher className="min-h-12 min-w-12 text-sm" />
                 </div>
+                {aiStudioHref && (
+                  <ButtonLink
+                    href={aiStudioHref}
+                    variant="secondary"
+                    className="group/studio w-full"
+                  >
+                    <span>{aiStudioLabel ?? "Explore AI Studio"}</span>
+                    <span className="ms-1.5 inline-block transition-transform duration-200 ease-out group-hover/studio:translate-x-1 motion-reduce:transition-none" aria-hidden="true">&rarr;</span>
+                  </ButtonLink>
+                )}
                 <ButtonLink href={talkHref} className="w-full min-[400px]:w-auto">
                   {String(talkLabel)}
                 </ButtonLink>

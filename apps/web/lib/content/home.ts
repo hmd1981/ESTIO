@@ -2,126 +2,144 @@ import type { IndustryItem, ServiceCard } from "./types";
 
 export const homeHero = {
   headline:
-    "Digital presence. Commercial growth. Intelligent automation.",
+    "Campaign-ready visuals, video, and brand assets \u2014 without the production overhead.",
   subheadline:
-    "Estio is a premium digital services and applied AI company based in Muscat, Oman. We help organisations across the GCC build exceptional online presence, reach their markets with precision, and transform operations through responsible AI — with clarity, ownership, and measurable outcomes.",
-  primaryCta: { label: "Start a conversation", href: "/contact" },
-  secondaryCta: { label: "Explore our services", href: "/services" },
+    "Stop waiting weeks for creative output. ESTIO\u2019s AI Studio produces brand-aligned imagery, video, and visual systems \u2014 scoped, reviewed, and delivered as production-ready files.",
+  primaryCta: { label: "Define your visual scope", href: "/contact" },
+  secondaryCta: { label: "See what we produce", href: "/ai-studio" },
+} as const;
+
+export const systemIdentity = {
+  heading: "What this is",
+  body: "A commercial system for scoping, building, and handing over bounded workflow automation and governed retrieval on top of your named applications — under written acceptance tests and your change control.",
+  contrast: "Not a generalist agency. Not a software reseller. Not an unfunded innovation lab.",
+} as const;
+
+export const operationalAlignment = {
+  kicker: "Operational alignment",
+  title: "Organisations we align with typically operate",
+  points: [
+    "Multi-system environments (CRM + finance + internal tools)",
+    "Approval-heavy workflows with named gatekeepers",
+    "Controlled data and access boundaries enforced by IT and compliance",
+  ],
+  footer:
+    "Engagements run under procurement rules, IT sign-off, and production risk ownership — not marketing experiments or unpaid pilots.",
 } as const;
 
 export const guidedIntents = [
   {
     id: "website",
-    label: "I need a website or digital presence",
+    label: "Design and deploy a production website or web platform",
     href: "/services/web-design-development",
   },
   {
     id: "content",
-    label: "I need content and marketing campaigns",
+    label: "Operate a structured content and campaign programme",
     href: "/services/content-campaigns",
   },
   {
     id: "creative-ai",
-    label: "I want AI-powered creative production",
+    label: "Scale creative output under governed AI controls",
     href: "/services/ai-creative",
   },
   {
     id: "enterprise",
-    label: "I need enterprise AI or automation",
+    label: "Scope workflow automation or governed retrieval on named systems",
     href: "/enterprise",
   },
 ] as const;
 
 export const trustSectionIntro = {
-  title: "Why organisations choose Estio",
+  title: "Operating standards — not promises",
   description:
-    "We deliver with the standards our clients would expect from an internal team: direct communication, documented delivery, and outcomes you can present to stakeholders with confidence.",
+    "Scoped delivery, documented decisions, and outcomes that survive internal review. We operate at the standard your board, IT, and compliance teams require — not the standard agencies sell.",
 } as const;
 
 export const trustPoints = [
   {
-    title: "Clear scope from the start",
-    body: "We define what gets delivered, how it works, and what success looks like before execution starts.",
+    title: "Written scope before build",
+    body: "Deliverables, acceptance criteria, and dependencies are defined and signed before any execution starts. No ambiguity, no scope creep without written change control.",
   },
   {
-    title: "Applied AI, not empty hype",
-    body: "We use AI where it improves workflow, quality, speed, and decision-making, not as presentation theatre.",
+    title: "Deployed AI, not pitch-deck AI",
+    body: "AI operates inside your identity model, on corpora you approve, with logging you control. If it does not run in production under your constraints, it does not ship.",
   },
   {
-    title: "Built for GCC business context",
-    body: "Our work reflects regional expectations around quality, language, communication, and commercial credibility.",
+    title: "Designed for GCC operating reality",
+    body: "Bilingual delivery, regional compliance, and stakeholder communication calibrated for boards, regulators, and government-adjacent organisations.",
   },
   {
-    title: "One accountable partner",
-    body: "You work with one team that owns the outcome end to end, with clear accountability throughout delivery.",
+    title: "Single accountable owner",
+    body: "One named lead owns every deliverable end-to-end. No account-manager buffer. No handoffs between teams you never meet.",
   },
 ] as const;
 
 export const servicesSectionIntro = {
-  title: "What we deliver",
+  title: "Four delivery practices — scoped, not bundled",
   description:
-    "Four integrated service lines — often combined into a single engagement — covering how you present your brand, how you reach your market, and how you scale operations with intelligence.",
+    "Each practice operates independently with its own scope, deliverables, and acceptance criteria. Combined engagements are sequenced explicitly — not sold as a package.",
 } as const;
 
 export const pillarServices: ServiceCard[] = [
   {
     id: "web",
-    title: "Website design & development",
+    title: "Platform design & deployment",
     description:
-      "Corporate websites, commercial web properties, and landing experiences — built for performance, accessibility, and multilingual audiences across Oman and the GCC.",
+      "Production websites, web applications, and bilingual digital platforms — architected for performance, accessibility, CMS ownership, and institutional credibility. Not templates. Not themes.",
     href: "/services/web-design-development",
     categoryKey: "WEB_DESIGN_DEVELOPMENT",
   },
   {
     id: "content",
-    title: "Content creation & campaigns",
+    title: "Content operations & campaign execution",
     description:
-      "Strategic content calendars, campaign creative, and channel management that keep your brand visible, consistent, and commercially persuasive.",
+      "Structured production calendars, campaign execution, and channel management tied to your commercial rhythm — not ad-hoc posting against a quota.",
     href: "/services/content-campaigns",
     categoryKey: "CONTENT_CAMPAIGNS",
   },
   {
     id: "ai-creative",
-    title: "AI creative services",
+    title: "Governed AI creative production",
     description:
-      "Governed AI for imagery, video, copy, and localisation — reviewed against brand guidelines and legal requirements before anything goes live.",
+      "AI-generated imagery, video, and copy deployed under brand, legal, and quality guardrails — with review checkpoints and version control before any output ships.",
     href: "/services/ai-creative",
     categoryKey: "AI_CREATIVE",
   },
   {
     id: "enterprise",
-    title: "Enterprise AI solutions",
+    title: "Workflow automation & governed retrieval",
     description:
-      "Private AI assistants, workflow automation, and bespoke integrations for organisations that need more than consumer-grade software.",
+      "Deterministic automation across named systems, retrieval bound to approved corpora under identity rules, and internal operator tools — scoped in writing, deployed for IT-operated production.",
     href: "/enterprise",
     categoryKey: "ENTERPRISE_AI",
   },
 ];
 
 export const enterpriseHighlight = {
-  headline: "We build operational systems — not just websites",
-  body: "Digital delivery is only the surface. Underneath, we engineer private AI, automation, and internal tools that run inside your security model, approval paths, and operational reality.",
+  headline: "Operational systems — not vendor demos",
+  body: "Websites are the visible layer. Underneath, we deploy deterministic automation across your integration inventory, retrieval services bound to corpora you sign off, and internal tools your IT team operates post-handover. If you cannot name the systems in scope, this section is not for you.",
   bullets: [
     {
-      title: "Private AI systems",
-      text: "Assistants and retrieval grounded on corpora you approve — with identity-aware access, logging where required, and deployment that fits your IT constraints.",
+      title: "Governed retrieval",
+      text: "Retrieval grounded on allow-listed corpora with identity-scoped access, configured blocklists, and logging retention matched to your record-keeping policy. Not prompt engineering on a public model.",
     },
     {
       title: "Workflow automation",
-      text: "Documented flows across CRM, ticketing, finance, and messaging — with monitoring, error handling, and evidence your operations teams can audit.",
+      text: "Deterministic orchestration across CRM, finance, ticketing, and messaging — with retry logic, typed exception queues, and rollback paths your operations team can execute.",
     },
     {
-      title: "Internal systems & dashboards",
-      text: "Tools and views your teams use daily: clear ownership, handover artefacts, and runbooks so internal staff can sustain what we ship.",
+      title: "Internal operator tools",
+      text: "Dashboards, admin UIs, and monitoring surfaces with clear ownership, runbooks, and escalation matrices. Designed for handover on day one.",
     },
   ],
-  cta: { label: "Start a conversation", href: "/contact" },
+  cta: { label: "Start qualification", href: "/enterprise#enterprise-deal-entry" },
 } as const;
 
 export const industriesSectionIntro = {
-  title: "Industries we serve",
+  title: "Sectors where we operate",
   description:
-    "We work with organisations across diverse sectors, tailoring our approach to each industry's regulatory environment, competitive dynamics, and operational reality.",
+    "Delivery is calibrated to sector-specific compliance, procurement, and operational constraints — not generic industry slides.",
 } as const;
 
 export const industries: IndustryItem[] = [
@@ -153,13 +171,13 @@ export const industries: IndustryItem[] = [
   {
     label: "Government & Semi-government",
     description:
-      "Digital transformation support, public-facing portals, and AI readiness programmes aligned with national digital strategies.",
+      "Digital infrastructure, public-facing portals, and AI readiness programmes designed for national digital strategy alignment.",
   },
 ];
 
 export const finalCta = {
-  headline: "Ready to start?",
-  body: "Tell us about your objectives, timeline, and key stakeholders. We respond with a clear, tailored proposal — not a generic brochure.",
-  buttonLabel: "Contact Estio",
+  headline: "Define scope. Enter qualification.",
+  body: "State the outcome, the systems involved, and the internal owner who signs off. We respond with a structured view of fit, effort, and phasing — or a direct decline if the engagement is not viable.",
+  buttonLabel: "Start a scoped engagement",
   href: "/contact",
 } as const;

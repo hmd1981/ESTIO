@@ -1,6 +1,21 @@
 import { mimeLooksLikeVideo, urlLooksLikeVideo } from "@/lib/cms/media-kind";
 import type { CmsVisual, MediaAssetMap } from "@/lib/cms/types";
 
+/**
+ * Explicit `videoUrl` / `videoMediaAssetId` only (no image-slot fallback).
+ */
+export function resolveExplicitVideoUrl(
+  videoUrl: string | undefined,
+  videoMediaAssetId: string | undefined,
+  mediaAssets: MediaAssetMap | null | undefined,
+): string | undefined {
+  const direct = videoUrl?.trim();
+  if (direct) return direct;
+  const id = videoMediaAssetId?.trim();
+  if (!id || !mediaAssets) return undefined;
+  return mediaAssets[id]?.url?.trim() || undefined;
+}
+
 /** CMS image fields that may use either a direct URL or a media library id. */
 export type ImageRef = {
   imageUrl?: string;

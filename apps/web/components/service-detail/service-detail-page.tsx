@@ -22,6 +22,8 @@ type Props = {
   content: ServiceDetailContent;
   locale: AppLocale;
   appendix?: ReactNode;
+  /** Renders immediately after the hero section (e.g. sub-navigation). */
+  preamble?: ReactNode;
   enterpriseVisuals?: EnterpriseMarketingVisuals;
   mediaAssets?: MediaAssetMap;
   /** Tighter panels / typography for enterprise programme pages under /enterprise. */
@@ -32,12 +34,14 @@ export function ServiceDetailPage({
   content,
   locale,
   appendix,
+  preamble,
   enterpriseVisuals,
   mediaAssets = {},
   enterpriseTone = false,
 }: Props) {
   const ui = getMessages(locale);
-  const heroEv = resolveCmsVisual(enterpriseVisuals?.hero, mediaAssets);
+  const heroRef = enterpriseVisuals?.hero ?? content.heroVisual;
+  const heroEv = resolveCmsVisual(heroRef, mediaAssets);
   const capEv = resolveCmsVisual(enterpriseVisuals?.capability, mediaAssets);
   const procEv = resolveCmsVisual(enterpriseVisuals?.process, mediaAssets);
   const t = ui.serviceDetail;
@@ -124,7 +128,7 @@ export function ServiceDetailPage({
             </div>
             <div className="lg:col-span-5">
               <PremiumMediaFrame
-                imageRef={enterpriseVisuals?.hero ?? {}}
+                imageRef={heroRef ?? {}}
                 mediaAssets={mediaAssets}
                 aspect="16/10"
                 overlay="readability"
@@ -136,6 +140,8 @@ export function ServiceDetailPage({
           </div>
         </Container>
       </section>
+
+      {preamble}
 
       {capEv?.url ? (
         <section className="border-b border-[var(--border)] bg-[var(--surface)]">

@@ -29,7 +29,7 @@ export function ButtonLink({
   className = "",
 }: Props) {
   const base =
-    "inline-flex items-center justify-center rounded-md px-5 py-2.5 text-sm font-semibold transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]";
+    "inline-flex min-h-[2.75rem] max-w-full items-center justify-center whitespace-normal rounded-md px-5 py-2.5 text-center text-sm font-semibold leading-snug transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)] sm:max-w-none sm:px-5";
 
   return (
     <Link href={href} className={`${base} ${variants[variant]} ${className}`}>

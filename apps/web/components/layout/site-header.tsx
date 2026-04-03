@@ -49,11 +49,14 @@ export function SiteHeader() {
 
   const contactHref = withLocale("/contact", locale);
   const homeHref = withLocale("/", locale);
+  const aiStudioHref = withLocale("/ai-studio", locale);
   const talkLabel =
     (locale === "ar"
       ? (labels?.ar as Record<string, unknown> | undefined)?.primaryCta
       : (labels?.en as Record<string, unknown> | undefined)?.primaryCta) ??
-    (locale === "ar" ? "راسلونا" : "Get in touch");
+    (locale === "ar" ? "بدء التأهيل" : "Start qualification");
+  const aiStudioLabel = locale === "ar" ? "\u0634\u0627\u0647\u062f \u0627\u0644\u0625\u0646\u062a\u0627\u062c" : "See studio output";
+  const isOnAiStudio = pathname.startsWith(aiStudioHref);
 
   const isActiveHref = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
@@ -109,13 +112,27 @@ export function SiteHeader() {
           className="flex flex-1 items-center justify-end gap-2 sm:gap-3 lg:flex-none"
         >
           <LanguageSwitcher />
+          {!isOnAiStudio && (
+            <Link
+              href={aiStudioHref}
+              className="group/studio hidden items-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-[0.8125rem] font-semibold text-[var(--accent)] transition-all duration-200 ease-out hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] lg:inline-flex"
+            >
+              <span>{aiStudioLabel}</span>
+              <span className="inline-block transition-transform duration-200 ease-out group-hover/studio:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true">&rarr;</span>
+            </Link>
+          )}
           <ButtonLink
             href={contactHref}
             className="hidden min-[400px]:inline-flex text-[0.8125rem]"
           >
             {String(talkLabel)}
           </ButtonLink>
-          <MobileNav items={navItems} contactHref={contactHref} />
+          <MobileNav
+            items={navItems}
+            contactHref={contactHref}
+            aiStudioHref={isOnAiStudio ? undefined : aiStudioHref}
+            aiStudioLabel={aiStudioLabel}
+          />
         </div>
       </Container>
     </header>

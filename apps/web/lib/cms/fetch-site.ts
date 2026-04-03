@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { getServerApiBase } from "@/lib/api/server";
 import type { AppLocale } from "@/lib/i18n/config";
@@ -13,7 +14,11 @@ function logBundle(locale: AppLocale, source: string, bundle: PublicSiteBundle) 
   });
 }
 
-export async function fetchPublicSite(
+/**
+ * Deduplicated per server request — layout + page + metadata often call this
+ * multiple times for the same locale; without `cache()`, each call hit the API again.
+ */
+export const fetchPublicSite = cache(async function fetchPublicSite(
   locale: AppLocale,
 ): Promise<PublicSiteBundle | null> {
   const base = getServerApiBase();
@@ -28,9 +33,9 @@ export async function fetchPublicSite(
   } catch {
     return null;
   }
-}
+});
 
-async function fetchPublicSitePreview(
+const fetchPublicSitePreview = cache(async function fetchPublicSitePreview(
   locale: AppLocale,
   token: string,
 ): Promise<PublicSiteBundle | null> {
@@ -48,26 +53,55 @@ async function fetchPublicSitePreview(
   } catch {
     return null;
   }
+});
+
+/**
+ * Arabic pages reuse English CMS fallbacks for `imageMediaAssetId` / `videoMediaAssetId`.
+ * The public `/ar` bundle often omits those asset rows; merge EN published `mediaAssets`
+ * so `resolveImage` / `resolveVisualMedia` resolve the same URLs as on `/en`.
+ */
+function mergeEnMediaIntoArabicBundle(
+  ar: PublicSiteBundle,
+  en: PublicSiteBundle | null,
+): PublicSiteBundle {
+  if (ar.locale !== "ar") return ar;
+  if (!en?.mediaAssets || Object.keys(en.mediaAssets).length === 0) return ar;
+  return {
+    ...ar,
+    mediaAssets: { ...(en.mediaAssets ?? {}), ...(ar.mediaAssets ?? {}) },
+  };
 }
 
 /** Published bundle only (no preview). Used for AR→EN CMS fallback on home. */
-export async function getPublishedSiteBundle(
+export const getPublishedSiteBundle = cache(async function getPublishedSiteBundle(
   locale: AppLocale,
 ): Promise<PublicSiteBundle> {
-  return (await fetchPublicSite(locale)) ?? emptyBundle(locale);
-}
+  const bundle = (await fetchPublicSite(locale)) ?? emptyBundle(locale);
+  if (locale === "ar") {
+    const en = await fetchPublicSite("en");
+    return mergeEnMediaIntoArabicBundle(bundle, en);
+  }
+  return bundle;
+});
 
 /** One resolved bundle per locale per RSC request (shared with layout + pages). */
-export async function getSiteBundle(
+export const getSiteBundle = cache(async function getSiteBundle(
   locale: AppLocale,
 ): Promise<PublicSiteBundle> {
   const preview = (await cookies()).get("estio_preview")?.value;
+  let bundle: PublicSiteBundle;
   if (preview) {
     const draft = await fetchPublicSitePreview(locale, preview);
-    if (draft) return draft;
+    bundle = draft ?? (await fetchPublicSite(locale)) ?? emptyBundle(locale);
+  } else {
+    bundle = (await fetchPublicSite(locale)) ?? emptyBundle(locale);
   }
-  return (await fetchPublicSite(locale)) ?? emptyBundle(locale);
-}
+  if (locale === "ar") {
+    const en = await fetchPublicSite("en");
+    return mergeEnMediaIntoArabicBundle(bundle, en);
+  }
+  return bundle;
+});
 
 export function emptyBundle(locale: AppLocale): PublicSiteBundle {
   return {

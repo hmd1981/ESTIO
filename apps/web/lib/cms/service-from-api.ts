@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { AppLocale } from "@/lib/i18n/config";
 import { getServerApiBase } from "@/lib/api/server";
 import type { ServiceDetailContent } from "@/lib/content/types";
@@ -12,29 +13,32 @@ export type ApiService = {
   detailBlocks: unknown;
 };
 
-export async function fetchPublishedServiceBySlug(
-  slug: string,
-  locale: AppLocale,
-): Promise<ApiService | null> {
-  try {
-    const base = getServerApiBase();
-    const url = `${base}/services/by-slug/${encodeURIComponent(slug)}?locale=${locale}`;
-    const r = await fetch(url, {
-      cache: "no-store",
-    });
-    if (!r.ok) return null;
-    const service = (await r.json()) as ApiService;
-    console.info("[cms] service detail", {
-      locale,
-      slug,
-      title: service.title,
-      status: service.status,
-    });
-    return service;
-  } catch {
-    return null;
-  }
-}
+/** Dedupes `generateMetadata` + page for the same slug/locale in one request. */
+export const fetchPublishedServiceBySlug = cache(
+  async function fetchPublishedServiceBySlug(
+    slug: string,
+    locale: AppLocale,
+  ): Promise<ApiService | null> {
+    try {
+      const base = getServerApiBase();
+      const url = `${base}/services/by-slug/${encodeURIComponent(slug)}?locale=${locale}`;
+      const r = await fetch(url, {
+        cache: "no-store",
+      });
+      if (!r.ok) return null;
+      const service = (await r.json()) as ApiService;
+      console.info("[cms] service detail", {
+        locale,
+        slug,
+        title: service.title,
+        status: service.status,
+      });
+      return service;
+    } catch {
+      return null;
+    }
+  },
+);
 
 function pickStrings(key: string, blocks: Record<string, unknown>): string[] {
   const v = blocks[key];
@@ -65,6 +69,26 @@ function pickProcess(
     }
   }
   return out.length ? out : undefined;
+}
+
+function pickHeroVisual(
+  blocks: Record<string, unknown>,
+): ServiceDetailContent["heroVisual"] | undefined {
+  const v = blocks.heroVisual;
+  if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const o = v as Record<string, unknown>;
+  const imageUrl = typeof o.imageUrl === "string" ? o.imageUrl.trim() : "";
+  const imageAlt = typeof o.imageAlt === "string" ? o.imageAlt.trim() : "";
+  const imageMediaAssetId =
+    typeof o.imageMediaAssetId === "string"
+      ? o.imageMediaAssetId.trim()
+      : "";
+  if (!imageUrl && !imageMediaAssetId) return undefined;
+  const out: NonNullable<ServiceDetailContent["heroVisual"]> = {};
+  if (imageUrl) out.imageUrl = imageUrl;
+  if (imageAlt) out.imageAlt = imageAlt;
+  if (imageMediaAssetId) out.imageMediaAssetId = imageMediaAssetId;
+  return out;
 }
 
 function pickCta(
@@ -103,6 +127,7 @@ export function mapApiServiceToDetailContent(
   const deliverables = pickStrings("deliverables", blocks);
   const process = pickProcess(blocks);
   const cta = pickCta(blocks, fallback.cta);
+  const heroFromCms = pickHeroVisual(blocks);
 
   const cap =
     capabilities.length > 0 ? capabilities : fallback.capabilities;
@@ -111,6 +136,7 @@ export function mapApiServiceToDetailContent(
   const del =
     deliverables.length > 0 ? deliverables : fallback.deliverables;
   const proc = process ?? fallback.process;
+  const heroVisual = heroFromCms ?? fallback.heroVisual;
 
   return {
     slug: row.slug,
@@ -129,5 +155,6 @@ export function mapApiServiceToDetailContent(
     additionalSections: fallback.additionalSections,
     cta,
     secondaryCta: fallback.secondaryCta,
+    heroVisual,
   };
 }

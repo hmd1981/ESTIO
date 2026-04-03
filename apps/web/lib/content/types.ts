@@ -57,4 +57,13 @@ export type ServiceDetailContent = {
   }>;
   cta: { headline: string; body: string; href: string; buttonLabel: string };
   secondaryCta?: { href: string };
+  /**
+   * Service detail hero: right column image or video (URL or media library id).
+   * CMS: `detailBlocks.heroVisual` on the service row.
+   */
+  heroVisual?: {
+    imageUrl?: string;
+    imageAlt?: string;
+    imageMediaAssetId?: string;
+  };
 };

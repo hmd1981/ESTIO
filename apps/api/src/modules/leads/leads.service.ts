@@ -8,6 +8,7 @@ import type {
   CrmLeadStatus,
   CrmPipelineStage,
   Prisma,
+  SiteLocale,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AutomationService } from '../automation/automation.service';
@@ -20,8 +21,20 @@ import type { CreateLeadTaskDto } from './dto/create-lead-task.dto';
 import type { PatchLeadAdminDto } from './dto/patch-lead-admin.dto';
 import type { PatchLeadStageDto } from './dto/patch-lead-stage.dto';
 import type { PatchLeadStatusDto } from './dto/patch-lead-status.dto';
+import {
+  DEFAULT_INTENT_MAPPING,
+  DEFAULT_PRICING_HINTS,
+  DEFAULT_PRIORITY_MAPPING,
+  mapHintPriorityToCrm,
+  mapSettingsStageToPipeline,
+  readStringRecord,
+  type AiStudioIntent,
+} from './ai-studio-sales.defaults';
+import type { CreateLeadFromAiStudioDto } from './dto/create-lead-from-ai-studio.dto';
+import { LeadRoutingService } from './lead-routing.service';
 import { LeadScoringService } from './lead-scoring.service';
 import { resolveServiceType } from './lib/legacy-service-interest';
+import { validateStageGate, nextStageRequirements } from './deal-flow';
 
 @Injectable()
 export class LeadsService {
@@ -32,6 +45,7 @@ export class LeadsService {
     private readonly scoring: LeadScoringService,
     private readonly automation: AutomationService,
     private readonly salesSettings: SalesSettingsService,
+    private readonly leadRouting: LeadRoutingService,
   ) {}
 
   async createPublic(dto: CreateLeadPublicDto): Promise<CreateLeadResponse> {
@@ -69,6 +83,145 @@ export class LeadsService {
   /** Intake completion + internal qualified creates. */
   async createQualified(input: CreateLeadCompleteInput): Promise<CreateLeadResponse> {
     return this.createInternal(input);
+  }
+
+  /**
+   * Public CRM ingest from AI Studio (CTA, exit capture, contact open).
+   * Uses SalesSettings mappings + routing engine; skips auto re-stage/email for provisional rows.
+   */
+  async createFromAiStudio(dto: CreateLeadFromAiStudioDto) {
+    const settings = await this.salesSettings.get();
+    if (!settings.isActive) {
+      throw new BadRequestException('AI Studio lead capture is disabled');
+    }
+
+    const intent = dto.intent as AiStudioIntent;
+    const intentMap = {
+      ...DEFAULT_INTENT_MAPPING,
+      ...readStringRecord(settings.intentMapping),
+    };
+    const priorityMap = {
+      ...DEFAULT_PRIORITY_MAPPING,
+      ...readStringRecord(settings.priorityMapping),
+    };
+    const pricingMap = {
+      ...DEFAULT_PRICING_HINTS,
+      ...readStringRecord(settings.pricingHints),
+    };
+
+    const offerType = intentMap[intent] ?? DEFAULT_INTENT_MAPPING[intent];
+    const priority = mapHintPriorityToCrm(priorityMap[intent]);
+    const stage = mapSettingsStageToPipeline(settings.defaultStage);
+    const ownerUserId = await this.leadRouting.resolveLeadRouting(
+      intent,
+      settings,
+    );
+
+    const scored = this.scoring.compute(
+      {
+        serviceType: 'AI_CREATIVE',
+        budgetRange: 'UNSPECIFIED',
+        timeline: 'UNSPECIFIED',
+        teamSize: 'UNSPECIFIED',
+        businessType: 'UNSPECIFIED',
+        phone: undefined,
+        whatsapp: undefined,
+        company: undefined,
+        jobTitle: undefined,
+        country: undefined,
+        city: undefined,
+        projectScope: dto.goalText?.trim() || undefined,
+      },
+      settings.scoringRules,
+    );
+
+    const safeSession =
+      dto.sessionId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'session';
+    const email = `ai-studio+${safeSession}.${Date.now()}@provisional.estio.internal`;
+
+    const localeNorm: SiteLocale | null =
+      dto.locale === 'ar' || dto.locale === 'en' ? dto.locale : null;
+
+    const crmMetadata: Prisma.InputJsonValue = {
+      sessionId: dto.sessionId,
+      device: dto.device ?? null,
+      locale: dto.locale ?? null,
+      ctaPosition: dto.ctaPosition ?? null,
+      analyticsSessionId: dto.sessionId,
+      captureSource: dto.source ?? null,
+      pricingHint: pricingMap[intent] ?? null,
+    };
+
+    const lead = await this.prisma.lead.create({
+      data: {
+        fullName: `AI Studio · ${intent}`,
+        email,
+        serviceType: 'AI_CREATIVE',
+        subServiceType: offerType.slice(0, 128),
+        businessType: 'UNSPECIFIED',
+        teamSize: 'UNSPECIFIED',
+        budgetRange: 'UNSPECIFIED',
+        timeline: 'UNSPECIFIED',
+        projectScope: null,
+        message: dto.goalText?.trim() || null,
+        source: 'AI_STUDIO',
+        locale: localeNorm,
+        studioIntent: intent,
+        offerType,
+        crmMetadata,
+        score: scored.score,
+        priority,
+        scoreBreakdown: scored.breakdown as Prisma.InputJsonValue,
+        status: 'NEW',
+        stage,
+        ownerUserId,
+      },
+    });
+
+    if (ownerUserId) {
+      await this.prisma.leadAssignment.create({
+        data: {
+          leadId: lead.id,
+          assigneeUserId: ownerUserId,
+          assignedBy: 'ai-studio-routing',
+        },
+      });
+    }
+
+    await this.prisma.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        type: 'CREATED',
+        payload: {
+          source: 'AI_STUDIO',
+          intent,
+          offerType,
+          captureSource: dto.source ?? null,
+        },
+      },
+    });
+
+    await this.automation.onNewLead(lead.id, {
+      skipAutoClassification: true,
+    });
+
+    this.logger.log(
+      `AI Studio lead id=${lead.id} intent=${intent} owner=${ownerUserId ?? 'none'}`,
+    );
+
+    return {
+      ok: true,
+      lead: {
+        id: lead.id,
+        intent: lead.studioIntent,
+        offerType: lead.offerType,
+        priority: lead.priority,
+        stage: lead.stage,
+        assignedTo: lead.ownerUserId,
+        source: lead.source,
+        createdAt: lead.createdAt.toISOString(),
+      },
+    };
   }
 
   private async createInternal(
@@ -298,10 +451,22 @@ export class LeadsService {
   async patchStage(id: string, dto: PatchLeadStageDto) {
     const existing = await this.prisma.lead.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException(`Lead not found: ${id}`);
+
+    const gateFailures = validateStageGate(
+      dto.stage,
+      existing as unknown as Record<string, unknown>,
+    );
+    if (gateFailures.length > 0) {
+      const requirements = nextStageRequirements(existing.stage);
+      throw new BadRequestException(
+        `Cannot advance to ${dto.stage}. Missing: ${gateFailures.join(', ')}. ${requirements}`,
+      );
+    }
+
     const syncStatus = this.automation.mapStageToStatusOnWinLoss(dto.stage);
     const data: Prisma.LeadUpdateInput = { stage: dto.stage };
     if (syncStatus) data.status = syncStatus;
-    const updated = await this.prisma.lead.update({ where: { id }, data });
+    await this.prisma.lead.update({ where: { id }, data });
     await this.automation.appendActivity(id, 'STAGE_CHANGED', {
       from: existing.stage,
       to: dto.stage,

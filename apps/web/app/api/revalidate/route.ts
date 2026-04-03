@@ -21,12 +21,17 @@ function pathSpecsFromTag(tag: string): PathSpec[] {
       { path: `/${locale}/services` },
       { path: `/${locale}/enterprise` },
       { path: `/${locale}/faq` },
+      { path: `/${locale}/ai-studio` },
+      { path: `/${locale}/ai-studio/image-production` },
+      { path: `/${locale}/ai-studio/video-production` },
+      { path: `/${locale}/ai-studio/brand-ai-packs` },
     ];
   }
 
   const service = /^service:(en|ar):(.+)$/u.exec(tag);
   if (!service) return [];
   const [, locale, slug] = service;
+  const AI_STUDIO_SLUGS = ["image-production", "video-production", "brand-ai-packs"];
   const detailPath =
     slug === "enterprise"
       ? `/${locale}/enterprise`
@@ -34,7 +39,9 @@ function pathSpecsFromTag(tag: string): PathSpec[] {
         ? `/${locale}/enterprise/private-ai`
         : slug === "automation"
           ? `/${locale}/enterprise/automation`
-          : `/${locale}/services/${slug}`;
+          : AI_STUDIO_SLUGS.includes(slug)
+            ? `/${locale}/ai-studio/${slug}`
+            : `/${locale}/services/${slug}`;
   return [ { path: detailPath } ];
 }
 

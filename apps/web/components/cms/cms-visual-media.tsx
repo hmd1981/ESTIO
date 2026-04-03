@@ -1,9 +1,5 @@
-import Image from "next/image";
 import type { ImageRef } from "@/lib/cms/resolve-image";
-import {
-  imageNeedsUnoptimized,
-  resolveVisualMedia,
-} from "@/lib/cms/resolve-image";
+import { resolveVisualMedia } from "@/lib/cms/resolve-image";
 import { inferVideoMimeType } from "@/lib/cms/media-kind";
 import type { MediaAssetMap } from "@/lib/cms/types";
 
@@ -22,7 +18,9 @@ type Props = {
 };
 
 /**
- * Renders a CMS “image” slot as either Next/Image or &lt;video&gt; when the asset is video.
+ * Renders a CMS “image” slot as &lt;img&gt; or &lt;video&gt; (never next/image).
+ * CMS URLs may be remote hosts not listed in next.config, or SVG under /public —
+ * the default Image optimizer rejects or blocks many of those; plain media tags match operator expectations.
  */
 export function CmsVisualMedia({
   imageRef,
@@ -32,7 +30,7 @@ export function CmsVisualMedia({
   fill,
   width = 800,
   height = 500,
-  sizes,
+  sizes: _sizes,
   decorative = false,
   priority = false,
 }: Props) {
@@ -62,28 +60,29 @@ export function CmsVisualMedia({
 
   if (fill) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element -- CMS sources: arbitrary URLs + SVG; avoid Image remotePatterns / SVG optimizer issues
+      <img
         src={vm.url}
         alt={decorative ? "" : vm.alt}
-        fill
-        className={className}
-        sizes={sizes}
-        unoptimized={imageNeedsUnoptimized(vm.url)}
-        priority={priority}
+        className={`absolute inset-0 h-full w-full ${className ?? ""}`}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : undefined}
       />
     );
   }
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element -- CMS sources: arbitrary URLs + SVG
+    <img
       src={vm.url}
       alt={decorative ? "" : vm.alt}
       width={width}
       height={height}
       className={className}
-      sizes={sizes}
-      unoptimized={imageNeedsUnoptimized(vm.url)}
-      priority={priority}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={priority ? "high" : undefined}
     />
   );
 }

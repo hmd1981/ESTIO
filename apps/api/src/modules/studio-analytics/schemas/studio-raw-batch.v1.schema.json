@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://estio.org/schemas/studio-analytics/raw-batch.v1.json",
+  "title": "StudioAnalyticsIngestBatchV1",
+  "description": "FROZEN v1 — POST /studio-analytics/events body. Bump version with STUDIO_RAW_EVENT_SCHEMA_VERSION.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sessionId", "events"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Optional; if sent, must be 1."
+    },
+    "sessionId": { "type": "string", "maxLength": 64 },
+    "locale": { "type": "string", "maxLength": 4 },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "ts"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "maxLength": 40,
+          "enum": [
+            "page_view",
+            "intent_selected",
+            "cta_clicked",
+            "exit_input_submitted",
+            "scroll_depth",
+            "offer_card_view"
+          ]
+        },
+        "intent": { "type": "string", "maxLength": 16 },
+        "source": { "type": "string", "maxLength": 16 },
+        "quality": { "type": "number" },
+        "ctaPosition": { "type": "string", "maxLength": 16 },
+        "clicked": { "type": "boolean" },
+        "hoverDuration": { "type": "number" },
+        "exitGoal": { "type": "string", "maxLength": 500 },
+        "ts": { "type": "number", "description": "Unix ms" }
+      }
+    }
+  }
+}

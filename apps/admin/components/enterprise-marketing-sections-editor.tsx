@@ -112,10 +112,10 @@ const ENTERPRISE_JSON_PLACEHOLDER = `{
     ]
   },
   "enterpriseDealEntry": {
-    "title": "Start an enterprise conversation",
+    "title": "Qualification entry — enterprise",
     "body": "If you are exploring private AI, workflow automation, or internal systems, we can define where the real opportunity sits and what implementation should look like.",
     "primaryCta": {
-      "label": "Start a conversation",
+      "label": "Start qualification",
       "href": "/contact"
     },
     "secondaryCta": {
@@ -990,7 +990,7 @@ export function EnterpriseMarketingSectionsEditor({
           Deal entry cards
         </p>
         <Hint>
-          List what the client must already know or provide. Intent drives contact form prefill. CTA should read like “Start a scoped engagement”.
+          List what the client must already know or provide. Intent drives contact form prefill. Use the site CTA taxonomy: Start qualification, Define your scope, Start a scoped engagement, or Review programme paths.
         </Hint>
         <input
           className="mt-2 w-full rounded border px-2 py-1 text-xs"
@@ -1233,7 +1233,7 @@ export function EnterpriseMarketingSectionsEditor({
                     title: "",
                     body: "",
                     intent: "AUTOMATION",
-                    ctaLabel: "Start a scoped engagement",
+                    ctaLabel: "Start qualification",
                     messageTemplate: "",
                     checklist: [],
                     qualification: { required: [], optional: [] },

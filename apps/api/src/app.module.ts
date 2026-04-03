@@ -19,6 +19,7 @@ import { SeoModule } from './modules/seo/seo.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { RevalidationModule } from './modules/revalidation/revalidation.module';
 import { CrmUsersModule } from './modules/crm-users/crm-users.module';
+import { StudioAnalyticsModule } from './modules/studio-analytics/studio-analytics.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -48,6 +49,7 @@ import { AppService } from './app.service';
     PublicSiteModule,
     RevalidationModule,
     CrmUsersModule,
+    StudioAnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

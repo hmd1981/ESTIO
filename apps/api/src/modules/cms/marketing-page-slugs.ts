@@ -6,6 +6,7 @@ export const MARKETING_PAGE_SLUGS = [
   'about',
   'contact',
   'faq',
+  'ai-studio',
 ] as const;
 
 export type MarketingPageSlug = (typeof MARKETING_PAGE_SLUGS)[number];

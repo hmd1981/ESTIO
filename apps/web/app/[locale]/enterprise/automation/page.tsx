@@ -27,14 +27,17 @@ export default async function AutomationPage({ params }: Props) {
   if (!isLocale(raw)) notFound();
   const fallback = getEnterprisePage(slug, raw);
   if (!fallback) notFound();
-  const content = await resolvePublishedServiceDetail(slug, raw, fallback);
-  const bundle = await getSiteBundle(raw);
+  const [content, bundle, enPublished] = await Promise.all([
+    resolvePublishedServiceDetail(slug, raw, fallback),
+    getSiteBundle(raw),
+    raw === "ar" ? getPublishedSiteBundle("en") : Promise.resolve(null),
+  ]);
   const cms = (bundle.marketingPages?.enterprise?.sections ??
     {}) as MarketingPageSectionsCMS;
   const cmsEn =
     raw === "ar"
-      ? (((await getPublishedSiteBundle("en")).marketingPages?.enterprise
-          ?.sections ?? {}) as MarketingPageSectionsCMS)
+      ? ((enPublished?.marketingPages?.enterprise?.sections ??
+          {}) as MarketingPageSectionsCMS)
       : undefined;
   const ev = mergeEnterpriseVisuals(cms, cmsEn, raw);
   return (
