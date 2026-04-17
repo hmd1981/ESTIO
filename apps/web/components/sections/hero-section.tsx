@@ -126,6 +126,20 @@ export function HeroSection({
                 <span className="ms-1.5 inline-block transition-transform duration-200 ease-out group-hover/cta:translate-x-1 motion-reduce:transition-none" aria-hidden="true">&rarr;</span>
               </ButtonLink>
             </div>
+            {hero.intentLinks.length > 0 ? (
+              <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch sm:gap-3">
+                {hero.intentLinks.map((link) => (
+                  <ButtonLink
+                    key={`${link.href}-${link.label}`}
+                    href={link.href}
+                    variant="secondary"
+                    className="min-h-[2.5rem] border-[color-mix(in_srgb,var(--border)_70%,transparent)] bg-[color-mix(in_srgb,var(--bg)_70%,transparent)] text-[0.8125rem] font-medium"
+                  >
+                    {link.label}
+                  </ButtonLink>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="relative min-h-[200px] lg:col-span-7 xl:col-span-7">

@@ -22,12 +22,13 @@ import type { PatchLeadAdminDto } from './dto/patch-lead-admin.dto';
 import type { PatchLeadStageDto } from './dto/patch-lead-stage.dto';
 import type { PatchLeadStatusDto } from './dto/patch-lead-status.dto';
 import {
+  AI_STUDIO_INTENTS,
   DEFAULT_INTENT_MAPPING,
   DEFAULT_PRICING_HINTS,
   DEFAULT_PRIORITY_MAPPING,
   mapHintPriorityToCrm,
-  mapSettingsStageToPipeline,
   readStringRecord,
+  resolveAiStudioInitialPipelineStage,
   type AiStudioIntent,
 } from './ai-studio-sales.defaults';
 import type { CreateLeadFromAiStudioDto } from './dto/create-lead-from-ai-studio.dto';
@@ -53,6 +54,42 @@ export class LeadsService {
       serviceType: dto.serviceType,
       legacyServiceInterest: dto.serviceInterest,
     });
+
+    const settings = await this.salesSettings.get();
+    const intentOfferLabels = {
+      ...DEFAULT_INTENT_MAPPING,
+      ...readStringRecord(settings.intentMapping),
+    };
+
+    const interestKey = dto.serviceInterest?.trim().toUpperCase();
+    let subServiceType = dto.subServiceType?.trim() || null;
+    let studioIntent: string | null = null;
+    let offerType: string | null = null;
+
+    if (interestKey === 'AI_STUDIO' && dto.studioIntent) {
+      const si = dto.studioIntent;
+      if (AI_STUDIO_INTENTS.includes(si)) {
+        studioIntent = si;
+        const label =
+          (intentOfferLabels[si] ?? DEFAULT_INTENT_MAPPING[si]).trim() ||
+          DEFAULT_INTENT_MAPPING[si];
+        offerType = label;
+        subServiceType = label.slice(0, 128);
+      }
+    }
+
+    const crmMetadata: Prisma.InputJsonValue | null = dto.askEstioAi
+      ? {
+          askEstioAi: {
+            userMessage: dto.askEstioAi.userMessage,
+            detectedIntent: dto.askEstioAi.detectedIntent,
+            recommendedOffer: dto.askEstioAi.recommendedOffer ?? null,
+            responseSummary: dto.askEstioAi.responseSummary ?? null,
+            sessionId: dto.askEstioAi.sessionId,
+          },
+        }
+      : null;
+
     return this.createInternal({
       fullName: dto.fullName.trim(),
       email: dto.email.trim().toLowerCase(),
@@ -63,7 +100,9 @@ export class LeadsService {
       country: dto.country?.trim(),
       city: dto.city?.trim(),
       serviceType,
-      subServiceType: dto.subServiceType?.trim(),
+      subServiceType,
+      studioIntent,
+      offerType,
       projectScope: dto.projectScope?.trim(),
       message: dto.message?.trim(),
       source: dto.source,
@@ -77,6 +116,7 @@ export class LeadsService {
       timeline: 'UNSPECIFIED',
       businessType: 'UNSPECIFIED',
       teamSize: 'UNSPECIFIED',
+      crmMetadata,
     });
   }
 
@@ -109,9 +149,17 @@ export class LeadsService {
       ...readStringRecord(settings.pricingHints),
     };
 
-    const offerType = intentMap[intent] ?? DEFAULT_INTENT_MAPPING[intent];
+    // Human offer line from Sales settings intentMapping (merged with defaults).
+    const offerType =
+      (intentMap[intent] ?? DEFAULT_INTENT_MAPPING[intent]).trim() ||
+      DEFAULT_INTENT_MAPPING[intent];
+    /** UI / “service” line: same as offerType; subServiceType column is varchar(128). */
+    const subServiceLine = offerType.slice(0, 128);
     const priority = mapHintPriorityToCrm(priorityMap[intent]);
-    const stage = mapSettingsStageToPipeline(settings.defaultStage);
+    const stage = resolveAiStudioInitialPipelineStage(
+      intent,
+      settings.defaultStage,
+    );
     const ownerUserId = await this.leadRouting.resolveLeadRouting(
       intent,
       settings,
@@ -150,6 +198,24 @@ export class LeadsService {
       analyticsSessionId: dto.sessionId,
       captureSource: dto.source ?? null,
       pricingHint: pricingMap[intent] ?? null,
+      ...(dto.askEstioAi
+        ? {
+            askEstioAi: {
+              userMessage: dto.askEstioAi.userMessage,
+              detectedIntent: dto.askEstioAi.detectedIntent,
+              recommendedOffer: dto.askEstioAi.recommendedOffer ?? null,
+              responseSummary: dto.askEstioAi.responseSummary ?? null,
+              sessionId: dto.askEstioAi.sessionId,
+            },
+          }
+        : {}),
+      ...(intent === 'brand'
+        ? {
+            pipelineRule: 'brand_fast_track',
+            pipelineSalesStageLabel: 'QUALIFIED',
+            pipelineStage: 'DISCOVERY',
+          }
+        : {}),
     };
 
     const lead = await this.prisma.lead.create({
@@ -157,7 +223,7 @@ export class LeadsService {
         fullName: `AI Studio · ${intent}`,
         email,
         serviceType: 'AI_CREATIVE',
-        subServiceType: offerType.slice(0, 128),
+        subServiceType: subServiceLine,
         businessType: 'UNSPECIFIED',
         teamSize: 'UNSPECIFIED',
         budgetRange: 'UNSPECIFIED',
@@ -172,7 +238,7 @@ export class LeadsService {
         score: scored.score,
         priority,
         scoreBreakdown: scored.breakdown as Prisma.InputJsonValue,
-        status: 'NEW',
+        status: intent === 'brand' ? 'QUALIFIED' : 'NEW',
         stage,
         ownerUserId,
       },
@@ -197,6 +263,14 @@ export class LeadsService {
           intent,
           offerType,
           captureSource: dto.source ?? null,
+          ...(intent === 'brand'
+            ? {
+                pipelineFastTrack: true,
+                stage: 'DISCOVERY',
+                status: 'QUALIFIED',
+                reason: 'brand_high_ticket',
+              }
+            : {}),
         },
       },
     });
@@ -258,6 +332,8 @@ export class LeadsService {
         city: input.city ?? null,
         serviceType: input.serviceType,
         subServiceType: input.subServiceType ?? null,
+        studioIntent: input.studioIntent ?? null,
+        offerType: input.offerType ?? null,
         businessType: input.businessType,
         teamSize: input.teamSize,
         budgetRange: input.budgetRange,
@@ -271,6 +347,7 @@ export class LeadsService {
         campaignSource: input.campaignSource ?? null,
         campaignMedium: input.campaignMedium ?? null,
         campaignName: input.campaignName ?? null,
+        crmMetadata: input.crmMetadata ?? undefined,
         score: scored.score,
         priority: scored.priority,
         scoreBreakdown: scored.breakdown as Prisma.InputJsonValue,
@@ -283,7 +360,11 @@ export class LeadsService {
       data: {
         leadId: lead.id,
         type: 'CREATED',
-        payload: { source: input.source, serviceType: input.serviceType },
+        payload: {
+          source: input.source,
+          serviceType: input.serviceType,
+          ...(input.crmMetadata != null ? { crmMetadata: input.crmMetadata } : {}),
+        },
       },
     });
 

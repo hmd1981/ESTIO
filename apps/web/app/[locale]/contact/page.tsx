@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Container } from "@/components/layout/container";
+import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { ContactForm } from "@/components/contact/contact-form";
 import { CmsVisualMedia } from "@/components/cms/cms-visual-media";
 import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
@@ -77,6 +78,14 @@ function parseLeadSource(value: string | undefined): LeadSource {
     : "CONTACT";
 }
 
+function parseStudioIntentQuery(
+  value: string | undefined,
+): "images" | "video" | "brand" | undefined {
+  const v = value?.trim().toLowerCase();
+  if (v === "images" || v === "video" || v === "brand") return v;
+  return undefined;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw } = await params;
   if (!isLocale(raw)) return {};
@@ -118,15 +127,35 @@ export default async function ContactPage({ params, searchParams }: Props) {
           ?.sections ?? {}) as MarketingPageSectionsCMS)
       : undefined;
   const sp = (await searchParams) ?? {};
-  const highlightFromQuery = queryValue(sp.highlight);
   const formSource = parseLeadSource(queryValue(sp.source));
+  const streamlinedStudio =
+    queryValue(sp.streamlined) === "1" || queryValue(sp.streamlined) === "true";
+  const promptFromQuery = queryValue(sp.prompt);
+  const platformFromQuery = queryValue(sp.platform);
+  const estimateFromQuery = queryValue(sp.estimate);
+  const funnelContextLines = [
+    promptFromQuery && `AI Studio preview: ${promptFromQuery}`,
+    platformFromQuery && `Platform: ${platformFromQuery}`,
+    estimateFromQuery && `Estimate: ${estimateFromQuery}`,
+  ].filter(Boolean) as string[];
+  const funnelContext =
+    funnelContextLines.length > 0 ? funnelContextLines.join("\n") : undefined;
+  const messageBase = queryValue(sp.message) ?? queryValue(sp.goal);
+  const messageInitial =
+    funnelContext && messageBase
+      ? `${messageBase}\n\n${funnelContext}`
+      : (funnelContext ?? messageBase);
+
   const formInitialValues = {
     name: queryValue(sp.name),
     email: queryValue(sp.email),
     phone: queryValue(sp.phone),
     company: queryValue(sp.company),
     serviceInterest: queryValue(sp.interest),
-    message: queryValue(sp.message) ?? queryValue(sp.goal),
+    message: messageInitial,
+    studioIntent: parseStudioIntentQuery(
+      queryValue(sp.intent) ?? queryValue(sp.studioIntent),
+    ),
   };
   const ui = getMessages(raw);
   const c = ui.contact;
@@ -147,19 +176,14 @@ export default async function ContactPage({ params, searchParams }: Props) {
   const heroImg = resolveCmsVisual(hero.heroVisual, mediaAssets);
   const trustImg = resolveCmsVisual(contactBlocks.trustVisual, mediaAssets);
   const officeImg = resolveCmsVisual(contactBlocks.officeVisual, mediaAssets);
-  const highlight =
-    (typeof highlightFromQuery === "string" && highlightFromQuery.trim()
-      ? highlightFromQuery.trim()
-      : cms._meta?.highlightSection?.trim()) ?? undefined;
 
   return (
     <MarketingShell>
-      <section
-        className={
-          highlight === "intro"
-            ? "border-b border-[var(--border)] bg-[var(--surface)] ring-2 ring-[var(--accent)]/50 ring-inset"
-            : "border-b border-[var(--border)] bg-[var(--surface)]"
-        }
+      <SectionHighlightFrame
+        as="section"
+        sectionId="intro"
+        fallbackHighlight={cms._meta?.highlightSection}
+        className="border-b border-[var(--border)] bg-[var(--surface)]"
         data-estio-section="intro"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-28">
@@ -203,7 +227,7 @@ export default async function ContactPage({ params, searchParams }: Props) {
             ) : null}
           </div>
         </Container>
-      </section>
+      </SectionHighlightFrame>
 
       <section className="bg-[var(--canvas)] py-14 sm:py-16 lg:py-20">
         <Container as="div">
@@ -231,6 +255,10 @@ export default async function ContactPage({ params, searchParams }: Props) {
                 copy={ui.contactForm}
                 source={formSource}
                 initialValues={formInitialValues}
+                hideQualification={
+                  streamlinedStudio &&
+                  formInitialValues.serviceInterest === "AI_STUDIO"
+                }
                 aiStudioContext={
                   formInitialValues.serviceInterest === "AI_STUDIO"
                     ? {

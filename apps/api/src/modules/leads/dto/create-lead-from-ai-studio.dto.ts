@@ -1,10 +1,13 @@
+import { Type } from 'class-transformer';
 import {
   IsIn,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { AskEstioAiHandoffDto } from './ask-estio-ai-handoff.dto';
 
 const INTENTS = ['images', 'video', 'brand'] as const;
 
@@ -42,4 +45,9 @@ export class CreateLeadFromAiStudioDto {
   @IsString()
   @MaxLength(64)
   ctaPosition?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AskEstioAiHandoffDto)
+  askEstioAi?: AskEstioAiHandoffDto;
 }

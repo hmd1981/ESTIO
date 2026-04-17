@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "@/lib/admin-fetch";
+import { formatLeadServiceDisplay } from "@/lib/format-lead-service";
 
 type LeadRow = {
   id: string;
@@ -11,6 +12,8 @@ type LeadRow = {
   stage: string;
   score: number;
   serviceType: string;
+  subServiceType: string | null;
+  offerType: string | null;
 };
 
 const STAGES = [
@@ -75,7 +78,7 @@ export function PipelineBoard() {
                     {row.fullName}
                   </span>
                   <p className="mt-1 text-xs text-[var(--admin-muted)]">
-                    {row.serviceType} · score {row.score}
+                    {formatLeadServiceDisplay(row)} · score {row.score}
                   </p>
                 </Link>
               </li>

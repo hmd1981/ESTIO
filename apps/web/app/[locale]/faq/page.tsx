@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Container } from "@/components/layout/container";
 import { getSiteBundle } from "@/lib/cms/fetch-site";
@@ -10,7 +11,6 @@ import { getMessages } from "@/lib/i18n/messages";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -24,20 +24,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return marketingDetailMetadata({ title, description }, `/${raw}/faq`);
 }
 
-export default async function FaqPage({ params, searchParams }: Props) {
+export default async function FaqPage({ params }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const bundle = await getSiteBundle(raw);
   const cms = (bundle.marketingPages?.faq?.sections ?? {}) as MarketingPageSectionsCMS;
-  const sp = (await searchParams) ?? {};
-  const highlightFromQuery = Array.isArray(sp.highlight)
-    ? sp.highlight[0]
-    : sp.highlight;
-  const highlight =
-    (typeof highlightFromQuery === "string" && highlightFromQuery.trim()
-      ? highlightFromQuery.trim()
-      : cms._meta?.highlightSection?.trim()) ?? undefined;
-
   const m = getMessages(raw).faq;
   const kicker = cms.kicker ?? m.kicker;
   const h1 = cms.title ?? m.h1;
@@ -62,12 +53,11 @@ export default async function FaqPage({ params, searchParams }: Props) {
 
   return (
     <MarketingShell>
-      <section
-        className={
-          highlight === "intro"
-            ? "border-b border-[var(--border)] bg-[var(--surface)] ring-2 ring-[var(--accent)]/50 ring-inset"
-            : "border-b border-[var(--border)] bg-[var(--surface)]"
-        }
+      <SectionHighlightFrame
+        as="section"
+        sectionId="intro"
+        fallbackHighlight={cms._meta?.highlightSection}
+        className="border-b border-[var(--border)] bg-[var(--surface)]"
         data-estio-section="intro"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-28">
@@ -81,14 +71,13 @@ export default async function FaqPage({ params, searchParams }: Props) {
             {lead}
           </p>
         </Container>
-      </section>
+      </SectionHighlightFrame>
 
-      <section
-        className={
-          highlight === "items"
-            ? "bg-[var(--canvas)] py-14 sm:py-16 lg:py-20 ring-2 ring-[var(--accent)]/50 ring-inset"
-            : "bg-[var(--canvas)] py-14 sm:py-16 lg:py-20"
-        }
+      <SectionHighlightFrame
+        as="section"
+        sectionId="items"
+        fallbackHighlight={cms._meta?.highlightSection}
+        className="bg-[var(--canvas)] py-14 sm:py-16 lg:py-20"
         data-estio-section="items"
       >
         <Container as="div" className="max-w-4xl">
@@ -114,7 +103,7 @@ export default async function FaqPage({ params, searchParams }: Props) {
             </div>
           )}
         </Container>
-      </section>
+      </SectionHighlightFrame>
     </MarketingShell>
   );
 }

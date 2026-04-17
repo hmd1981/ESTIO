@@ -115,21 +115,20 @@ export type AiStudioLandingContent = {
 export const aiStudioLanding: AiStudioLandingContent = {
   hero: {
     kicker: "AI Studio",
-    headline:
-      "Production-grade AI visuals and video \u2014 scoped, reviewed, delivered.",
-    lead: "You define the output. We produce it \u2014 brand-reviewed, production-ready, delivered as final files. AI Studio is Estio\u2019s commercial layer for AI-generated imagery, video, and brand asset systems.",
+    headline: "On-brand images and short video you can publish this week.",
+    lead: "Tell us the output. We produce it, you approve it, we ship final files \u2014 no DIY tools.",
     primaryCta: {
-      label: "Request a studio scope",
-      href: "/contact?interest=AI_STUDIO",
+      label: "Start a project",
+      href: "/contact?interest=AI_STUDIO&streamlined=1",
     },
     secondaryCta: {
-      label: "See what you\u2019ll get",
-      href: "#studio-offers",
+      label: "Get a quick quote",
+      href: "/contact?interest=AI_STUDIO&streamlined=1",
     },
   },
 
   studioOutputs: {
-    title: "Selected studio outputs",
+    title: "Sample outputs",
     samples: [
       {
         label: "Campaign hero visual",
@@ -150,86 +149,71 @@ export const aiStudioLanding: AiStudioLandingContent = {
   },
 
   separator: {
-    title: "AI Studio vs AI Creative Services",
-    body: "AI Studio delivers finished visual and video assets \u2014 you request, we produce and ship. AI Creative Services is different: it embeds governed AI capabilities into your internal workflows, teams, and production pipelines. If you need output, start here. If you need internal systems, see Enterprise.",
+    title: "Studio vs internal AI",
+    body: "Here you get finished files. For AI inside your own workflows and tools, see AI Creative Services and Enterprise.",
   },
 
   valueProps: [
     {
-      title: "Scoped, not speculative",
-      body: "Every deliverable has defined specifications, review gates, and acceptance criteria \u2014 agreed before production starts.",
+      title: "Agreed before we build",
+      body: "Specs and review steps are set up front \u2014 no surprise scope.",
     },
     {
-      title: "Brand-controlled",
-      body: "Your visual direction, brand rules, and quality bar govern what ships. AI accelerates production \u2014 it does not replace judgement.",
+      title: "Your brand rules win",
+      body: "We produce to your direction; nothing ships without your OK.",
     },
     {
-      title: "Delivered, not delegated",
-      body: "You receive finished assets \u2014 not access to a prompt interface. We operate the pipeline; you receive the output.",
+      title: "Files, not logins",
+      body: "You receive assets ready to upload \u2014 we run the production side.",
     },
   ],
 
   offerCards: [
     {
-      title: "High-conversion AI product & campaign visuals",
-      description:
-        "Built to increase click-through and visual trust across ads and landing pages.",
-      whatYouGet: [
-        "10\u201330 production-ready images per engagement",
-        "Fully edited & brand-aligned outputs",
-        "Multiple variations for A/B testing",
-        "Delivered in commercial-ready format (PNG/JPEG/TIFF)",
+      title: "AI stills & campaign images",
+      description: "Product, lifestyle, and hero shots aligned to your brand.",
+      whatYouGet: [],
+      bestFor: [],
+      typicalOutputs: "",
+      subOffers: [
+        "What: production-ready stills from your brief and references.",
+        "Where: ads, social, site heroes, e-commerce grids.",
+        "Benefit: test more creative without multiplying shoot days.",
       ],
-      bestFor: [
-        "Ads",
-        "E-commerce",
-        "Social",
-      ],
-      typicalOutputs: "10\u201350+ images per engagement",
       href: "/ai-studio/image-production",
-      cta: "Start with this",
+      cta: "See image production",
       imageUrl: "/ai-studio/image-production.svg",
       imageAlt: "Scoped image production pipeline from brief to brand-reviewed delivery",
     },
     {
-      title: "Scroll-stopping AI video ads & social content",
-      description:
-        "Designed for engagement, retention, and paid performance.",
-      whatYouGet: [
-        "15\u201360s branded video, ready to publish",
-        "Platform-optimised exports (vertical, square, landscape)",
-        "Multiple variants for campaign testing",
-        "Motion asset library with naming convention",
+      title: "Short branded video",
+      description: "Clips sized for feeds and paid placements.",
+      whatYouGet: [],
+      bestFor: [],
+      typicalOutputs: "",
+      subOffers: [
+        "What: 15\u201360s spots, edited and on-brand.",
+        "Where: Reels, TikTok, YouTube Shorts, paid social, landing pages.",
+        "Benefit: vertical, square, and landscape from one production pass.",
       ],
-      bestFor: [
-        "Reels",
-        "TikTok",
-        "Campaign launches",
-      ],
-      typicalOutputs: "5\u201320+ videos per engagement",
       href: "/ai-studio/video-production",
-      cta: "Start with this",
+      cta: "See video production",
       imageUrl: "/ai-studio/video-production.svg",
       imageAlt: "AI video production pipeline with multi-format delivery",
     },
     {
-      title: "Consistent AI visual system for your brand",
-      description:
-        "Eliminate inconsistency and scale your brand visuals with precision.",
-      whatYouGet: [
-        "Complete brand-aligned style preset library",
-        "Documented visual direction & prompt architecture",
-        "Cross-channel consistency guidelines",
-        "Reusable production templates and references",
+      title: "Brand visual system",
+      description: "Presets and templates so every asset matches.",
+      whatYouGet: [],
+      bestFor: [],
+      typicalOutputs: "",
+      subOffers: [
+        "What: reusable style kit and prompt structure for your look.",
+        "Where: every channel your team publishes to.",
+        "Benefit: faster rounds when you need volume \u2014 less visual drift.",
       ],
-      bestFor: [
-        "Brands scaling content production",
-        "Multi-channel consistency",
-        "Visual identity systems",
-      ],
-      typicalOutputs: "Complete brand production system",
       href: "/ai-studio/brand-ai-packs",
-      cta: "Start with this",
+      cta: "See brand packs",
       imageUrl: "/ai-studio/brand-ai-packs.svg",
       imageAlt: "Brand AI pack structure with visual system, prompt architecture, and asset library",
     },
@@ -312,10 +296,10 @@ export const aiStudioLanding: AiStudioLandingContent = {
   },
 
   cta: {
-    headline: "Discuss your visual production needs",
-    body: "Tell us what you need \u2014 we\u2019ll guide you to the right setup in minutes.",
-    buttonLabel: "Request a studio scope",
-    href: "/contact?interest=AI_STUDIO",
+    headline: "Tell us what you need",
+    body: "We\u2019ll reply fast with a clear next step \u2014 usually within one business day.",
+    buttonLabel: "Start a project",
+    href: "/contact?interest=AI_STUDIO&streamlined=1",
   },
 
   faq: {
@@ -430,7 +414,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
     cta: {
       headline: "Discuss your image production needs",
       body: "Tell us the visual category, volume, brand direction, and delivery timeline.",
-      href: "/contact?interest=AI_STUDIO",
+      href: "/contact?interest=AI_STUDIO&streamlined=1",
       buttonLabel: "Request a studio scope",
     },
     secondaryCta: { href: "/ai-studio" },
@@ -507,7 +491,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
     cta: {
       headline: "Discuss your video production needs",
       body: "Tell us the video type, format, volume, brand direction, and delivery timeline.",
-      href: "/contact?interest=AI_STUDIO",
+      href: "/contact?interest=AI_STUDIO&streamlined=1",
       buttonLabel: "Request a studio scope",
     },
     secondaryCta: { href: "/ai-studio" },
@@ -584,7 +568,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
     cta: {
       headline: "Discuss your brand pack needs",
       body: "Tell us your brand identity requirements, target channels, and consistency objectives.",
-      href: "/contact?interest=AI_STUDIO",
+      href: "/contact?interest=AI_STUDIO&streamlined=1",
       buttonLabel: "Request a studio scope",
     },
     secondaryCta: { href: "/ai-studio" },

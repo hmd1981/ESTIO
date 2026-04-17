@@ -9,8 +9,14 @@ import { MarketingShell } from "@/components/layout/marketing-shell";
 import { ButtonLink } from "@/components/ui/button-link";
 import { AiStudioSubNav } from "@/components/ai-studio/ai-studio-sub-nav";
 import { AiStudioStickyNav } from "@/components/ai-studio/ai-studio-sticky-nav";
+import { AskEstioAiSection } from "@/components/ai-studio/ask-estio-ai-section";
 import { AiStudioConversionLayer } from "@/components/ai-studio/ai-studio-conversion-layer";
-import type { AiStudioLandingContent } from "@/lib/content/ai-studio-pages";
+import { AiStudioFunnelV3Panel } from "@/components/ai-studio/ai-studio-funnel-v3-panel";
+import { StudioCreditsPanel } from "@/components/ai-studio/studio-credits-panel";
+import {
+  aiStudioOfferCardBullets,
+  type AiStudioLandingContent,
+} from "@/lib/content/ai-studio-pages";
 import type { AppLocale } from "@/lib/i18n/config";
 import { imageNeedsUnoptimized } from "@/lib/cms/resolve-image";
 import { withLocale } from "@/lib/i18n/paths";
@@ -134,12 +140,17 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                       {c.hero.primaryCta.label}
                     </ButtonLink>
                     <ButtonLink
-                      href={c.hero.secondaryCta.href}
+                      href={withLocale(c.hero.secondaryCta.href, locale)}
                       variant="secondary"
                     >
                       {c.hero.secondaryCta.label}
                     </ButtonLink>
                   </div>
+                  <p className="mt-4 max-w-xl text-xs leading-relaxed text-[var(--muted)]">
+                    {locale === "ar"
+                      ? "\u0627\u0628\u062a\u062f\u0627\u0621\u064b \u0645\u0646 150 \u062f\u0648\u0644\u0627\u0631\u064b\u0627 \u0623\u0645\u0631\u064a\u0643\u064a\u064b\u0627 \u062d\u0633\u0628 \u0627\u0644\u0646\u0637\u0627\u0642."
+                      : "From $150 depending on scope."}
+                  </p>
 
                   {/* Early decision trigger */}
                   <div className="mt-8 flex flex-wrap items-center gap-2.5">
@@ -147,13 +158,29 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                       {locale === "ar" ? "ماذا تحتاجون:" : "I need:"}
                     </span>
                     {[
-                      { href: "#offer-images", en: "Images", ar: "صور" },
-                      { href: "#offer-video", en: "Video", ar: "فيديو" },
-                      { href: "#offer-packs", en: "Brand system", ar: "نظام العلامة" },
+                      {
+                        href: "#offer-images",
+                        en: "Images",
+                        ar: "صور",
+                        funnelIntent: "images" as const,
+                      },
+                      {
+                        href: "#offer-video",
+                        en: "Video",
+                        ar: "فيديو",
+                        funnelIntent: "video" as const,
+                      },
+                      {
+                        href: "#offer-packs",
+                        en: "Brand system",
+                        ar: "نظام العلامة",
+                        funnelIntent: "brand" as const,
+                      },
                     ].map((opt) => (
                       <a
                         key={opt.href}
                         href={opt.href}
+                        data-ai-funnel-intent={opt.funnelIntent}
                         className="rounded-full border border-[var(--accent)]/25 px-3.5 py-1.5 text-[0.75rem] font-semibold text-[var(--accent)] transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--accent)]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       >
                         {locale === "ar" ? opt.ar : opt.en}
@@ -162,7 +189,8 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                   </div>
                 </div>
 
-                <div className="relative min-h-[200px] lg:col-span-6 xl:col-span-7">
+                <div className="relative flex min-h-[200px] flex-col gap-6 lg:col-span-6 xl:col-span-7">
+                  <AskEstioAiSection locale={locale} ambient={ambient} />
                   <PremiumMediaFrame
                     aspectClassName="aspect-[16/10] w-full sm:aspect-[2/1] lg:aspect-[21/10]"
                     overlay={
@@ -208,6 +236,15 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                         <PremiumMediaEmpty label="Studio visual" />
                       )
                     }
+                  />
+                </div>
+
+                {/* Credits + checkout — full width, centered, visible in first screen with hero */}
+                <div className="mt-10 min-w-0 lg:col-span-12">
+                  <StudioCreditsPanel
+                    locale={locale}
+                    ambient={ambient}
+                    embedded
                   />
                 </div>
               </div>
@@ -261,16 +298,17 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
               <div className="mt-10 grid gap-6 sm:grid-cols-3 lg:gap-8">
                 {c.offerCards.map((card, i) => {
                   const anchorId = ["offer-images", "offer-video", "offer-packs"][i];
+                  const cardBullets = aiStudioOfferCardBullets(card);
                   const trustLine = locale === "ar"
                     ? [
-                        "\u0643\u0644 \u0645\u062e\u0631\u062c \u064a\u064f\u0631\u0627\u062c\u064e\u0639 \u0642\u0628\u0644 \u0627\u0644\u062a\u0633\u0644\u064a\u0645",
-                        "\u062c\u0627\u0647\u0632 \u062a\u062c\u0627\u0631\u064a\u0627\u064b \u2014 \u0644\u064a\u0633 \u062a\u0648\u0644\u064a\u062f\u0627\u064b \u062e\u0627\u0645\u0627\u064b",
-                        "\u0645\u0628\u0646\u064a \u0644\u0644\u062d\u0645\u0644\u0627\u062a \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629\u060c \u0644\u064a\u0633 \u0644\u0644\u062a\u062c\u0627\u0631\u0628",
+                        "\u0645\u0631\u0627\u062c\u0639\u0629 \u0642\u0628\u0644 \u0627\u0644\u062a\u0633\u0644\u064a\u0645",
+                        "\u062c\u0627\u0647\u0632 \u0644\u0644\u0646\u0634\u0631 \u2014 \u0644\u064a\u0633 \u0645\u0644\u0641\u0627\u062a \u062e\u0627\u0645",
+                        "\u0644\u0644\u062d\u0645\u0644\u0627\u062a \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629\u060c \u0644\u064a\u0633 \u062a\u062c\u0627\u0631\u0628",
                       ][i]
                     : [
-                        "Every output is reviewed before delivery",
-                        "Commercial-ready \u2014 no raw AI outputs",
-                        "Built for real campaigns, not experiments",
+                        "Reviewed before delivery",
+                        "Production-ready files \u2014 not raw dumps",
+                        "Built for real campaigns",
                       ][i];
 
                   return (
@@ -314,29 +352,36 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                             {trustLine}
                           </p>
 
-                          <div className="mt-5 border-t border-[var(--border)] pt-5">
-                            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                              {locale === "ar" ? "\u0645\u0627 \u062a\u062d\u0635\u0644 \u0639\u0644\u064a\u0647" : "What you get"}
-                            </p>
-                            <ul className="mt-3 space-y-1.5">
-                              {card.whatYouGet.map((item, j) => (
-                                <li
-                                  key={`wyg-${i}-${j}`}
-                                  className="flex gap-2 text-sm text-[var(--text-body)]"
-                                >
-                                  <span
-                                    className="mt-2 h-1 w-1 shrink-0 bg-[var(--accent)]"
-                                    aria-hidden
-                                  />
-                                  {item}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                          {cardBullets.length > 0 ? (
+                            <div className="mt-5 border-t border-[var(--border)] pt-5">
+                              <p className="text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                                {locale === "ar" ? "\u0641\u064a \u0627\u0644\u0623\u0633\u0627\u0633" : "The basics"}
+                              </p>
+                              <ul className="mt-3 space-y-1.5">
+                                {cardBullets.map((item, j) => (
+                                  <li
+                                    key={`wyg-${i}-${j}`}
+                                    className="flex gap-2 text-sm text-[var(--text-body)]"
+                                  >
+                                    <span
+                                      className="mt-2 h-1 w-1 shrink-0 bg-[var(--accent)]"
+                                      aria-hidden
+                                    />
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : null}
 
-                          <p className="mt-4 text-xs text-[var(--muted)]">
-                            {locale === "ar" ? "\u0627\u0644\u0646\u0637\u0627\u0642 \u0627\u0644\u0646\u0645\u0648\u0630\u062c\u064a: " : "Typical scope: "}{card.typicalOutputs}
-                          </p>
+                          {card.typicalOutputs.trim() ? (
+                            <p className="mt-4 text-xs text-[var(--muted)]">
+                              {locale === "ar"
+                                ? "\u0627\u0644\u0646\u0637\u0627\u0642 \u0627\u0644\u0646\u0645\u0648\u0630\u062c\u064a: "
+                                : "Typical scope: "}
+                              {card.typicalOutputs}
+                            </p>
+                          ) : null}
 
                           <span className="mt-auto inline-flex items-center gap-2 pt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
                             {card.cta}
@@ -364,8 +409,8 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
               </p>
               <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)]">
                 {locale === "ar"
-                  ? "هذه ليست نماذج تجريبية — كل مخرج تراه أدناه أُنتج لعميل حقيقي وسُلّم جاهزاً للاستخدام."
-                  : "These aren\u2019t demos \u2014 every output below was produced for a real client and delivered production-ready."}
+                  ? "\u0623\u0646\u0645\u0627\u0637 \u0644\u0644\u0623\u0633\u0644\u0648\u0628 \u0648\u0627\u0644\u062a\u0646\u0633\u064a\u0642 \u2014 \u0645\u062e\u0631\u062c\u0627\u062a\u0643 \u0627\u0644\u0641\u0639\u0644\u064a\u0629 \u062a\u0637\u0627\u0628\u0642 \u0627\u0644\u0646\u0637\u0627\u0642 \u0627\u0644\u0645\u062a\u0641\u0642 \u0639\u0644\u064a\u0647."
+                  : "Illustrative of style and layout \u2014 your files match the scope we agree."}
               </p>
               <div className="mt-8 grid gap-5 sm:grid-cols-3 lg:gap-6">
                 {c.studioOutputs.samples.map((s, i) => {
@@ -399,12 +444,12 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
               </div>
               <p className="mt-8 text-center text-sm text-[var(--muted)]">
                 <a
-                  href={withLocale("/contact?interest=AI_STUDIO", locale)}
+                  href={withLocale("/contact?interest=AI_STUDIO&streamlined=1", locale)}
                   className="font-medium text-[var(--accent)] underline decoration-[var(--accent)]/30 underline-offset-4 transition-colors duration-200 hover:decoration-[var(--accent)]"
                 >
                   {locale === "ar"
-                    ? "أخبرونا ماذا تحتاجون — سنحدد النطاق معاً"
-                    : "Tell us what you need \u2014 we\u2019ll scope it together"}
+                    ? "\u0627\u0637\u0644\u0628\u0648\u0627 \u0639\u0631\u0636 \u0633\u0631\u064a\u0639 \u2014 \u0646\u0631\u062f \u0628\u062e\u0637\u0648\u0629 \u062a\u0627\u0644\u064a\u0629"
+                    : "Get a quick quote \u2014 we\u2019ll reply with next steps"}
                 </a>
               </p>
             </Container>
@@ -605,6 +650,7 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
 
           {/* ── Conversion micro-interactions ── */}
           <AiStudioConversionLayer locale={locale} />
+          <AiStudioFunnelV3Panel locale={locale} />
         </div>
       </div>
     </MarketingShell>

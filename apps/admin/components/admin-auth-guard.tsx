@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useLayoutEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getAdminToken } from "@/lib/admin-token";
 
@@ -9,7 +9,8 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
+  /** useLayoutEffect avoids an extra paint of “Verifying session…” on each admin navigation. */
+  useLayoutEffect(() => {
     const token = getAdminToken();
     if (!token) {
       const next = pathname && pathname !== "/admin" ? `?next=${encodeURIComponent(pathname)}` : "";

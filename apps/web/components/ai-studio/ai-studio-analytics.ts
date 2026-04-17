@@ -35,7 +35,20 @@ export type StudioEvent =
   | { event: "studio_exit_input_submitted"; goal: string; intent: Intent | null }
   | { event: "studio_conflict_detected"; from: Intent; to: Intent; source: IntentSource }
   | { event: "studio_page_view" }
-  | { event: "studio_adaptive_default_applied"; intent: Intent };
+  | { event: "studio_adaptive_default_applied"; intent: Intent }
+  | { event: "ask_box_viewed" }
+  | { event: "ask_box_submitted"; intent: Intent | null }
+  | {
+      event: "ask_box_response_rendered";
+      intent: Intent | "unknown";
+    }
+  | { event: "ask_box_cta_clicked"; intent: Intent }
+  | {
+      event: "ask_box_escalated_to_contact";
+      intent: Intent | "unknown";
+    }
+  | { event: "ask_box_rate_limited" }
+  | { event: "ask_box_out_of_scope" };
 
 export function trackEvent(payload: StudioEvent): void {
   if (typeof window === "undefined") return;
@@ -329,6 +342,13 @@ export async function postCrmLeadFromAiStudio(payload: {
   device?: string;
   locale?: string;
   ctaPosition?: CtaPosition | null;
+  askEstioAi?: {
+    userMessage: string;
+    detectedIntent: "images" | "video" | "brand" | "unknown";
+    recommendedOffer: string | null;
+    responseSummary: string;
+    sessionId: string;
+  };
 }): Promise<void> {
   if (typeof window === "undefined" || !payload.sessionId) return;
   try {
@@ -349,6 +369,7 @@ export async function postCrmLeadFromAiStudio(payload: {
             ? document.documentElement.lang || undefined
             : undefined),
         ctaPosition: payload.ctaPosition ?? undefined,
+        askEstioAi: payload.askEstioAi,
       }),
       keepalive: true,
     });

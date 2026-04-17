@@ -21,6 +21,7 @@ import type { ServiceDetailContent } from "@/lib/content/types";
 import type { AppLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
+import { EnterpriseSectionHighlight } from "@/components/section-highlight/section-highlight-frame";
 
 function firstNonEmpty(...candidates: (string | undefined)[]): string {
   for (const c of candidates) {
@@ -28,12 +29,6 @@ function firstNonEmpty(...candidates: (string | undefined)[]): string {
     if (t) return t;
   }
   return "";
-}
-
-function sectionClassName(id: string, base: string, highlightSection?: string) {
-  return highlightSection === id
-    ? `${base} ring-2 ring-[var(--accent)]/50 ring-inset`
-    : base;
 }
 
 type ProgramRow = {
@@ -55,7 +50,8 @@ type Props = {
   mediaAssets: MediaAssetMap;
   programRows: ProgramRow[];
   programsSectionTitle: string;
-  highlightSection?: string;
+  /** CMS preview — merged with `?highlight=` on the client. */
+  highlightFallback?: string | null;
 };
 
 export function EnterpriseLandingPage({
@@ -68,7 +64,7 @@ export function EnterpriseLandingPage({
   mediaAssets,
   programRows,
   programsSectionTitle,
-  highlightSection,
+  highlightFallback,
 }: Props) {
   const ui = getMessages(locale);
   const t = ui.serviceDetail;
@@ -114,12 +110,10 @@ export function EnterpriseLandingPage({
 
   return (
     <MarketingShell>
-      <section
-        className={sectionClassName(
-          "intro",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
+      <EnterpriseSectionHighlight
+        sectionKey="intro"
+        baseClassName="border-b border-[var(--border)] bg-[var(--surface)]"
+        fallbackHighlight={highlightFallback}
         data-estio-section="intro"
       >
         <Container as="div" className="py-14 sm:py-20 lg:py-24">
@@ -187,15 +181,13 @@ export function EnterpriseLandingPage({
             <SalesMicroLine text={el.salesMicro.afterHero} />
           ) : null}
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-practice"
+        baseClassName="border-b border-[var(--border)] bg-[#050505]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-practice"
-        className={sectionClassName(
-          "enterprise-practice",
-          "border-b border-[var(--border)] bg-[#050505]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-practice"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-24">
@@ -284,15 +276,13 @@ export function EnterpriseLandingPage({
 
           <SalesMicroLine text={el.salesMicro.afterPractice} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-proof"
+        baseClassName="border-b border-[var(--border)] bg-[#050505]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-proof"
-        className={sectionClassName(
-          "enterprise-proof",
-          "border-b border-[var(--border)] bg-[#050505]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-proof"
       >
         <Container as="div" className="py-14 sm:py-16">
@@ -307,17 +297,15 @@ export function EnterpriseLandingPage({
           />
           <SalesMicroLine text={el.salesMicro.afterProof} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
       {(ev.systemDiagram.imageUrl?.trim() ||
         ev.systemDiagram.imageMediaAssetId?.trim()) && (
-        <section
+        <EnterpriseSectionHighlight
+          sectionKey="enterprise-system-diagram"
+          baseClassName="border-b border-[var(--border)] bg-[var(--surface)]"
+          fallbackHighlight={highlightFallback}
           id="enterprise-system-diagram"
-          className={sectionClassName(
-            "enterprise-system-diagram",
-            "border-b border-[var(--border)] bg-[var(--surface)]",
-            highlightSection,
-          )}
           data-estio-section="enterprise-system-diagram"
         >
           <Container as="div" className="py-14 sm:py-16 lg:py-20">
@@ -337,16 +325,14 @@ export function EnterpriseLandingPage({
               />
             </div>
           </Container>
-        </section>
+        </EnterpriseSectionHighlight>
       )}
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-system-diagrams"
+        baseClassName="border-b border-[var(--border)] bg-[#050505]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-system-diagrams"
-        className={sectionClassName(
-          "enterprise-system-diagrams",
-          "border-b border-[var(--border)] bg-[#050505]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-system-diagrams"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-24">
@@ -467,15 +453,13 @@ export function EnterpriseLandingPage({
 
           <SalesMicroLine text={el.salesMicro.afterDiagrams} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-case-studies"
+        baseClassName="border-b border-[var(--border)] bg-[var(--surface)]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-case-studies"
-        className={sectionClassName(
-          "enterprise-case-studies",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-case-studies"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-24">
@@ -487,15 +471,13 @@ export function EnterpriseLandingPage({
           />
           <SalesMicroLine text={el.salesMicro.afterCases} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-roi"
+        baseClassName="border-b border-[var(--border)] bg-[var(--surface)]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-roi"
-        className={sectionClassName(
-          "enterprise-roi",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-roi"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-24">
@@ -507,35 +489,31 @@ export function EnterpriseLandingPage({
           />
           <SalesMicroLine text={el.salesMicro.afterRoi} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
       {(landing.fit.title ||
         landing.fit.lead ||
         landing.fit.fit.length > 0 ||
         landing.fit.nonFit.length > 0) && (
-        <section
+        <EnterpriseSectionHighlight
+          sectionKey="enterprise-fit"
+          baseClassName="border-b border-[var(--border)] bg-[#050505]"
+          fallbackHighlight={highlightFallback}
           id="enterprise-fit"
-          className={sectionClassName(
-            "enterprise-fit",
-            "border-b border-[var(--border)] bg-[#050505]",
-            highlightSection,
-          )}
           data-estio-section="enterprise-fit"
         >
           <Container as="div" className="py-16 sm:py-20 lg:py-24">
             <EnterpriseFitMatrix fit={landing.fit} panelClass={panelClass} />
             <SalesMicroLine text={el.salesMicro.afterFit} />
           </Container>
-        </section>
+        </EnterpriseSectionHighlight>
       )}
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-programs"
+        baseClassName="border-b border-[var(--border)] bg-[var(--surface)]"
+        fallbackHighlight={highlightFallback}
         id="enterprise-programs"
-        className={sectionClassName(
-          "enterprise-programs",
-          "border-b border-[var(--border)] bg-[var(--surface)]",
-          highlightSection,
-        )}
         data-estio-section="enterprise-programs"
       >
         <Container as="div" className="py-16 sm:py-20">
@@ -586,7 +564,7 @@ export function EnterpriseLandingPage({
           </ul>
           <SalesMicroLine text={el.salesMicro.afterPrograms} />
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
 
       {(content.capabilities.length > 0 || content.idealClients.length > 0) && (
         <section className="border-b border-[var(--border)] bg-[var(--surface)] py-14 sm:py-16 lg:py-20">
@@ -656,13 +634,11 @@ export function EnterpriseLandingPage({
       ) : null}
 
       {content.process && content.process.length > 0 && (
-        <section
+        <EnterpriseSectionHighlight
+          sectionKey="enterprise-process"
+          baseClassName="border-b border-[var(--border)] bg-[var(--surface)] py-14 sm:py-16 lg:py-20"
+          fallbackHighlight={highlightFallback}
           id="enterprise-process"
-          className={sectionClassName(
-            "enterprise-process",
-            "border-b border-[var(--border)] bg-[var(--surface)] py-14 sm:py-16 lg:py-20",
-            highlightSection,
-          )}
           data-estio-section="enterprise-process"
         >
           <Container as="div">
@@ -723,7 +699,7 @@ export function EnterpriseLandingPage({
             </ol>
             <SalesMicroLine text={el.salesMicro.processObjection} />
           </Container>
-        </section>
+        </EnterpriseSectionHighlight>
       )}
 
       {content.additionalSections && content.additionalSections.length > 0 ? (
@@ -773,13 +749,11 @@ export function EnterpriseLandingPage({
         </section>
       ) : null}
 
-      <section
+      <EnterpriseSectionHighlight
+        sectionKey="enterprise-deal-entry"
+        baseClassName={`bg-[#050505] py-16 sm:py-20 lg:py-24${hasDecisionStrip ? " pb-24 sm:pb-32" : ""}`}
+        fallbackHighlight={highlightFallback}
         id="enterprise-deal-entry"
-        className={sectionClassName(
-          "enterprise-deal-entry",
-          `bg-[#050505] py-16 sm:py-20 lg:py-24${hasDecisionStrip ? " pb-24 sm:pb-32" : ""}`,
-          highlightSection,
-        )}
         data-estio-section="enterprise-deal-entry"
       >
         <Container as="div">
@@ -812,7 +786,7 @@ export function EnterpriseLandingPage({
             </p>
           </div>
         </Container>
-      </section>
+      </EnterpriseSectionHighlight>
       {hasDecisionStrip ? <EnterpriseDecisionBar summary={landing.decisionSummary} /> : null}
     </MarketingShell>
   );

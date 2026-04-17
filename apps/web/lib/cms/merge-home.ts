@@ -3,6 +3,7 @@ import {
   finalCtaAr,
   guidedIntentsAr,
   homeHeroAr,
+  homeHeroIntentLinksAr,
   industriesAr,
   industriesSectionIntroAr,
   pillarServicesAr,
@@ -15,6 +16,7 @@ import {
   finalCta,
   guidedIntents,
   homeHero,
+  homeHeroIntentLinks,
   industries,
   industriesSectionIntro,
   pillarServices,
@@ -33,6 +35,8 @@ export type MergedHero = {
   subheadline: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string };
+  /** Short intent links under hero CTAs (e.g. Images / Short video / Brand system). */
+  intentLinks: { label: string; href: string }[];
   videoUrl?: string;
   videoMediaAssetId?: string;
   /** Explicit CMS URL only; omit when using imageMediaAssetId + mediaAssets map. */
@@ -131,6 +135,11 @@ function itemLine(it: HomeListItem | undefined): string {
   return firstNonEmpty(it.title, it.label, (it as { text?: string }).text);
 }
 
+/** Correct known CMS copy mistakes on industry cards. */
+function normalizeIndustryLabel(label: string): string {
+  return label.replace(/\bReal state\b/gi, "Real estate");
+}
+
 /**
  * Merge homepage sections. Pass English `cmsEn` for `/ar` **media only** (hero video, images,
  * guided tiles). Arabic **copy** falls back to `home-ar` / messages — never to English CMS text.
@@ -178,6 +187,35 @@ export function mergeHomeSections(
     cms.hero?.videoMediaAssetId,
     locale === "ar" ? en?.hero?.videoMediaAssetId : undefined,
   );
+
+  const defaultIntentLinks =
+    locale === "ar" ? homeHeroIntentLinksAr : homeHeroIntentLinks;
+  const cmsIntentRaw = cms.hero?.intentLinks;
+  const intentLinks: { label: string; href: string }[] =
+    cmsIntentRaw && cmsIntentRaw.length > 0
+      ? cmsIntentRaw.map((raw, i) => {
+          const def = defaultIntentLinks[i];
+          return {
+            label: firstNonEmpty(
+              raw.label,
+              skipEnCopy ? undefined : en?.hero?.intentLinks?.[i]?.label,
+              def?.label ?? "",
+            ),
+            href: withLocale(
+              firstNonEmpty(
+                raw.href,
+                skipEnCopy ? undefined : en?.hero?.intentLinks?.[i]?.href,
+                def?.href ?? "/ai-studio",
+              ),
+              locale,
+            ),
+          };
+        })
+      : defaultIntentLinks.map((d) => ({
+          label: d.label,
+          href: withLocale(d.href, locale),
+        }));
+
   const hero: MergedHero = {
     eyebrow: firstNonEmpty(
       cms.hero?.eyebrow,
@@ -230,6 +268,7 @@ export function mergeHomeSections(
         locale,
       ),
     },
+    intentLinks,
     videoUrl: heroVideo || undefined,
     videoMediaAssetId: heroVideoMediaId || undefined,
     imageUrl: heroImage || undefined,
@@ -697,9 +736,8 @@ export function mergeHomeSections(
   const inds: MergedIndustry[] =
     indBlock?.items && indBlock.items.length > 0
       ? indBlock.items.map((row, i) => ({
-          label: firstNonEmpty(
-            itemLine(row),
-            IND[i]?.label ?? "",
+          label: normalizeIndustryLabel(
+            firstNonEmpty(itemLine(row), IND[i]?.label ?? ""),
           ),
           description: firstNonEmpty(
             row.description,
@@ -720,10 +758,12 @@ export function mergeHomeSections(
         }))
       : cms.industries && cms.industries.length > 0
         ? cms.industries.map((row, i) => ({
-            label: firstNonEmpty(
-              row.name,
-              skipEnCopy ? undefined : en?.industries?.[i]?.name,
-              IND[i]?.label ?? "",
+            label: normalizeIndustryLabel(
+              firstNonEmpty(
+                row.name,
+                skipEnCopy ? undefined : en?.industries?.[i]?.name,
+                IND[i]?.label ?? "",
+              ),
             ),
             description: firstNonEmpty(
               row.detail,

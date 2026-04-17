@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "@/lib/admin-fetch";
+import { formatLeadServiceDisplay } from "@/lib/format-lead-service";
 
 type LeadDetail = {
   id: string;
@@ -17,6 +18,8 @@ type LeadDetail = {
   city: string | null;
   serviceType: string;
   subServiceType: string | null;
+  offerType: string | null;
+  studioIntent: string | null;
   status: string;
   stage: string;
   lostReason: string;
@@ -205,8 +208,15 @@ export function LeadDetailView({ leadId }: { leadId: string }) {
           {lead.fullName}
         </h1>
         <p className="mt-2 text-sm text-[var(--admin-muted)]">
-          {lead.serviceType}
-          {lead.subServiceType ? ` · ${lead.subServiceType}` : ""} · score{" "}
+          <span className="font-medium text-[var(--admin-text)]">
+            {formatLeadServiceDisplay(lead)}
+          </span>
+          {lead.offerType?.trim() ? (
+            <span className="ms-1 text-xs font-normal text-[var(--admin-muted)]">
+              ({lead.serviceType})
+            </span>
+          ) : null}
+          {" · "}score{" "}
           <span className="font-mono tabular-nums">{lead.score}</span> · priority{" "}
           {lead.priority}
         </p>

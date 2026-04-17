@@ -20,17 +20,19 @@ export function SiteFooter() {
   const s = bundle.settings as Record<string, string | null | undefined> | null;
 
   const legalName =
-    locale === "ar" && s?.businessNameAr
-      ? s.businessNameAr
-      : s?.businessName ?? brand.legalName;
+    (locale === "ar" && s?.businessNameAr?.trim()) ||
+    s?.businessName?.trim() ||
+    brand.legalName;
 
   const displayBrand =
-    locale === "ar" && s?.brandNameAr ? s.brandNameAr : s?.brandName ?? brand.name;
+    (locale === "ar" && s?.brandNameAr?.trim()) ||
+    s?.brandName?.trim() ||
+    brand.name;
 
   const taglineFooter =
     locale === "ar"
-      ? (s?.footerTextAr ?? brand.taglineAr)
-      : (s?.footerText ?? brand.tagline);
+      ? (s?.footerTextAr?.trim() || brand.taglineAr)
+      : (s?.footerText?.trim() || brand.tagline);
 
   const cityLine =
     s?.address || s?.city || s?.country

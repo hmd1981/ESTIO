@@ -1,10 +1,13 @@
-# Production stack: Postgres + API + web + admin. Host ports: web 3000, admin 3001, API 4000.
-# Matches deploy/nginx/estio.conf (nginx → localhost:3000 / :3001 / :4000).
+# Production stack (single node): Postgres + Redis + API + web + admin on one host.
+# Host ports: web 3000, admin 3001, API 4000 — matches deploy/nginx/estio.conf.
+#
+# Split production (VM 900 worker / 901 app / 902 DB): use docker-compose.prod.split.yml
+# on the app host and docker-compose.prod.postgres.yml on the DB host — see deploy/SPLIT_ARCHITECTURE.md.
 #
 #   export POSTGRES_PASSWORD='strong-secret'
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
-# Optional: copy deploy/env.prod.example to .env.prod and use --env-file .env.prod
+# Optional: copy deploy/env.prod.example to .env (same folder as this file).
 
 services:
   postgres:
@@ -22,11 +25,26 @@ services:
       timeout: 5s
       retries: 12
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+
   api:
     build:
       context: .
       dockerfile: deploy/docker/Dockerfile.api
     restart: unless-stopped
+    # So Nest can reach an SSH reverse tunnel on the HOST (e.g. :9000) via MEDIA_WORKER_URL=http://host.docker.internal:9000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - path: .env
+        required: false
     ports:
       - "4000:4000"
     volumes:
@@ -46,8 +64,42 @@ services:
       # On-demand revalidation
       WEB_REVALIDATE_URL: ${WEB_REVALIDATE_URL:-http://web:3000}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # Ask Estio AI — DEEPSEEK_API_KEY comes from env_file (.env); omit here so an empty
+      # compose substitution does not override a real key in .env.
+      ASK_ESTIO_AI_ENABLED: ${ASK_ESTIO_AI_ENABLED:-true}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      ASK_ESTIO_AI_IP_SALT: ${ASK_ESTIO_AI_IP_SALT:-}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      WORKSTATION_URL: ${WORKSTATION_URL:-}
+      WORKSTATION_SECRET: ${WORKSTATION_SECRET:-}
+      MEDIA_WORKER_URL: ${MEDIA_WORKER_URL:-}
+      MEDIA_WORKER_TIMEOUT_MS: ${MEDIA_WORKER_TIMEOUT_MS:-660000}
+      MEDIA_WORKER_HEALTH_TIMEOUT_MS: ${MEDIA_WORKER_HEALTH_TIMEOUT_MS:-10000}
+      # Set to true briefly to expose GET /media/worker-debug (then remove or set false)
+      MEDIA_WORKER_DEBUG: ${MEDIA_WORKER_DEBUG:-false}
+      MEDIA_WORKER_MODE: ${MEDIA_WORKER_MODE:-sync}
+      MEDIA_WORKER_ASYNC_SUBMIT_PATH: ${MEDIA_WORKER_ASYNC_SUBMIT_PATH:-}
+      MEDIA_WORKER_ASYNC_SUBMIT_PATH_TEXT_TO_IMAGE: ${MEDIA_WORKER_ASYNC_SUBMIT_PATH_TEXT_TO_IMAGE:-}
+      MEDIA_WORKER_ASYNC_SUBMIT_PATH_IMAGE_TO_VIDEO: ${MEDIA_WORKER_ASYNC_SUBMIT_PATH_IMAGE_TO_VIDEO:-}
+      MEDIA_WORKER_ASYNC_SUBMIT_PATH_TEXT_TO_VIDEO: ${MEDIA_WORKER_ASYNC_SUBMIT_PATH_TEXT_TO_VIDEO:-}
+      MEDIA_WORKER_SYNC_PATH_IMAGE_TO_VIDEO: ${MEDIA_WORKER_SYNC_PATH_IMAGE_TO_VIDEO:-}
+      MEDIA_WORKER_SYNC_PATH_TEXT_TO_VIDEO: ${MEDIA_WORKER_SYNC_PATH_TEXT_TO_VIDEO:-}
+      MEDIA_WORKER_ASYNC_JOB_BASE_PATH: ${MEDIA_WORKER_ASYNC_JOB_BASE_PATH:-}
+      MEDIA_WORKER_ASYNC_SUBMIT_TIMEOUT_MS: ${MEDIA_WORKER_ASYNC_SUBMIT_TIMEOUT_MS:-}
+      MEDIA_WORKER_ASYNC_POLL_REQUEST_TIMEOUT_MS: ${MEDIA_WORKER_ASYNC_POLL_REQUEST_TIMEOUT_MS:-}
+      MEDIA_WORKER_ASYNC_POLL_INTERVAL_MS: ${MEDIA_WORKER_ASYNC_POLL_INTERVAL_MS:-}
+      MEDIA_WORKER_ASYNC_JOB_ID_KEYS: ${MEDIA_WORKER_ASYNC_JOB_ID_KEYS:-}
+      MEDIA_WORKER_ASYNC_STATUS_JSON_FIELD: ${MEDIA_WORKER_ASYNC_STATUS_JSON_FIELD:-}
+      # ComfyUI-style results: playback URL + optional GET /media/comfy-view proxy to worker/Comfy
+      MEDIA_JOB_VIEW_BASE_URL: ${MEDIA_JOB_VIEW_BASE_URL:-}
+      MEDIA_JOB_VIEW_PATH: ${MEDIA_JOB_VIEW_PATH:-}
+      MEDIA_JOB_VIEW_PROXY_UPSTREAM: ${MEDIA_JOB_VIEW_PROXY_UPSTREAM:-}
+      MEDIA_JOB_VIEW_UPSTREAM_PATH: ${MEDIA_JOB_VIEW_UPSTREAM_PATH:-/view}
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   web:
@@ -56,6 +108,9 @@ services:
       dockerfile: deploy/docker/Dockerfile.web
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://127.0.0.1:4000}
+        NEXT_PUBLIC_SHOW_ASK_ESTIO_AI: ${NEXT_PUBLIC_SHOW_ASK_ESTIO_AI:-true}
+        NEXT_PUBLIC_MEDIA_JOB_VIEW_BASE_URL: ${NEXT_PUBLIC_MEDIA_JOB_VIEW_BASE_URL:-}
+        NEXT_PUBLIC_MEDIA_JOB_VIEW_PATH: ${NEXT_PUBLIC_MEDIA_JOB_VIEW_PATH:-/view}
     restart: unless-stopped
     ports:
       - "3000:3000"

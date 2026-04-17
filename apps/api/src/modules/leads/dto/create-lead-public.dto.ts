@@ -1,13 +1,16 @@
 import { CrmLeadSource, CrmServiceType, SiteLocale } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { AskEstioAiHandoffDto } from './ask-estio-ai-handoff.dto';
 
 /** Public POST /leads — enums only; supports legacy `name` + `serviceInterest`. */
 export class CreateLeadPublicDto {
@@ -68,6 +71,11 @@ export class CreateLeadPublicDto {
   @MaxLength(128)
   subServiceType?: string;
 
+  /** When serviceInterest is AI_STUDIO: images | video | brand (offer label stored on lead). */
+  @IsOptional()
+  @IsIn(['images', 'video', 'brand'])
+  studioIntent?: 'images' | 'video' | 'brand';
+
   @IsOptional()
   @IsString()
   @MaxLength(10000)
@@ -109,4 +117,9 @@ export class CreateLeadPublicDto {
   @IsString()
   @MaxLength(256)
   campaignName?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AskEstioAiHandoffDto)
+  askEstioAi?: AskEstioAiHandoffDto;
 }

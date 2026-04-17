@@ -13,6 +13,7 @@ import { MediaPort } from './contracts/media.port';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto';
 import type { ImportMediaUrlDto } from './dto/import-media-url.dto';
 import { UpdateMediaAssetDto } from './dto/update-media-asset.dto';
+import { MediaWorkerService } from './media-worker.service';
 
 const IMPORT_MAX_BYTES = 15 * 1024 * 1024;
 
@@ -66,10 +67,31 @@ function extFromMime(mime: string): string {
   return map[m] ?? '';
 }
 
-/** Metadata for uploaded binaries; file bytes live in object storage (phase 2). */
+/**
+ * Media library (Prisma) plus integration with the GPU worker
+ * ({@link MediaWorkerService}: POST /generate-image, GET /health), typically via SSH reverse tunnel on the Estio host.
+ */
 @Injectable()
 export class MediaService implements MediaPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaWorker: MediaWorkerService,
+  ) {}
+
+  /** Forwards the JSON body unchanged after prompt validation (see controller). */
+  forwardGenerateImageToWorker(body: Record<string, unknown>): Promise<unknown> {
+    return this.mediaWorker.forwardGenerateImage(body);
+  }
+
+  /** Proxies GET {MEDIA_WORKER_URL}/health for ops / monitoring. */
+  probeMediaWorkerHealth(): Promise<unknown> {
+    return this.mediaWorker.probeWorkerHealth();
+  }
+
+  /** Optional debug JSON when MEDIA_WORKER_DEBUG=true. */
+  getMediaWorkerDebugSnapshot(): Promise<Record<string, unknown>> {
+    return this.mediaWorker.getDebugSnapshot();
+  }
 
   create(dto: CreateMediaAssetDto) {
     return this.prisma.mediaAsset.create({ data: dto });
@@ -142,6 +164,7 @@ export class MediaService implements MediaPort {
       include: {
         placements: {
           orderBy: [{ pageSlug: 'asc' }, { locale: 'asc' }],
+          take: 24,
         },
       },
     });

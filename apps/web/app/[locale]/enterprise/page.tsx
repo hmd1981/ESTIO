@@ -18,7 +18,6 @@ const slug = "enterprise";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -72,15 +71,11 @@ const caseStudyVisualsByLocale = {
   ],
 } as const;
 
-export default async function EnterpriseOverviewPage({ params, searchParams }: Props) {
+export default async function EnterpriseOverviewPage({ params }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const fallback = getEnterprisePage(slug, raw);
   if (!fallback) notFound();
-  const sp = (await searchParams) ?? {};
-  const highlightFromQuery = Array.isArray(sp.highlight)
-    ? sp.highlight[0]
-    : sp.highlight;
   const app = getMessages(raw).enterpriseAppendix;
 
   const [content, bundle, enPublished] = await Promise.all([
@@ -150,11 +145,7 @@ export default async function EnterpriseOverviewPage({ params, searchParams }: P
       mediaAssets={mediaAssets}
       programRows={programRows}
       programsSectionTitle={app.title}
-      highlightSection={
-        typeof highlightFromQuery === "string" && highlightFromQuery.trim()
-          ? highlightFromQuery.trim()
-          : undefined
-      }
+      highlightFallback={cms._meta?.highlightSection?.trim() ?? null}
     />
   );
 }

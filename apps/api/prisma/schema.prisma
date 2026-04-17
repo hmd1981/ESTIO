@@ -596,6 +596,36 @@ model StudioAnalyticsRollupDay {
   @@index([day])
 }
 
+/// AI Studio ask/response audit trail for the guided assistant funnel.
+model AiStudioAskEvent {
+  id                 String   @id @default(cuid())
+  sessionId          String   @db.VarChar(80)
+  page               String   @db.VarChar(64)
+  locale             String   @db.VarChar(4)
+  userMessage        String   @db.Text
+  normalizedIntent   String   @db.VarChar(16)
+  recommendedOffer   String?  @db.VarChar(256)
+  recommendedCtaLabel String? @db.VarChar(256)
+  secondaryCtaLabel  String?  @db.VarChar(256)
+  responseText       String   @db.Text
+  source             String?  @db.VarChar(64)
+  url                String?  @db.Text
+  ipHash             String?  @db.VarChar(64)
+  tokensUsed         Int?
+  outOfScope         Boolean  @default(false)
+  rateLimited        Boolean  @default(false)
+  disabledFallback   Boolean  @default(false)
+  shouldEscalate     Boolean  @default(false)
+  primaryCtaClicked  Boolean  @default(false)
+  secondaryCtaClicked Boolean @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@index([createdAt])
+  @@index([normalizedIntent, createdAt])
+  @@map("AiStudioAskEvent")
+}
+
 /// Where a media asset appears on the marketing site (synced from page sections).
 model MediaPlacement {
   id           String     @id @default(cuid())
@@ -610,4 +640,39 @@ model MediaPlacement {
   @@unique([mediaAssetId, pageSlug, locale, sectionKey, fieldKey])
   @@index([mediaAssetId])
   @@index([pageSlug, locale])
+}
+
+// --- Async media generation (BullMQ + Prisma) ---
+
+enum MediaGenerationJobStatus {
+  queued
+  running
+  completed
+  failed
+}
+
+/// Durable media worker job; full `inputPayload` is for the processor only — not returned on status GET.
+model MediaGenerationJob {
+  id                 String                   @id @default(uuid())
+  type               String                   @default("generate_image")
+  status             MediaGenerationJobStatus @default(queued)
+  /// Worker hostname from MEDIA_WORKER_URL (e.g. host.docker.internal) for future multi-worker routing.
+  workerTargetHost   String?
+  /// Base URL of the worker that accepted this job (submit + async poll/result). Set when using MEDIA_WORKER_URLS or explicit pinning.
+  workerBaseUrl        String?
+  inputPayload       Json
+  inputMeta          Json
+  resultPayload      Json?
+  errorPayload       Json?
+  errorMessage       String?
+  upstreamHttpStatus Int?
+  /// Workstation async job id when MEDIA_WORKER_MODE=async; safe for status API.
+  workerRemoteJobId  String?
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  @@index([status, createdAt])
+  @@map("media_generation_jobs")
 }

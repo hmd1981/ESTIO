@@ -23,6 +23,8 @@ type MediaRow = {
   }[];
 };
 
+import { proxyUploadUrl as proxyUrl } from "@/lib/proxy-upload-url";
+
 function isImage(row: MediaRow) {
   return row.mimeType?.startsWith("image/");
 }
@@ -294,14 +296,14 @@ export function MediaLibrary({ initialRows }: { initialRows: MediaRow[] }) {
                       {row.publicUrl && isImage(row) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={row.publicUrl}
+                          src={proxyUrl(row.publicUrl) ?? row.publicUrl}
                           alt={row.altText ?? row.originalName}
                           className="h-16 w-24 rounded border border-[var(--admin-border)] object-cover"
                           loading="lazy"
                         />
                       ) : row.publicUrl && isVideo(row) ? (
                         <video
-                          src={row.publicUrl}
+                          src={proxyUrl(row.publicUrl) ?? row.publicUrl}
                           className="h-16 w-24 rounded border border-[var(--admin-border)] object-cover"
                           preload="metadata"
                           muted

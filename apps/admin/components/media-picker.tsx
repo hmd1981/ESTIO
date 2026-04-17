@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getPublicApiBase } from "@/lib/api-base";
 
+import { proxyUploadUrl as proxyUrl } from "@/lib/proxy-upload-url";
+
 type MediaRow = {
   id: string;
   originalName: string;
@@ -142,14 +144,14 @@ export function MediaPicker({
                   {r.publicUrl && isImage(r) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={r.publicUrl}
+                      src={proxyUrl(r.publicUrl) ?? r.publicUrl}
                       alt={r.altText ?? r.originalName}
                       className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
                       loading="lazy"
                     />
                   ) : r.publicUrl && isVideo(r) ? (
                     <video
-                      src={r.publicUrl}
+                      src={proxyUrl(r.publicUrl) ?? r.publicUrl}
                       className="h-full w-full object-cover"
                       preload="metadata"
                       muted

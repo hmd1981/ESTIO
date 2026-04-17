@@ -1,10 +1,12 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { DocumentLang } from "@/components/document-lang";
 import { SiteBundleProvider } from "@/components/site-bundle-context";
 import { getSiteBundle } from "@/lib/cms/fetch-site";
-import { isLocale } from "@/lib/i18n/config";
+import { isLocale, locales } from "@/lib/i18n/config";
 
-export const dynamic = "force-dynamic";
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
 export default async function LocaleLayout({
   children,

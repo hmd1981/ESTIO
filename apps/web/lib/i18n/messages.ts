@@ -330,15 +330,16 @@ const en: MarketingMessages = {
     definitionOfDoneLabel: "Definition of done",
   },
   guidedSectionKicker: "Select your engagement path",
-  homeMetadataTitleSuffix: "Scoped Delivery — Platforms, Content Ops, Governed AI & Enterprise Automation | Muscat",
+  homeMetadataTitleSuffix:
+    "AI visual production & digital execution for GCC brands | Muscat",
   about: {
     seoTitle: "About",
     seoDescription:
-      "Scoped delivery firm: digital platforms, content operations, governed AI creative, and enterprise automation — from Muscat for GCC organisations that require written scope and accountable delivery.",
+      "Estio — premium AI-powered visual production and digital execution for GCC brands, from Muscat: governed creative output, websites, content systems, and enterprise automation under written scope.",
     kicker: "About Estio",
-    h1: "Scoped delivery firm — not an agency, not a consultancy",
+    h1: "AI-powered visual production and digital execution — scoped for serious organisations",
     introP1:
-      "Estio is a Muscat-based firm that designs and deploys production websites, operates content programmes, governs AI creative output under brand and legal controls, and builds deterministic automation tied to named systems and data classes. We exist because enterprises in the GCC need a firm that signs scope, documents decisions, and ships work that survives board review, IT audit, and regulatory scrutiny — not pitch decks and innovation experiments.",
+      "Estio is a Muscat-based firm focused on premium AI-powered visual production: campaign imagery, short-form video, and brand asset systems — reviewed and delivered as commercial-ready output. The same team also designs and deploys production websites, runs structured content programmes, governs broader AI creative work, and builds deterministic automation on named systems when your brief requires it. We sign scope, document decisions, and ship work that survives board review and IT scrutiny — not experiments.",
     introP2:
       "We do not pitch trends. We define deliverables, accept accountability, and operate against the criteria you set when the engagement started. If we are not the right fit, we say so before you spend.",
     principlesKicker: "Delivery practices",
@@ -405,29 +406,30 @@ const en: MarketingMessages = {
         body: "We don’t sell retainers filled with unspecified hours, promise AI without data and governance clarity, or take on work we cannot staff to our own standard. If we are not the right fit, we say so early.",
       },
     ],
-    ctaH2: "Define scope. Enter qualification.",
+    ctaH2: "Ready for a concrete next step?",
     ctaBody:
-      "State the outcome, systems, and constraints. We respond with a structured assessment of fit, effort, and phasing — or a direct decline if we are not the right firm.",
+      "Share the outcome, constraints, and systems in play. We respond with a clear view of fit, effort, and phasing — or an honest redirect if we are not the right firm.",
     ctaButton: "Start a scoped engagement",
   },
   contact: {
     seoTitle: "Contact",
     seoDescription:
-      "Qualification intake for scoped delivery — Estio, Muscat. Written reply within one business day: fit, questions, or decline.",
-    kicker: "Qualification intake",
-    h1: "Define scope before we allocate capacity",
-    lead: "This route is a qualification gate — not a contact desk. Name the outcome, systems in scope, data classes, and the internal signatory for access and go-live. Within one business day you get a written fit call, targeted scope questions, or a direct decline. No auto-replies. No open discovery calls without a brief that clears the bar below.",
-    formH2: "Engagement definition",
+      "Tell Estio what you need — AI visuals, video, brand packs, websites, or automation. Muscat-based team; written reply within one business day.",
+    kicker: "Contact",
+    h1: "Say hello",
+    lead:
+      "Tell us what you are working on and how to reach you. We read everything and reply within one business day — usually with a few clear questions or a suggested quick call.",
+    formH2: "How we can help",
     formLead:
-      "Name the outcome, constraints, systems, and who approves internally. Incomplete briefs receive a request for specifics — not a meeting invite.",
+      "Drop a few lines: goals, deadlines, links, half-formed ideas — all fine. We will figure out scope together.",
     asideDirectH3: "Prefer phone or WhatsApp?",
     whatsapp: "WhatsApp",
     officeH3: "Office",
     nextH3: "What happens after you send this",
     nextSteps: [
-      "Within one business day: written response with initial questions or a time proposal for a 20–30 minute call.",
-      "On the call: we confirm objectives, constraints, stakeholders, and whether Estio is the right partner.",
-      "If we proceed: a written proposal with scope, milestones, dependencies on your side, and commercial terms.",
+      "Within one business day you hear from us — questions or a short call, whatever is fastest.",
+      "We check fit honestly. If we are not right for the job, we will say so.",
+      "If we go ahead: a simple written plan — scope, timing, what we need from you, and numbers.",
     ],
     mapIframeTitle: "Map",
     openInGoogleMaps: "Open in Google Maps",
@@ -443,10 +445,10 @@ const en: MarketingMessages = {
       { value: "PLATFORM_BUILD", label: "Platform build & technical programme" },
       { value: "UNSURE", label: "Not sure yet" },
     ],
-    successTitle: "Submission received — qualification in progress",
+    successTitle: "Thanks — we have your message",
     successBody:
-      "Your brief is under review. Expect a written response within one business day: either scoping questions, a fit assessment, or a redirect. For time-sensitive matters, call directly.",
-    submitAnother: "Submit another brief",
+      "We will review what you sent and reply within one business day. If something is urgent, you can also reach us by phone or WhatsApp.",
+    submitAnother: "Send another message",
     name: "Full name",
     namePh: "Your name",
     email: "Business email",
@@ -457,18 +459,18 @@ const en: MarketingMessages = {
     companyPh: "Organisation name",
     interest: "Area of interest",
     interestPlaceholder: "Select a service area",
-    message: "Project brief",
+    message: "Anything else we should know? (optional)",
     messagePh:
-      "Objectives, systems in scope, constraints, success criteria, and who approves...",
+      "Goals, deadlines, channels, brand links, or questions — even bullet points are fine.",
     error:
       "Something went wrong. Please try again or write to",
     sending: "Sending...",
-    submit: "Start qualification",
-    qualificationHeading: "Before you submit",
+    submit: "Send message",
+    qualificationHeading: "Nice to have",
     qualificationIntro:
-      "We prioritise enquiries that include the items below for your selected area — it reduces back-and-forth and tells us if we are the right firm.",
-    qualificationRequiredHeading: "Required context for this area",
-    qualificationOptionalHeading: "Strongly helps",
+      "The more you share, the sharper our reply — but send what you have. We will only ask for what we truly need.",
+    qualificationRequiredHeading: "Helps us quote faster",
+    qualificationOptionalHeading: "Extra detail",
     qualificationByIntent: {
       AUTOMATION: {
         required: [
@@ -496,20 +498,20 @@ const en: MarketingMessages = {
       },
       AI_STUDIO: {
         required: [
-          "Output type: image, video, or brand pack.",
-          "Approximate volume or asset count.",
-          "Brand direction: existing guidelines, reference images, or described direction.",
+          "Image, short video, or brand pack — what are you leaning toward?",
+          "Rough volume (e.g. number of shots or clips).",
+          "Any brand links, mood refs, or a short note on look and feel.",
         ],
         optional: [
-          "Target channels (web, social, print).",
-          "Delivery timeline.",
+          "Where it will run (web, social, print).",
+          "When you need it.",
         ],
       },
     },
-    intakeProcessEyebrow: "Structured qualification",
-    intakeProcessTitle: "You are entering a qualification gate — not a sales funnel",
+    intakeProcessEyebrow: "How we handle enquiries",
+    intakeProcessTitle: "Clear, structured follow-up",
     intakeProcessBody:
-      "Every submission is classified by engagement path and reviewed for fit against documented criteria. Incomplete briefs receive a direct decline or a specific request for missing artefacts. We do not schedule open-ended discovery calls.",
+      "We classify each submission by engagement path and respond with focused questions or next steps. If we need one missing detail, we ask for it directly — we do not run open-ended discovery cycles.",
     enterprisePreSubmitEyebrow: "Minimum qualification bar",
     enterprisePreSubmitTitle: "Enterprise submissions we accept for review",
     enterprisePreSubmitMustHaveTitle: "Confirm you have",
@@ -627,7 +629,7 @@ const en: MarketingMessages = {
   },
   homeEnterpriseBridge: {
     eyebrow: "Enterprise delivery",
-    secondaryCtaLabel: "Review programme paths",
+    secondaryCtaLabel: "See enterprise",
   },
   enterpriseLanding: {
     heroKicker: "Production system scope — not a capabilities page",
@@ -1118,15 +1120,15 @@ const ar: MarketingMessages = {
   },
   guidedSectionKicker: "مسارات التنفيذ",
   homeMetadataTitleSuffix:
-    "تنفيذ محدود النطاق — منصّات، محتوى تشغيلي، إبداع محكوم، أتمتة واسترجاع داخلي | مسقط",
+    "إنتاج بصري بالذكاء الاصطناعي وتنفيذ رقمي لعلامات الخليج | مسقط",
   about: {
     seoTitle: "من نحن",
     seoDescription:
-      "إستيو — تنفيذ محدود النطاق من مسقط: منصّات رقمية، تشغيل محتوى وحملات، إنتاج إبداعي بضوابط، وأتمتة واسترجاع داخلي على أنظمة مسماة. تسليم يصمد أمام الإدارة وتقنية المعلومات والتدقيق.",
+      "إستيو — إنتاج بصري رفيع المستوى مدعوم بالذكاء الاصطناعي وتنفيذ رقمي لعلامات الخليج من مسقط: مخرجات إبداعية محكومة، مواقع، أنظمة محتوى، وأتمتة مؤسسية ضمن نطاق معلن.",
     kicker: "عن إستيو",
-    h1: "شركة تنفيذ محدود النطاق — ليست وكالة عامة ولا استشارة مفتوحة",
+    h1: "إنتاج بصري بالذكاء الاصطناعي وتنفيذ رقمي — بنطاق واضح للمؤسسات الجادة",
     introP1:
-      "إستيو في القرم، مسقط: نبني ونشغّل منصّات ويب، وبرامج محتوى وحملات بمؤشرات، وإبداعاً مساعداً بالذكاء ضمن حدود العلامة والالتزام، ونربط التطبيقات بسير عمل حتمي واسترجاعاً داخلياً محكوماً على مصادر تعتمدونها. نخدم مؤسسات الخليج التي تشتري تغييراً تشغيلياً بعقد واضح: نطاق كتابي، وجرد تكامل، وقبول مرحلي، ومسؤول واحد — لا عروضاً تجميلية ولا تجارب بلا مالك.",
+      "إستيو في مسقط تركّز على إنتاج بصري رفيع المستوى مدعوم بالذكاء الاصطناعي: صور حملات، فيديو قصير، وأنظمة أصول علامة — بمراجعة وتسليم جاهز للاستخدام التجاري. نفس الفريق يصمّم ويطوّر مواقع إنتاج، ويشغّل برامج محتوى منظّمة، ويحكم إبداعاً أوسع بالذكاء الاصطناعي، ويبني أتمتة حتمية على أنظمة مسماة عندما يتطلّب الموجز ذلك. نوقّع النطاق، ونوثّق القرارات، ونسلّم عملاً يصمد أمام الإدارة وتقنية المعلومات — لا تجارب عشوائية.",
     introP2:
       "لا نبيع «الاتجاهات». نحدّد المخرجات قبل البناء، ونلتزم بمعايير قبول، ونقيس على ما اتفقنا أنه النجاح. إن لم نكن المناسبين نقول ذلك مبكراً.",
     principlesKicker: "ماذا ننفّذ",
@@ -1194,30 +1196,30 @@ const ar: MarketingMessages = {
         body: "لا نبيع اشتراكات ساعات غامضة، ولا نعدّ ذكاءً دون وضوح بيانات وحوكمة، ولا نأخذ عملاً لا نستطيع تغطيته بمعيارنا. إن لم نكن المناسبين نقول ذلك مبكراً.",
       },
     ],
-    ctaH2: "حدّدوا النطاق ثم ادخلوا التأهيل",
+    ctaH2: "جاهزون لخطوة تالية واضحة؟",
     ctaBody:
-      "اذكروا المخرج، والأنظمة المعنية، والقيود، ومن يعتمد داخلياً. نرد بتقييم ملاءمة أو أسئلة نطاق أو توجيه لمسار أنسب — بلا استكشاف مفتوح بلا موجز.",
-    ctaButton: "بدء التأهيل",
+      "اذكروا المخرج والقيود والأنظمة المعنية. نرد برؤية صريحة للملاءمة والجهد والمراحل — أو بتوجيه صادق إن لم نكن الشريك المناسب.",
+    ctaButton: "بدء التعاقد المحدد النطاق",
   },
   contact: {
-    seoTitle: "التأهيل والتواصل",
+    seoTitle: "تواصل",
     seoDescription:
-      "مدخل تأهيل من إستيو، مسقط: موجز واضح، ردّ كتابي خلال يوم عمل — ملاءمة، أسئلة نطاق، أو رفض مباشر.",
-    kicker: "مدخل التأهيل",
-    h1: "حدّدوا النطاق قبل تخصيص السعة",
+      "صفوا ما تحتاجونه لإستيو — صور وفيديو بالذكاء الاصطناعي، حزم علامة، مواقع، أو أتمتة. فريق مسقط؛ ردّ كتابي خلال يوم عمل.",
+    kicker: "تواصل",
+    h1: "مرحباً",
     lead:
-      "هذا المسار ليس «نموذج اتصال» عاماً. هو بوابة تأهيل: اذكروا المخرج المطلوب، والأنظمة ضمن النطاق، وفئات البيانات، والموقّع الداخلي على الوصول والإطلاق في الإنتاج. خلال يوم عمل (الأحد–الخميس، مسقط) يصلكم ردّ كتابي: تقييم ملاءمة، أو أسئلة محددة، أو رفض مباشر — بلا رسائل آلية. لا نجدول مكالمات استكشاف بلا موجز يجتاز الحد الأدنى أدناه.",
-    formH2: "تعريف النطاق في الطلب",
+      "اكتبوا ما تعملون عليه وكيف نتواصل معكم. نقرأ كل رسالة ونرد خلال يوم عمل — غالباً بأسئلة واضحة أو اقتراح مكالمة قصيرة.",
+    formH2: "كيف يمكننا المساعدة",
     formLead:
-      "كلما أوضحتم النتيجة والقيود والمالك الداخلي، قلّت الرسائل ذهاباً وإياباً. الموجز الضعيف يُردّ أو يُطلب منه مستند واحد فقط — لا سلسلة اجتماعات.",
-    asideDirectH3: "قناة عاجلة؟",
+      "سطر أو سطران: أهداف، مواعيد، روابط، أفكار غير مكتملة — كله مقبول. نضبط النطاق معاً.",
+    asideDirectH3: "تفضّلون الهاتف أو واتساب؟",
     whatsapp: "واتساب",
     officeH3: "الموقع",
     nextH3: "بعد إرسال الطلب",
     nextSteps: [
-      "خلال يوم عمل: ردّ كتابي — أسئلة نطاق، أو رفض، أو طلب مستند ناقص واحد.",
-      "مكالمة قصيرة فقط إذا اجتاز الموجز حد التأهيل؛ وإلا يبقى التواصل كتابياً.",
-      "أي مقترح تجاري بعد اتفاق نطاق ومعايير قبول مرحلية كتابية — لا عروض أسعار على موجز غامض.",
+      "خلال يوم عمل تسمعون منا — أسئلة أو مكالمة قصيرة، حسب الأسرع.",
+      "نقول الصراحة إن لم نكن المناسبين.",
+      "إن تقدّمنا: خطة كتابية بسيطة — نطاق، توقيت، ما نحتاجه منكم، والأرقام.",
     ],
     mapIframeTitle: "موقع المكتب على الخريطة",
     openInGoogleMaps: "الموقع على خرائط Google",
@@ -1233,10 +1235,10 @@ const ar: MarketingMessages = {
       { value: "PLATFORM_BUILD", label: "بناء منصة وبرنامج تقني" },
       { value: "UNSURE", label: "لم يُحدَّد بعد" },
     ],
-    successTitle: "وصل الطلب — التأهيل قيد المراجعة",
+    successTitle: "شكراً — استلمنا رسالتكم",
     successBody:
-      "نراجع الموجز وفق المسار الذي اخترتموه. خلال يوم عمل واحد: ردّ كتابي بأسئلة نطاق، أو تقييم ملاءمة، أو رفض مباشر. للعاجل التشغيلي استخدموا الهاتف أو واتساب مع إشارة إلى رقم الطلب إن وُجد.",
-    submitAnother: "طلب تأهيل آخر",
+      "سنراجع ما أرسلتموه ونرد خلال يوم عمل. إن كان الأمر عاجلاً يمكنكم التواصل بالهاتف أو واتساب.",
+    submitAnother: "إرسال رسالة أخرى",
     name: "الاسم الكامل",
     namePh: "الاسم كما يظهر في المراسلات",
     email: "البريد المهني",
@@ -1247,16 +1249,16 @@ const ar: MarketingMessages = {
     companyPh: "اسم المؤسسة",
     interest: "مجال الاهتمام",
     interestPlaceholder: "اختروا مجالًا",
-    message: "موجز المشروع",
-    messagePh: "الأهداف، الأنظمة ضمن النطاق، القيود، معايير النجاح، ومن يعتمد…",
+    message: "أي تفاصيل إضافية؟ (اختياري)",
+    messagePh: "أهداف، مواعيد، قنوات، روابط علامة، أو أسئلة — حتى نقاط بسيطة تكفي.",
     error: "تعذّر الإرسال. أعيدوا المحاولة، أو أرسلوا مباشرة إلى",
     sending: "جارٍ الإرسال…",
-    submit: "بدء التأهيل",
-    qualificationHeading: "قبل الإرسال",
+    submit: "أرسلوا الرسالة",
+    qualificationHeading: "مفيد لو توفّر",
     qualificationIntro:
-      "نأخذ في الاعتبار أولاً الطلبات التي ترفق السياق أدناه حسب المجال — هذا يحدد سريعاً إن كان التعاقد معنا واقعياً.",
-    qualificationRequiredHeading: "السياق المطلوب لهذا المجال",
-    qualificationOptionalHeading: "يُحسّن الجودة بشكل كبير",
+      "كلما شاركتم تفاصيل أوضح كان ردّنا أدق — لكن أرسلوا ما لديكم؛ نطلب فقط ما نحتاجه فعلاً.",
+    qualificationRequiredHeading: "يسرّع عرض السعر",
+    qualificationOptionalHeading: "تفاصيل إضافية",
     qualificationByIntent: {
       AUTOMATION: {
         required: [
@@ -1284,20 +1286,20 @@ const ar: MarketingMessages = {
       },
       AI_STUDIO: {
         required: [
-          "نوع المخرج: صور، فيديو، أو حزمة علامة.",
-          "الحجم التقريبي أو عدد الأصول.",
-          "اتجاه العلامة: إرشادات قائمة، صور مرجعية، أو وصف الاتجاه.",
+          "صور، فيديو قصير، أو حزمة علامة — ما الذي تفضّلونه؟",
+          "حجم تقريبي (عدد لقطات أو مقاطع).",
+          "روابط علامة، مراجع مزاجية، أو وصف قصير للمظهر.",
         ],
         optional: [
-          "القنوات المستهدفة (ويب، اجتماعي، طباعة).",
-          "الجدول الزمني للتسليم.",
+          "أين سيُعرض (ويب، سوشال، طباعة).",
+          "متى تحتاجونه.",
         ],
       },
     },
-    intakeProcessEyebrow: "استقبال مؤهّل",
-    intakeProcessTitle: "أنتم تدخلون مسار تأهيل",
+    intakeProcessEyebrow: "كيف نتعامل مع الاستفسارات",
+    intakeProcessTitle: "متابعة واضحة ومنظمة",
     intakeProcessBody:
-      "نصنّف الطلبات حسب المسار ونراجع الملاءمة. الموجزات الضعيفة تتلقى رفضاً موجزاً أو طلب تفاصيل — لا سلسلة مكالمات استكشاف مفتوحة.",
+      "نصنّف كل طلب حسب المسار ونرد بأسئلة مركزة أو خطوات تالية. إن احتجنا تفصيلاً واحداً نطلبه مباشرة — بلا دورات استكشاف مفتوحة.",
     enterprisePreSubmitEyebrow: "الحد الأدنى",
     enterprisePreSubmitTitle: "استفسارات المؤسسات التي نردّ عليها فعلياً",
     enterprisePreSubmitMustHaveTitle: "أكّدوا أن لديكم",
@@ -1415,7 +1417,7 @@ const ar: MarketingMessages = {
   },
   homeEnterpriseBridge: {
     eyebrow: "تسليم مؤسسي",
-    secondaryCtaLabel: "استعراض مسارات البرامج",
+    secondaryCtaLabel: "قسم المؤسسات",
   },
   enterpriseLanding: {
     heroKicker: "نطاق نظام قابل للتنفيذ — ملخص يعادل مستوى نطاق العمل",

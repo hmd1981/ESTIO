@@ -10,6 +10,7 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [listLoading, setListLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     const r = await adminFetch("/admin/crm-users");
@@ -20,6 +21,32 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
   useEffect(() => {
     setRows(initialRows);
   }, [initialRows]);
+
+  /** JWT lives in localStorage — server render cannot auth; load list after mount. */
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      setListLoading(true);
+      const r = await adminFetch("/admin/crm-users");
+      if (cancelled) return;
+      if (r.ok) {
+        setRows((await r.json()) as Row[]);
+      }
+      setListLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const copyId = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setStatus("Copied user ID to clipboard.");
+    } catch {
+      setStatus(`User ID: ${id}`);
+    }
+  };
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,9 +64,19 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
       setStatus(await r.text());
       return;
     }
+    const created = (await r.json()) as Row;
     setEmail("");
     setName("");
-    setStatus("Created.");
+    try {
+      await navigator.clipboard.writeText(created.id);
+      setStatus(
+        "Created. User ID copied — paste into Sales settings → Default owner user id.",
+      );
+    } catch {
+      setStatus(
+        `Created. User ID (paste into Sales settings): ${created.id}`,
+      );
+    }
     await refresh();
   };
 
@@ -51,6 +88,10 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
       >
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--admin-muted)]">
           Add user
+        </p>
+        <p className="text-xs text-[var(--admin-muted)]">
+          Use the <strong className="text-[var(--admin-text)]">User ID</strong> column below for{" "}
+          <span className="font-mono">Sales settings → Default owner user id</span>.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
@@ -89,7 +130,7 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="border-b border-[var(--admin-border)] bg-[var(--admin-row-header)]">
-              {["Name", "Email", "Active"].map((c) => (
+              {["Name", "Email", "User ID", "Active"].map((c) => (
                 <th
                   key={c}
                   className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[var(--admin-muted)]"
@@ -100,10 +141,19 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--admin-border)]">
-            {rows.length === 0 ? (
+            {listLoading ? (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
+                  className="px-4 py-10 text-center text-sm text-[var(--admin-muted)]"
+                >
+                  Loading…
+                </td>
+              </tr>
+            ) : rows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={4}
                   className="px-4 py-10 text-center text-sm text-[var(--admin-muted)]"
                 >
                   No CRM users yet.
@@ -116,6 +166,21 @@ export function CrmUsersManager({ initialRows }: { initialRows: Row[] }) {
                     {r.name}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">{r.email}</td>
+                  <td className="max-w-[14rem] px-4 py-3 align-top">
+                    <code
+                      className="block break-all font-mono text-[0.65rem] leading-snug text-[var(--admin-text)]"
+                      title={r.id}
+                    >
+                      {r.id}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => void copyId(r.id)}
+                      className="mt-1 text-xs font-medium text-[var(--admin-primary)] underline-offset-2 hover:underline"
+                    >
+                      Copy ID
+                    </button>
+                  </td>
                   <td className="px-4 py-3 text-xs">
                     {r.isActive ? "Yes" : "No"}
                   </td>

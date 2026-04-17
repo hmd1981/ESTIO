@@ -1,5 +1,5 @@
 import { getPublicApiBase } from "@/lib/api-base";
-import { getAdminToken } from "@/lib/admin-token";
+import { clearAdminToken, getAdminToken } from "@/lib/admin-token";
 
 type AdminFetchInit = Omit<RequestInit, "headers"> & {
   headers?: Record<string, string>;
@@ -16,9 +16,20 @@ export async function adminFetch(
   };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
+    headers["X-Estio-Admin-Token"] = token;
   }
-  return fetch(`${getPublicApiBase()}${path}`, {
+  const res = await fetch(`${getPublicApiBase()}${path}`, {
     ...init,
     headers,
   });
+
+  if (res.status === 401 && typeof window !== "undefined" && token) {
+    clearAdminToken();
+    const next = encodeURIComponent(
+      `${window.location.pathname}${window.location.search}`,
+    );
+    window.location.assign(`/login?session=expired&next=${next}`);
+  }
+
+  return res;
 }

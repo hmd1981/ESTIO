@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useSiteBundle } from "@/components/site-bundle-context";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
+import { normalizeHeaderNavHref } from "@/lib/nav/normalize-header-nav";
 
 type Props = {
   items?: NavItem[];
@@ -29,14 +30,17 @@ export function MobileNav({ items, contactHref, aiStudioHref, aiStudioLabel }: P
     items ??
     fallbackPrimaryNav(bundle.locale).map((i) => ({
       ...i,
-      href: withLocale(i.href, bundle.locale),
+      href: normalizeHeaderNavHref(i.label, i.href, bundle.locale),
     }));
   const talkHref = contactHref ?? withLocale("/contact", bundle.locale);
-  const talkLabel =
-    (bundle.locale === "ar"
+  const rawCta =
+    bundle.locale === "ar"
       ? (labels?.ar as Record<string, unknown> | undefined)?.primaryCta
-      : (labels?.en as Record<string, unknown> | undefined)?.primaryCta) ??
-    (bundle.locale === "ar" ? "بدء التأهيل" : "Start qualification");
+      : (labels?.en as Record<string, unknown> | undefined)?.primaryCta;
+  const ctaText = typeof rawCta === "string" ? rawCta.trim() : "";
+  const talkLabel =
+    (ctaText && ctaText !== "Start qualification" ? ctaText : null) ??
+    (bundle.locale === "ar" ? "ابدأ مشروعاً" : "Start a project");
 
   useEffect(() => {
     if (!open) return;

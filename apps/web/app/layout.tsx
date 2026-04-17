@@ -1,6 +1,5 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { headers } from "next/headers";
 import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/content/site";
@@ -21,7 +20,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: `${brand.name} — Premium Digital Services & Applied AI | Muscat, Oman`,
+    default: `${brand.name} - AI visual production & digital execution | GCC`,
     template: `%s | ${brand.name}`,
   },
   description: brand.tagline,
@@ -30,12 +29,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en",
     siteName: brand.name,
-    title: `${brand.name} — Premium Digital Services & Applied AI`,
+    title: `${brand.name} - AI visual production & digital execution`,
     description: brand.tagline,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${brand.name} — Premium Digital Services & Applied AI`,
+    title: `${brand.name} - AI visual production & digital execution`,
     description: brand.tagline,
   },
 };
@@ -44,24 +43,21 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const locale = (await headers()).get("x-estio-locale") ?? "en";
-  const dir = locale === "ar" ? "rtl" : "ltr";
-
   return (
     <html
-      lang={locale}
-      dir={dir}
-      className={`${dmSans.variable} ${fraunces.variable} theme-dark h-full scroll-smooth antialiased`}
+      lang="en"
+      dir="ltr"
+      className={`${dmSans.variable} ${fraunces.variable} theme-dark min-h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script
-          // Sync document element before React/CSS — pairs with middleware + RSC `lang`/`dir`
+          // Sync document element before React/CSS using the locale segment in the URL.
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var p=location.pathname.split("/").filter(Boolean)[0];var r=document.documentElement;if(p==="ar"){r.setAttribute("lang","ar");r.setAttribute("dir","rtl");}else if(p==="en"){r.setAttribute("lang","en");r.setAttribute("dir","ltr");}}catch(e){}})();`,

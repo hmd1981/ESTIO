@@ -11,12 +11,12 @@ import { brand } from "@/lib/content/site";
 import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
+import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { CmsVisualMedia } from "@/components/cms/cms-visual-media";
 import { resolveCmsVisual } from "@/lib/cms/resolve-image";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
 }
 
-export default async function AboutPage({ params, searchParams }: Props) {
+export default async function AboutPage({ params }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const [bundle, enPublished] = await Promise.all([
@@ -65,10 +65,6 @@ export default async function AboutPage({ params, searchParams }: Props) {
       ? ((enPublished?.marketingPages?.about?.sections ??
           {}) as MarketingPageSectionsCMS)
       : undefined;
-  const sp = (await searchParams) ?? {};
-  const highlightFromQuery = Array.isArray(sp.highlight)
-    ? sp.highlight[0]
-    : sp.highlight;
   const a = getMessages(raw).about;
   const hero = mergeMarketingHero(
     cms,
@@ -87,20 +83,14 @@ export default async function AboutPage({ params, searchParams }: Props) {
   const deliveryImg = resolveCmsVisual(aboutV.delivery, mediaAssets);
   const omanImg = resolveCmsVisual(aboutV.oman, mediaAssets);
 
-  const highlight =
-    (typeof highlightFromQuery === "string" && highlightFromQuery.trim()
-      ? highlightFromQuery.trim()
-      : cms._meta?.highlightSection?.trim()) ?? undefined;
-
   return (
     <MarketingShell>
-      <section
+      <SectionHighlightFrame
+        as="section"
+        sectionId="intro"
+        fallbackHighlight={cms._meta?.highlightSection}
+        className="border-b border-[var(--border)] bg-[var(--surface)]"
         data-estio-section="intro"
-        className={
-          highlight === "intro"
-            ? "border-b border-[var(--border)] bg-[var(--surface)] ring-2 ring-[var(--accent)]/50 ring-inset"
-            : "border-b border-[var(--border)] bg-[var(--surface)]"
-        }
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-28">
           <div
@@ -134,7 +124,7 @@ export default async function AboutPage({ params, searchParams }: Props) {
             ) : null}
           </div>
         </Container>
-      </section>
+      </SectionHighlightFrame>
 
       {brandImg?.url ? (
         <section className="border-b border-[var(--border)] bg-[var(--canvas)]">

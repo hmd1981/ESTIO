@@ -6,6 +6,7 @@ function pickHeaders(inHeaders: Headers): Headers {
   const h = new Headers();
   const allow = new Set([
     "authorization",
+    "x-estio-admin-token",
     "content-type",
     "accept",
     "accept-language",
@@ -21,19 +22,24 @@ function pickHeaders(inHeaders: Headers): Headers {
 async function handle(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
   const upstreamBase = (process.env.API_INTERNAL_URL ?? "http://api:4000").trim();
-  const upstreamUrl = joinUrl(upstreamBase, path.join("/"));
+  const url = new URL(req.url);
+  const qs = url.search ?? "";
+  const upstreamUrl = `${joinUrl(upstreamBase, path.join("/"))}${qs}`;
 
   const headers = pickHeaders(req.headers);
 
-  const upstreamResp = await fetch(upstreamUrl, {
+  const hasBody = req.method !== "GET" && req.method !== "HEAD";
+  const upstreamInit: RequestInit & { duplex?: "half" } = {
     method: req.method,
     headers,
-    body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
-    // Node.js fetch requires this when streaming a request body (e.g. multipart uploads).
-    // TS in the DOM lib doesn't include it, so cast narrowly.
-    duplex: "half",
+    body: hasBody ? req.body : undefined,
     redirect: "manual",
-  } as RequestInit & { duplex: "half" });
+  };
+  if (hasBody && req.body != null) {
+    upstreamInit.duplex = "half";
+  }
+
+  const upstreamResp = await fetch(upstreamUrl, upstreamInit);
 
   const outHeaders = new Headers(upstreamResp.headers);
   // Avoid leaking hop-by-hop headers and ensure correct content-length handling.

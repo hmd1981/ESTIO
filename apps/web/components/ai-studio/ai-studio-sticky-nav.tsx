@@ -13,6 +13,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
+  { id: "studio-credits", labelEn: "Credits", labelAr: "\u0627\u0644\u0631\u0635\u064a\u062f", hintEn: "Top up balance", hintAr: "\u0634\u062d\u0646 \u0627\u0644\u0631\u0635\u064a\u062f" },
   { id: "offer-images", labelEn: "AI Images", labelAr: "\u0635\u0648\u0631", hintEn: "Campaigns & ads", hintAr: "\u062d\u0645\u0644\u0627\u062a \u0648\u0625\u0639\u0644\u0627\u0646\u0627\u062a" },
   { id: "offer-video", labelEn: "AI Video", labelAr: "\u0641\u064a\u062f\u064a\u0648", hintEn: "Social & reels", hintAr: "\u0645\u062d\u062a\u0648\u0649 \u0627\u062c\u062a\u0645\u0627\u0639\u064a" },
   { id: "offer-packs", labelEn: "AI Packs", labelAr: "\u062d\u0632\u0645", hintEn: "Brand system", hintAr: "\u0646\u0638\u0627\u0645 \u0627\u0644\u0639\u0644\u0627\u0645\u0629" },

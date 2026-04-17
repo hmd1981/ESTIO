@@ -5,6 +5,7 @@ import type {
   CrmServiceType,
   CrmTeamSize,
   CrmTimeline,
+  Prisma,
   SiteLocale,
 } from '@prisma/client';
 
@@ -19,6 +20,10 @@ export type CreateLeadCompleteInput = {
   city?: string | null;
   serviceType: CrmServiceType;
   subServiceType?: string | null;
+  /** AI Studio funnel key when area of interest is AI_STUDIO */
+  studioIntent?: string | null;
+  /** Human offer line (e.g. AI Image Production) */
+  offerType?: string | null;
   businessType: CrmBusinessType;
   teamSize: CrmTeamSize;
   budgetRange: CrmBudgetRange;
@@ -32,4 +37,5 @@ export type CreateLeadCompleteInput = {
   campaignSource?: string | null;
   campaignMedium?: string | null;
   campaignName?: string | null;
+  crmMetadata?: Prisma.InputJsonValue | null;
 };

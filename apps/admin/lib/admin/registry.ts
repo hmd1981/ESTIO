@@ -54,6 +54,18 @@ export const ADMIN_ROUTES: AdminRouteDefinition[] = [
     matchPrefix: false,
   },
   {
+    id: "ai-insights",
+    href: "/admin/ai-insights",
+    label: "Ask Estio AI insights",
+    description:
+      "Top questions, intent mix, CTA conversion by intent, out-of-scope themes, recent Ask events.",
+    primaryResponsibility:
+      "See what visitors ask, what confuses them, and what converts before CRM handoff.",
+    section: "content",
+    sort: 27,
+    matchPrefix: false,
+  },
+  {
     id: "services",
     href: "/admin/services",
     label: "Services",

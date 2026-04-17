@@ -17,10 +17,10 @@ import type { AppLocale } from "@/lib/i18n/config";
 import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
+import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { PremiumMediaFrame } from "@/components/cms/premium-media-frame";
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const SAFE_DETAIL_ROUTES = new Set([
@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
 }
 
-export default async function ServicesOverviewPage({ params, searchParams }: Props) {
+export default async function ServicesOverviewPage({ params }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const bundle = await getSiteBundle(raw);
@@ -92,10 +92,6 @@ export default async function ServicesOverviewPage({ params, searchParams }: Pro
       ? (((await getPublishedSiteBundle("en")).marketingPages?.services
           ?.sections ?? {}) as MarketingPageSectionsCMS)
       : undefined;
-  const sp = (await searchParams) ?? {};
-  const highlightFromQuery = Array.isArray(sp.highlight)
-    ? sp.highlight[0]
-    : sp.highlight;
   const L = getMessages(raw).servicesListing;
   const groups = getServiceOverviewGroups(raw);
   const hero = mergeMarketingHero(
@@ -114,21 +110,15 @@ export default async function ServicesOverviewPage({ params, searchParams }: Pro
     raw,
     groups.map((g) => g.id),
   );
-  const highlight =
-    (typeof highlightFromQuery === "string" && highlightFromQuery.trim()
-      ? highlightFromQuery.trim()
-      : cms._meta?.highlightSection?.trim()) ?? undefined;
-
   const mediaAssets = bundle.mediaAssets ?? {};
 
   return (
     <MarketingShell>
-      <section
-        className={
-          highlight === "intro"
-            ? "border-b border-[var(--border)] bg-[var(--surface)] ring-2 ring-[var(--accent)]/50 ring-inset"
-            : "border-b border-[var(--border)] bg-[var(--surface)]"
-        }
+      <SectionHighlightFrame
+        as="section"
+        sectionId="intro"
+        fallbackHighlight={cms._meta?.highlightSection}
+        className="border-b border-[var(--border)] bg-[var(--surface)]"
         data-estio-section="intro"
       >
         <Container as="div" className="py-16 sm:py-20 lg:py-28">
@@ -161,7 +151,7 @@ export default async function ServicesOverviewPage({ params, searchParams }: Pro
             </div>
           </div>
         </Container>
-      </section>
+      </SectionHighlightFrame>
 
       <section className="border-b border-[var(--border)] bg-[var(--canvas)] py-10 sm:py-12">
         <Container as="div" className="max-w-3xl">

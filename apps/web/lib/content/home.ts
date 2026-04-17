@@ -1,13 +1,19 @@
 import type { IndustryItem, ServiceCard } from "./types";
 
 export const homeHero = {
-  headline:
-    "Campaign-ready visuals, video, and brand assets \u2014 without the production overhead.",
+  headline: "Campaign-ready visuals, fast \u2014 without running a studio in-house.",
   subheadline:
-    "Stop waiting weeks for creative output. ESTIO\u2019s AI Studio produces brand-aligned imagery, video, and visual systems \u2014 scoped, reviewed, and delivered as production-ready files.",
-  primaryCta: { label: "Define your visual scope", href: "/contact" },
-  secondaryCta: { label: "See what we produce", href: "/ai-studio" },
+    "AI-powered images, short video, and on-brand assets for the GCC. You say what you need; we deliver files you can ship.",
+  primaryCta: { label: "Start a project", href: "/contact" },
+  secondaryCta: { label: "Get a quick quote", href: "/contact" },
 } as const;
+
+/** Hero intent row — links to AI Studio tracks (EN). */
+export const homeHeroIntentLinks = [
+  { label: "Images", href: "/ai-studio/image-production" },
+  { label: "Short video", href: "/ai-studio/video-production" },
+  { label: "Brand system", href: "/ai-studio/brand-ai-packs" },
+] as const;
 
 export const systemIdentity = {
   heading: "What this is",
@@ -51,27 +57,27 @@ export const guidedIntents = [
 ] as const;
 
 export const trustSectionIntro = {
-  title: "Operating standards — not promises",
+  title: "Clear process, real delivery",
   description:
-    "Scoped delivery, documented decisions, and outcomes that survive internal review. We operate at the standard your board, IT, and compliance teams require — not the standard agencies sell.",
+    "We scope in writing, review before we ship, and hand over files you own. Based in Muscat; we work with teams across the GCC.",
 } as const;
 
 export const trustPoints = [
   {
-    title: "Written scope before build",
-    body: "Deliverables, acceptance criteria, and dependencies are defined and signed before any execution starts. No ambiguity, no scope creep without written change control.",
+    title: "Scope before pixels",
+    body: "You know what you are getting and when \u2014 before production starts.",
   },
   {
-    title: "Deployed AI, not pitch-deck AI",
-    body: "AI operates inside your identity model, on corpora you approve, with logging you control. If it does not run in production under your constraints, it does not ship.",
+    title: "Brand-reviewed output",
+    body: "Nothing goes live until it matches your direction and quality bar.",
   },
   {
-    title: "Designed for GCC operating reality",
-    body: "Bilingual delivery, regional compliance, and stakeholder communication calibrated for boards, regulators, and government-adjacent organisations.",
+    title: "Built for GCC teams",
+    body: "Bilingual delivery and messaging that fits how your stakeholders actually decide.",
   },
   {
-    title: "Single accountable owner",
-    body: "One named lead owns every deliverable end-to-end. No account-manager buffer. No handoffs between teams you never meet.",
+    title: "One lead, end to end",
+    body: "Same person owns your job from brief to final files \u2014 no mystery handoffs.",
   },
 ] as const;
 
@@ -117,8 +123,8 @@ export const pillarServices: ServiceCard[] = [
 ];
 
 export const enterpriseHighlight = {
-  headline: "Operational systems — not vendor demos",
-  body: "Websites are the visible layer. Underneath, we deploy deterministic automation across your integration inventory, retrieval services bound to corpora you sign off, and internal tools your IT team operates post-handover. If you cannot name the systems in scope, this section is not for you.",
+  headline: "When you need systems, not just assets",
+  body: "Beyond campaigns: automation across the apps you already use, and governed internal tools your IT can run. Named systems, written scope, clean handover.",
   bullets: [
     {
       title: "Governed retrieval",
@@ -133,7 +139,7 @@ export const enterpriseHighlight = {
       text: "Dashboards, admin UIs, and monitoring surfaces with clear ownership, runbooks, and escalation matrices. Designed for handover on day one.",
     },
   ],
-  cta: { label: "Start qualification", href: "/enterprise#enterprise-deal-entry" },
+  cta: { label: "Start a project", href: "/contact" },
 } as const;
 
 export const industriesSectionIntro = {
@@ -176,8 +182,8 @@ export const industries: IndustryItem[] = [
 ];
 
 export const finalCta = {
-  headline: "Define scope. Enter qualification.",
-  body: "State the outcome, the systems involved, and the internal owner who signs off. We respond with a structured view of fit, effort, and phasing — or a direct decline if the engagement is not viable.",
-  buttonLabel: "Start a scoped engagement",
+  headline: "Ready when you are",
+  body: "Tell us what you are building. We reply within one business day with next steps \u2014 or an honest no if we are not the right fit.",
+  buttonLabel: "Start a project",
   href: "/contact",
 } as const;

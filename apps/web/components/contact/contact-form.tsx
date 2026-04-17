@@ -8,6 +8,11 @@ import {
   getStudioSessionId,
   postCrmLeadFromAiStudio,
 } from "@/components/ai-studio/ai-studio-analytics";
+import { FUNNEL_V3_CRM_SENT_KEY } from "@/lib/ai-studio-funnel-v3/constants";
+import {
+  ASK_ESTIO_AI_HANDOFF_KEY,
+  type AskEstioAiHandoffPayload,
+} from "@/lib/ask-estio-ai-handoff";
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -20,17 +25,22 @@ type ContactFormInitialValues = {
   company?: string;
   serviceInterest?: string;
   message?: string;
+  /** From ?intent= or session (images | video | brand) for AI_STUDIO offers */
+  studioIntent?: "images" | "video" | "brand";
 };
 
 export function ContactForm({
   copy,
   source,
   initialValues = {},
+  hideQualification = false,
   aiStudioContext,
 }: {
   copy: ContactFormCopy;
   source: LeadSource;
   initialValues?: ContactFormInitialValues;
+  /** When true (e.g. AI Studio streamlined funnel), omit qualification checklist. */
+  hideQualification?: boolean;
   aiStudioContext?: { locale: string; initialGoal?: string };
 }) {
   const [state, setState] = useState<FormState>("idle");
@@ -39,10 +49,35 @@ export function ContactForm({
     initialValues.serviceInterest ?? "",
   );
   const studioLeadPosted = useRef(false);
+  const askHandoffRef = useRef<AskEstioAiHandoffPayload | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(ASK_ESTIO_AI_HANDOFF_KEY);
+      if (raw) {
+        const p = JSON.parse(raw) as AskEstioAiHandoffPayload;
+        if (p?.sessionId && p.userMessage != null) {
+          askHandoffRef.current = p;
+        }
+      }
+    } catch {
+      /* noop */
+    }
+  }, []);
 
   useEffect(() => {
     if (!aiStudioContext || studioLeadPosted.current) return;
+    let skipDuplicate = false;
+    try {
+      if (sessionStorage.getItem(FUNNEL_V3_CRM_SENT_KEY) === "1") {
+        sessionStorage.removeItem(FUNNEL_V3_CRM_SENT_KEY);
+        skipDuplicate = true;
+      }
+    } catch {
+      /* noop */
+    }
     studioLeadPosted.current = true;
+    if (skipDuplicate) return;
     const intent = getPreNavIntent() ?? "brand";
     void postCrmLeadFromAiStudio({
       intent,
@@ -65,6 +100,20 @@ export function ContactForm({
     const form = e.currentTarget;
     const data = new FormData(form);
     const serviceInterest = data.get("serviceInterest") as string;
+    const studioIntentRaw =
+      getPreNavIntent() ?? initialValues.studioIntent;
+    const handoff = askHandoffRef.current;
+    const fromAsk =
+      handoff &&
+      (handoff.detectedIntent === "images" ||
+        handoff.detectedIntent === "video" ||
+        handoff.detectedIntent === "brand")
+        ? handoff.detectedIntent
+        : null;
+    const studioIntentResolved =
+      serviceInterest === "AI_STUDIO"
+        ? fromAsk ?? studioIntentRaw
+        : undefined;
     const payload = {
       fullName: (data.get("name") as string).trim(),
       email: (data.get("email") as string).trim(),
@@ -73,6 +122,24 @@ export function ContactForm({
       serviceInterest,
       message: ((data.get("message") as string) || "").trim() || undefined,
       source,
+      ...(serviceInterest === "AI_STUDIO" &&
+      studioIntentResolved &&
+      (studioIntentResolved === "images" ||
+        studioIntentResolved === "video" ||
+        studioIntentResolved === "brand")
+        ? { studioIntent: studioIntentResolved }
+        : {}),
+      ...(serviceInterest === "AI_STUDIO" && handoff
+        ? {
+            askEstioAi: {
+              userMessage: handoff.userMessage,
+              detectedIntent: handoff.detectedIntent,
+              recommendedOffer: handoff.recommendedOffer ?? undefined,
+              responseSummary: handoff.responseSummary,
+              sessionId: handoff.sessionId,
+            },
+          }
+        : {}),
     };
 
     try {
@@ -97,6 +164,12 @@ export function ContactForm({
       if (!body || (body as { ok?: boolean }).ok !== true) {
         throw new Error("Unexpected response");
       }
+      try {
+        sessionStorage.removeItem(ASK_ESTIO_AI_HANDOFF_KEY);
+      } catch {
+        /* noop */
+      }
+      askHandoffRef.current = null;
       setState("success");
       form.reset();
       setServiceInterest("");
@@ -232,7 +305,7 @@ export function ContactForm({
         </select>
       </div>
 
-      {qualificationPack ? (
+      {qualificationPack && !hideQualification ? (
         <div className="rounded-md border border-[color-mix(in_srgb,var(--accent)_22%,var(--border)_78%)] bg-[color-mix(in_srgb,var(--canvas)_92%,#000_8%)] p-5 sm:p-6">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
             {copy.qualificationHeading}
@@ -284,13 +357,11 @@ export function ContactForm({
           htmlFor="contact-message"
           className="block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]"
         >
-          {copy.message}{" "}
-          <span className="text-[var(--accent)]">*</span>
+          {copy.message}
         </label>
         <textarea
           id="contact-message"
           name="message"
-          required
           rows={5}
           className="mt-2 block w-full resize-y rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text)] placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
           placeholder={copy.messagePh}

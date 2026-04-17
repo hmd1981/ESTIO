@@ -22,42 +22,47 @@ export class PublicSiteService {
   }
 
   async getBundle(locale: SiteLocale) {
-    const [settings, headerNav, footerNav, marketingPagesList, services] =
-      await Promise.all([
-        this.prisma.settings.findFirst(),
-        this.prisma.navigationItem.findMany({
-          where: {
-            location: NavigationLocation.HEADER,
-            locale,
-            isActive: true,
-          },
-          orderBy: { orderIndex: 'asc' },
-        }),
-        this.prisma.navigationItem.findMany({
-          where: {
-            location: NavigationLocation.FOOTER,
-            locale,
-            isActive: true,
-          },
-          orderBy: { orderIndex: 'asc' },
-        }),
-        this.prisma.page.findMany({
-          where: {
-            locale,
-            slug: { in: [...MARKETING_PAGE_SLUGS] },
-            status: PageStatus.PUBLISHED,
-          },
-        }),
-        this.prisma.service.findMany({
-          where: { locale, status: ContentStatus.PUBLISHED },
-          orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
-        }),
-      ]);
+    const [
+      settings,
+      headerNav,
+      footerNav,
+      marketingPagesList,
+      services,
+      mediaAssets,
+    ] = await Promise.all([
+      this.prisma.settings.findFirst(),
+      this.prisma.navigationItem.findMany({
+        where: {
+          location: NavigationLocation.HEADER,
+          locale,
+          isActive: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+      }),
+      this.prisma.navigationItem.findMany({
+        where: {
+          location: NavigationLocation.FOOTER,
+          locale,
+          isActive: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+      }),
+      this.prisma.page.findMany({
+        where: {
+          locale,
+          slug: { in: [...MARKETING_PAGE_SLUGS] },
+          status: PageStatus.PUBLISHED,
+        },
+      }),
+      this.prisma.service.findMany({
+        where: { locale, status: ContentStatus.PUBLISHED },
+        orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
+      }),
+      this.buildMediaAssetsMap(),
+    ]);
 
     const marketingPages = this.mapMarketingPages(marketingPagesList);
     const homePage = marketingPages.home ?? null;
-
-    const mediaAssets = await this.buildMediaAssetsMap();
 
     return {
       locale,
@@ -76,41 +81,46 @@ export class PublicSiteService {
       throw new UnauthorizedException('Invalid preview token');
     }
 
-    const [settings, headerNav, footerNav, marketingPagesList, services] =
-      await Promise.all([
-        this.prisma.settings.findFirst(),
-        this.prisma.navigationItem.findMany({
-          where: {
-            location: NavigationLocation.HEADER,
-            locale,
-            isActive: true,
-          },
-          orderBy: { orderIndex: 'asc' },
-        }),
-        this.prisma.navigationItem.findMany({
-          where: {
-            location: NavigationLocation.FOOTER,
-            locale,
-            isActive: true,
-          },
-          orderBy: { orderIndex: 'asc' },
-        }),
-        this.prisma.page.findMany({
-          where: {
-            locale,
-            slug: { in: [...MARKETING_PAGE_SLUGS] },
-          },
-        }),
-        this.prisma.service.findMany({
-          where: { locale, status: ContentStatus.PUBLISHED },
-          orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
-        }),
-      ]);
+    const [
+      settings,
+      headerNav,
+      footerNav,
+      marketingPagesList,
+      services,
+      mediaAssets,
+    ] = await Promise.all([
+      this.prisma.settings.findFirst(),
+      this.prisma.navigationItem.findMany({
+        where: {
+          location: NavigationLocation.HEADER,
+          locale,
+          isActive: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+      }),
+      this.prisma.navigationItem.findMany({
+        where: {
+          location: NavigationLocation.FOOTER,
+          locale,
+          isActive: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+      }),
+      this.prisma.page.findMany({
+        where: {
+          locale,
+          slug: { in: [...MARKETING_PAGE_SLUGS] },
+        },
+      }),
+      this.prisma.service.findMany({
+        where: { locale, status: ContentStatus.PUBLISHED },
+        orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
+      }),
+      this.buildMediaAssetsMap(),
+    ]);
 
     const marketingPages = this.mapMarketingPages(marketingPagesList);
     const homePage = marketingPages.home ?? null;
-
-    const mediaAssets = await this.buildMediaAssetsMap();
 
     return {
       locale,

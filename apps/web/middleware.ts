@@ -1,12 +1,13 @@
-import type { NextRequest } from "next/server";
+﻿import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 const locales = new Set(["en", "ar"]);
 
 /**
  * Forwards locale to the root layout (SSR `lang` / `dir`) via `x-estio-locale`.
- * Sets `estio_preview` cookie when `?previewToken=` matches `PREVIEW_TOKEN`,
- * then redirects to the same path without the query (draft bundle via API).
+ * When `?previewToken=` matches `PREVIEW_TOKEN`, redirect through `/api/draft`
+ * so preview uses Next Draft Mode instead of a custom cookie that forces all
+ * public routes into dynamic rendering.
  */
 export function middleware(request: NextRequest) {
   const parts = request.nextUrl.pathname.split("/").filter(Boolean);
@@ -20,23 +21,17 @@ export function middleware(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("previewToken");
   const secret = process.env.PREVIEW_TOKEN?.trim();
 
-  if (token && secret && token === secret) {
-    if (first && locales.has(first)) {
-      const url = request.nextUrl.clone();
-      url.searchParams.delete("previewToken");
-      const res = NextResponse.redirect(url);
-      res.headers.set("x-estio-locale", locale);
-      res.cookies.set("estio_preview", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 30,
-        path: "/",
-      });
-      return res;
-    }
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    });
+  if (token && secret && token === secret && first && locales.has(first)) {
+    const cleaned = request.nextUrl.clone();
+    cleaned.searchParams.delete("previewToken");
+    const redirectPath = `${cleaned.pathname}${cleaned.search}`;
+    const draftUrl = new URL("/api/draft", request.url);
+    draftUrl.searchParams.set("previewToken", token);
+    draftUrl.searchParams.set("redirect", redirectPath || `/${locale}`);
+
+    const res = NextResponse.redirect(draftUrl);
+    res.headers.set("x-estio-locale", locale);
+    return res;
   }
 
   return NextResponse.next({

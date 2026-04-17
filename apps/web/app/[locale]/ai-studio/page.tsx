@@ -7,9 +7,10 @@ import {
 import { getAiStudioLanding } from "@/lib/content/ai-studio-pages";
 import {
   mergeAiStudioLandingFromSections,
+  overlayEnglishAiStudioMediaOnArabic,
   seoFromAiStudioSections,
 } from "@/lib/cms/merge-ai-studio-landing";
-import { getSiteBundle } from "@/lib/cms/fetch-site";
+import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
 import { inferVideoMimeType } from "@/lib/cms/media-kind";
 import {
   resolveExplicitVideoUrl,
@@ -22,6 +23,9 @@ import { isLocale } from "@/lib/i18n/config";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+/** Avoid serving a stale static shell after deploy (CDN / edge). */
+export const dynamic = "force-dynamic";
 
 const fallbackSeo = {
   en: {
@@ -72,10 +76,18 @@ export default async function AiStudioPage({ params }: Props) {
     | null
     | undefined;
   const staticLanding = getAiStudioLanding(raw);
-  const merged = mergeAiStudioLandingFromSections(
+  let merged = mergeAiStudioLandingFromSections(
     rec?.sections,
     staticLanding,
   );
+  if (raw === "ar") {
+    const enBundle = await getPublishedSiteBundle("en");
+    const enRec = enBundle.marketingPages?.["ai-studio"] as
+      | { sections?: unknown }
+      | null
+      | undefined;
+    merged = overlayEnglishAiStudioMediaOnArabic(merged, enRec?.sections);
+  }
   const mediaAssets = bundle.mediaAssets ?? {};
   const offerCards = merged.offerCards.map((card) => {
     const resolved = resolveImage(

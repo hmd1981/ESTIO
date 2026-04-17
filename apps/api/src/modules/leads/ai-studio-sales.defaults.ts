@@ -48,6 +48,22 @@ export function mapSettingsStageToPipeline(
   return SETTINGS_STAGE_TO_PIPELINE[k] ?? 'INBOX';
 }
 
+/**
+ * Brand AI pack = high-ticket: skip INBOX and open in DISCOVERY
+ * (sales-facing label in settings map: QUALIFIED).
+ */
+export const AI_STUDIO_BRAND_FAST_TRACK_STAGE: CrmPipelineStage = 'DISCOVERY';
+
+export function resolveAiStudioInitialPipelineStage(
+  intent: AiStudioIntent,
+  settingsDefaultStageKey: string,
+): CrmPipelineStage {
+  if (intent === 'brand') {
+    return AI_STUDIO_BRAND_FAST_TRACK_STAGE;
+  }
+  return mapSettingsStageToPipeline(settingsDefaultStageKey);
+}
+
 export function mapHintPriorityToCrm(
   hint: string | null | undefined,
 ): CrmPriority {

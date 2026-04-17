@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AI_STUDIO_FUNNEL_OPEN_EVENT } from "@/lib/ai-studio-funnel-v3/constants";
 import type { AppLocale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/paths";
 import {
@@ -22,23 +23,68 @@ import {
 } from "./ai-studio-analytics";
 
 const CTA_LABELS: Record<Intent, { en: string; ar: string }> = {
-  images: { en: "Request image production", ar: "\u0637\u0644\u0628 \u0625\u0646\u062a\u0627\u062c \u0635\u0648\u0631" },
-  video: { en: "Start video production", ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0641\u064a\u062f\u064a\u0648" },
-  brand: { en: "Start brand pack", ar: "\u0627\u0628\u062f\u0623 \u062d\u0632\u0645\u0629 \u0627\u0644\u0639\u0644\u0627\u0645\u0629" },
+  images: {
+    en: "Start image production",
+    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0635\u0648\u0631",
+  },
+  video: {
+    en: "Start video production",
+    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0641\u064a\u062f\u064a\u0648",
+  },
+  brand: {
+    en: "Start brand production",
+    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0639\u0644\u0627\u0645\u0629",
+  },
 };
 
 const DEFAULT_TEXTS = new Set([
   "Request a studio scope",
   "\u0637\u0644\u0628 \u0646\u0637\u0627\u0642 \u0627\u0633\u062a\u0648\u062f\u064a\u0648",
+  "Start a project",
+  "Get a quick quote",
+  "\u0627\u0628\u062f\u0623 \u0645\u0634\u0631\u0648\u0639\u0627\u064B",
+  "\u0639\u0631\u0636 \u0633\u0639\u0631 \u0633\u0631\u064a\u0639",
+  "Start image production",
+  "Start video production",
+  "Start brand production",
+  "Get images",
+  "Get short video",
+  "Get brand system",
 ]);
 
 function detectIntent(el: HTMLElement): Intent | null {
-  const sig = `${el.getAttribute("href") || ""} ${el.id || ""}`.toLowerCase();
-  if (sig.includes("offer-images") || sig.includes("images")) return "images";
-  if (sig.includes("offer-video") || sig.includes("video")) return "video";
-  if (sig.includes("offer-packs") || sig.includes("packs") || sig.includes("brand"))
+  const href = (el.getAttribute("href") || "").toLowerCase();
+  const id = (el.id || "").toLowerCase();
+  const sig = `${href} ${id}`;
+  if (
+    sig.includes("offer-images") ||
+    sig.includes("#offer-images") ||
+    href.includes("image-production")
+  )
+    return "images";
+  if (
+    sig.includes("offer-video") ||
+    sig.includes("#offer-video") ||
+    href.includes("video-production")
+  )
+    return "video";
+  if (
+    sig.includes("offer-packs") ||
+    sig.includes("#offer-packs") ||
+    href.includes("brand-ai-packs") ||
+    href.includes("brand-ai")
+  )
     return "brand";
   return null;
+}
+
+function buildStudioContactHref(locale: AppLocale, intent: Intent | null): string {
+  const q = new URLSearchParams({
+    interest: "AI_STUDIO",
+    streamlined: "1",
+  });
+  if (intent) q.set("intent", intent);
+  return withLocale(`/contact?${q.toString()}`, locale);
 }
 
 export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
@@ -93,18 +139,59 @@ export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
      ──────────────────────────────────────────────────────────────────── */
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const anchor = (e.target as HTMLElement).closest<HTMLElement>(
-        'a[href*="offer-"], button, [id^="offer-"]',
-      );
-      if (anchor) {
-        const i = detectIntent(anchor);
-        if (i) {
-          const source: IntentSource = detectIntentSource(anchor);
-          const dominant = trackerRef.current.record(i, source);
-          optimizerRef.current.recordImpression(i, source);
-          bufferEvent({ event: "studio_intent_selected", intent: i, source, quality: 0.9 });
-          setIntent(dominant);
+      const t = e.target as HTMLElement;
+      const mod =
+        e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+
+      let i: Intent | null = null;
+      let sourceEl: HTMLElement | null = null;
+
+      const funnelEl = t.closest("[data-ai-funnel-intent]");
+      if (funnelEl && !mod) {
+        const raw = funnelEl.getAttribute("data-ai-funnel-intent");
+        if (raw === "images" || raw === "video" || raw === "brand") {
+          e.preventDefault();
+          window.dispatchEvent(
+            new CustomEvent(AI_STUDIO_FUNNEL_OPEN_EVENT, {
+              detail: { intent: raw, source: "hero" },
+            }),
+          );
+          i = raw;
+          sourceEl = funnelEl as HTMLElement;
         }
+      }
+
+      const offerHost = t.closest<HTMLElement>("[id^='offer-']");
+      if (!i && offerHost) {
+        if (offerHost.id === "offer-images") i = "images";
+        else if (offerHost.id === "offer-video") i = "video";
+        else if (offerHost.id === "offer-packs") i = "brand";
+        if (i) {
+          sourceEl = offerHost;
+          if (!mod && t.closest("a[href]")) {
+            e.preventDefault();
+            window.dispatchEvent(
+              new CustomEvent(AI_STUDIO_FUNNEL_OPEN_EVENT, {
+                detail: { intent: i, source: "card" },
+              }),
+            );
+          }
+        }
+      }
+
+      if (!i) {
+        const el = t.closest<HTMLElement>("a, button, [id^='offer-']");
+        if (el) {
+          i = detectIntent(el);
+          sourceEl = el;
+        }
+      }
+      if (i && sourceEl) {
+        const source: IntentSource = detectIntentSource(sourceEl);
+        const dominant = trackerRef.current.record(i, source);
+        optimizerRef.current.recordImpression(i, source);
+        bufferEvent({ event: "studio_intent_selected", intent: i, source, quality: 0.9 });
+        setIntent(dominant);
       }
     };
     document.addEventListener("click", onClick, true);
@@ -157,7 +244,7 @@ export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
     };
   }, []);
 
-  /* ── CTA click tracking ── */
+  /* ── CTA click tracking + hard navigation with latest intent / streamlined query ── */
   useEffect(() => {
     const allCtaLabels = new Set<string>();
     for (const labels of Object.values(CTA_LABELS)) {
@@ -171,62 +258,87 @@ export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
       const href = a.getAttribute("href") || "";
       const text = a.textContent?.trim() || "";
 
-      const isCta =
-        (href.includes("contact") && href.includes("AI_STUDIO")) ||
-        DEFAULT_TEXTS.has(text) ||
-        allCtaLabels.has(text);
+      const goesToContact =
+        href.includes("/contact") &&
+        !href.startsWith("mailto:") &&
+        !href.startsWith("tel:");
+      const isStudioConversionCta =
+        goesToContact &&
+        (href.includes("AI_STUDIO") ||
+          href.includes("interest%3DAI_STUDIO") ||
+          DEFAULT_TEXTS.has(text) ||
+          allCtaLabels.has(text));
 
-      if (isCta) {
-        const position = detectCtaPosition(a);
-        const currentDominant = trackerRef.current.dominant;
-        const currentIntent = currentDominant?.intent ?? null;
+      if (!isStudioConversionCta) return;
 
-        const ctaEv = { event: "studio_cta_clicked", intent: currentIntent, position } as const;
-        trackEvent(ctaEv);
-        bufferEvent(ctaEv);
-        recordFunnelStage("cta_clicked", { intent: currentIntent, position });
+      const position = detectCtaPosition(a);
+      const currentDominant = trackerRef.current.dominant;
+      const domIntent = currentDominant?.intent ?? intent;
 
-        if (currentIntent && currentDominant) {
-          optimizerRef.current.recordCtaClick(currentIntent, currentDominant.source);
-        }
-        setPreNavIntent(currentIntent);
-        flushEvents();
-        const crmIntent = currentIntent ?? ("brand" as Intent);
-        void postCrmLeadFromAiStudio({
-          intent: crmIntent,
-          sessionId: getStudioSessionId(),
-          source: "cta_click",
-          locale,
-          ctaPosition: position,
-        });
+      const ctaEv = { event: "studio_cta_clicked", intent: domIntent, position } as const;
+      trackEvent(ctaEv);
+      bufferEvent(ctaEv);
+      recordFunnelStage("cta_clicked", { intent: domIntent, position });
+
+      if (currentDominant && domIntent) {
+        optimizerRef.current.recordCtaClick(domIntent, currentDominant.source);
       }
+      setPreNavIntent(domIntent);
+      flushEvents();
+      const crmIntent = domIntent ?? ("brand" as Intent);
+      void postCrmLeadFromAiStudio({
+        intent: crmIntent,
+        sessionId: getStudioSessionId(),
+        source: "cta_click",
+        locale,
+        ctaPosition: position,
+      });
+
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+        return;
+      }
+      e.preventDefault();
+      window.location.assign(buildStudioContactHref(locale, domIntent));
     };
 
     document.addEventListener("click", handler, true);
     return () => document.removeEventListener("click", handler, true);
-  }, [locale]);
+  }, [locale, intent]);
 
-  /* ── Adapt CTA button text via DOM ── */
+  /* ── Sync contact hrefs + CTA labels to current intent (no layout change) ── */
   useEffect(() => {
-    if (!intent) return;
-    const label = CTA_LABELS[intent][ar ? "ar" : "en"];
-
-    const allAnchors = document.querySelectorAll<HTMLAnchorElement>("a");
-    const saved: [HTMLAnchorElement, string][] = [];
-    allAnchors.forEach((a) => {
-      const href = a.getAttribute("href") || "";
-      const text = a.textContent?.trim() || "";
-      const hrefMatch = href.includes("contact") && href.includes("AI_STUDIO");
-      const textMatch = DEFAULT_TEXTS.has(text);
-      if (hrefMatch || textMatch) {
-        saved.push([a, a.textContent || ""]);
-        a.textContent = label;
-      }
+    const nextHref = buildStudioContactHref(locale, intent);
+    const hrefSaved: [HTMLAnchorElement, string][] = [];
+    document.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
+      const h = a.getAttribute("href") || "";
+      if (!h.includes("AI_STUDIO") && !h.includes("interest%3DAI_STUDIO")) return;
+      if (!h.includes("/contact")) return;
+      hrefSaved.push([a, h]);
+      a.setAttribute("href", nextHref);
     });
+
+    const textSaved: [HTMLAnchorElement, string][] = [];
+    if (intent) {
+      const label = CTA_LABELS[intent][ar ? "ar" : "en"];
+      document.querySelectorAll<HTMLAnchorElement>("a").forEach((a) => {
+        const h = a.getAttribute("href") || "";
+        const text = a.textContent?.trim() || "";
+        const hrefMatch =
+          h.includes("/contact") &&
+          (h.includes("AI_STUDIO") || h.includes("interest%3DAI_STUDIO"));
+        const textMatch = DEFAULT_TEXTS.has(text);
+        if (hrefMatch || textMatch) {
+          textSaved.push([a, a.textContent || ""]);
+          a.textContent = label;
+        }
+      });
+    }
+
     return () => {
-      for (const [a, t] of saved) a.textContent = t;
+      for (const [el, h] of hrefSaved) el.setAttribute("href", h);
+      for (const [el, t] of textSaved) el.textContent = t;
     };
-  }, [intent, ar]);
+  }, [intent, locale, ar]);
 
   /* ────────────────────────────────────────────────────────────────────
      2  Exit-intent soft capture
@@ -284,7 +396,12 @@ export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
       source: "exit_intent",
       locale,
     });
-    const q = new URLSearchParams({ interest: "AI_STUDIO", goal: exitGoal.trim() });
+    const q = new URLSearchParams({
+      interest: "AI_STUDIO",
+      streamlined: "1",
+      goal: exitGoal.trim(),
+    });
+    q.set("intent", crmIntent);
     window.location.href = withLocale(`/contact?${q.toString()}`, locale);
   }, [exitGoal, locale]);
 
@@ -344,7 +461,10 @@ export function AiStudioConversionLayer({ locale }: { locale: AppLocale }) {
   }, [reinforce]);
 
   /* ── Computed ── */
-  const contactHref = withLocale("/contact?interest=AI_STUDIO", locale);
+  const contactHref = useMemo(
+    () => buildStudioContactHref(locale, intent),
+    [intent, locale],
+  );
   const reinforceCta = intent
     ? CTA_LABELS[intent][ar ? "ar" : "en"]
     : ar

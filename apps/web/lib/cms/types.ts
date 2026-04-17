@@ -85,6 +85,8 @@ export type HomeSectionsCMS = {
     subheadline?: string;
     primaryCta?: { label?: string; href?: string };
     secondaryCta?: { label?: string; href?: string };
+    /** Optional row of short links (e.g. AI Studio paths); merged with code defaults when absent. */
+    intentLinks?: Array<{ label?: string; href?: string }>;
     videoUrl?: string;
     videoMediaAssetId?: string;
     imageUrl?: string;

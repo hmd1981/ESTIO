@@ -1,4 +1,4 @@
-import { cache } from "react";
+﻿import { cache } from "react";
 import type { AppLocale } from "@/lib/i18n/config";
 import { getServerApiBase } from "@/lib/api/server";
 import type { ServiceDetailContent } from "@/lib/content/types";
@@ -23,7 +23,10 @@ export const fetchPublishedServiceBySlug = cache(
       const base = getServerApiBase();
       const url = `${base}/services/by-slug/${encodeURIComponent(slug)}?locale=${locale}`;
       const r = await fetch(url, {
-        cache: "no-store",
+        next: {
+          revalidate: 60,
+          tags: [`service:${locale}:${slug}`],
+        },
       });
       if (!r.ok) return null;
       const service = (await r.json()) as ApiService;
@@ -144,7 +147,7 @@ export function mapApiServiceToDetailContent(
     summary: row.shortDescription,
     longDescription: row.longDescription || undefined,
     seo: {
-      title: `${row.title} — Estio`,
+      title: `${row.title}  - Estio`,
       description: row.shortDescription.slice(0, 300),
     },
     breadcrumbParents: fallback.breadcrumbParents,

@@ -11,28 +11,54 @@ export type AiStudioLandingSectionsCMS = {
   aiStudio?: Partial<AiStudioLandingContent> | null;
 };
 
+/**
+ * CMS / admin JSON often sends "" for untouched fields. `??` keeps those empty
+ * strings and wipes locale defaults (e.g. Arabic copy). Fall back to `base`
+ * when patch is missing or whitespace-only.
+ */
+function coalesceText(patch: string | undefined | null, base: string): string {
+  if (typeof patch !== "string") return base;
+  const t = patch.trim();
+  return t.length > 0 ? t : base;
+}
+
+function coalesceOptional(
+  patch: string | undefined | null,
+  base: string | undefined,
+): string | undefined {
+  if (patch == null) return base;
+  const t = patch.trim();
+  return t.length > 0 ? t : base;
+}
+
 function mergeHero(
   base: AiStudioLandingContent["hero"],
   patch?: Partial<AiStudioLandingContent["hero"]>,
 ): AiStudioLandingContent["hero"] {
   if (!patch) return base;
   return {
-    kicker: patch.kicker ?? base.kicker,
-    headline: patch.headline ?? base.headline,
-    lead: patch.lead ?? base.lead,
+    kicker: coalesceText(patch.kicker, base.kicker),
+    headline: coalesceText(patch.headline, base.headline),
+    lead: coalesceText(patch.lead, base.lead),
     primaryCta: {
-      ...base.primaryCta,
-      ...patch.primaryCta,
+      label: coalesceText(patch.primaryCta?.label, base.primaryCta.label),
+      href: coalesceText(patch.primaryCta?.href, base.primaryCta.href),
     },
     secondaryCta: {
-      ...base.secondaryCta,
-      ...patch.secondaryCta,
+      label: coalesceText(patch.secondaryCta?.label, base.secondaryCta.label),
+      href: coalesceText(patch.secondaryCta?.href, base.secondaryCta.href),
     },
-    imageUrl: patch.imageUrl ?? base.imageUrl,
-    imageAlt: patch.imageAlt ?? base.imageAlt,
-    imageMediaAssetId: patch.imageMediaAssetId ?? base.imageMediaAssetId,
-    videoUrl: patch.videoUrl ?? base.videoUrl,
-    videoMediaAssetId: patch.videoMediaAssetId ?? base.videoMediaAssetId,
+    imageUrl: coalesceOptional(patch.imageUrl, base.imageUrl),
+    imageAlt: coalesceOptional(patch.imageAlt, base.imageAlt),
+    imageMediaAssetId: coalesceOptional(
+      patch.imageMediaAssetId,
+      base.imageMediaAssetId,
+    ),
+    videoUrl: coalesceOptional(patch.videoUrl, base.videoUrl),
+    videoMediaAssetId: coalesceOptional(
+      patch.videoMediaAssetId,
+      base.videoMediaAssetId,
+    ),
   };
 }
 
@@ -45,18 +71,24 @@ function mergePageBackdrop(
     return Object.keys(b).length ? b : undefined;
   }
   const out: AiStudioPageBackdrop = {
-    videoUrl: patch.videoUrl ?? b.videoUrl,
-    videoMediaAssetId: patch.videoMediaAssetId ?? b.videoMediaAssetId,
-    posterUrl: patch.posterUrl ?? b.posterUrl,
-    posterAlt: patch.posterAlt ?? b.posterAlt,
-    posterMediaAssetId: patch.posterMediaAssetId ?? b.posterMediaAssetId,
+    videoUrl: coalesceOptional(patch.videoUrl, b.videoUrl),
+    videoMediaAssetId: coalesceOptional(
+      patch.videoMediaAssetId,
+      b.videoMediaAssetId,
+    ),
+    posterUrl: coalesceOptional(patch.posterUrl, b.posterUrl),
+    posterAlt: coalesceOptional(patch.posterAlt, b.posterAlt),
+    posterMediaAssetId: coalesceOptional(
+      patch.posterMediaAssetId,
+      b.posterMediaAssetId,
+    ),
   };
   const has =
     out.videoUrl?.trim() ||
     out.videoMediaAssetId?.trim() ||
     out.posterUrl?.trim() ||
     out.posterMediaAssetId?.trim();
-  return has ? out : undefined;
+  return has ? out : Object.keys(b).length ? b : undefined;
 }
 
 function mergeOfferCards(
@@ -68,14 +100,14 @@ function mergeOfferCards(
     const b = base[i];
     if (!b) {
       return {
-        title: p.title ?? "",
-        description: p.description ?? "",
+        title: coalesceText(p.title, ""),
+        description: coalesceText(p.description, ""),
         whatYouGet: p.whatYouGet?.length ? p.whatYouGet : [],
         bestFor: p.bestFor?.length ? p.bestFor : [],
         typicalOutputs: p.typicalOutputs?.trim() ?? "",
         subOffers: p.subOffers?.length ? p.subOffers : undefined,
-        href: p.href ?? "",
-        cta: p.cta ?? "",
+        href: coalesceText(p.href, ""),
+        cta: coalesceText(p.cta, ""),
         imageUrl: p.imageUrl,
         imageAlt: p.imageAlt,
         imageMediaAssetId: p.imageMediaAssetId,
@@ -84,10 +116,10 @@ function mergeOfferCards(
     return {
       ...b,
       ...p,
-      title: p.title ?? b.title,
-      description: p.description ?? b.description,
-      href: p.href ?? b.href,
-      cta: p.cta ?? b.cta,
+      title: coalesceText(p.title, b.title),
+      description: coalesceText(p.description, b.description),
+      href: coalesceText(p.href, b.href),
+      cta: coalesceText(p.cta, b.cta),
       whatYouGet:
         p.whatYouGet !== undefined && p.whatYouGet.length > 0
           ? p.whatYouGet
@@ -96,15 +128,18 @@ function mergeOfferCards(
         p.bestFor !== undefined && p.bestFor.length > 0 ? p.bestFor : b.bestFor,
       typicalOutputs:
         p.typicalOutputs !== undefined && p.typicalOutputs.trim()
-          ? p.typicalOutputs
+          ? p.typicalOutputs.trim()
           : b.typicalOutputs,
       subOffers:
         p.subOffers !== undefined && p.subOffers.length > 0
           ? p.subOffers
           : b.subOffers,
-      imageUrl: p.imageUrl ?? b.imageUrl,
-      imageAlt: p.imageAlt ?? b.imageAlt,
-      imageMediaAssetId: p.imageMediaAssetId ?? b.imageMediaAssetId,
+      imageUrl: coalesceOptional(p.imageUrl, b.imageUrl),
+      imageAlt: coalesceOptional(p.imageAlt, b.imageAlt),
+      imageMediaAssetId: coalesceOptional(
+        p.imageMediaAssetId,
+        b.imageMediaAssetId,
+      ),
     };
   });
 }
@@ -115,16 +150,16 @@ function mergeWho(
 ): AiStudioLandingContent["whoThisIsFor"] {
   if (!patch) return base;
   return {
-    title: patch.title ?? base.title,
+    title: coalesceText(patch.title, base.title),
     fit: {
-      title: patch.fit?.title ?? base.fit.title,
+      title: coalesceText(patch.fit?.title, base.fit.title),
       items:
         patch.fit?.items !== undefined && patch.fit.items.length > 0
           ? patch.fit.items
           : base.fit.items,
     },
     notFit: {
-      title: patch.notFit?.title ?? base.notFit.title,
+      title: coalesceText(patch.notFit?.title, base.notFit.title),
       items:
         patch.notFit?.items !== undefined && patch.notFit.items.length > 0
           ? patch.notFit.items
@@ -142,13 +177,13 @@ function mergeSteps(
     const b = base[i];
     if (!b) {
       return {
-        step: p.step ?? "",
-        description: p.description ?? "",
+        step: coalesceText(p.step, ""),
+        description: coalesceText(p.description, ""),
       };
     }
     return {
-      step: p.step ?? b.step,
-      description: p.description ?? b.description,
+      step: coalesceText(p.step, b.step),
+      description: coalesceText(p.description, b.description),
     };
   });
 }
@@ -175,21 +210,26 @@ export function mergeAiStudioLandingFromSections(
     studioOutputs:
       p.studioOutputs && typeof p.studioOutputs === "object"
         ? {
-            title: p.studioOutputs.title ?? base.studioOutputs.title,
+            title: coalesceText(
+              p.studioOutputs.title,
+              base.studioOutputs.title,
+            ),
             samples:
               p.studioOutputs.samples !== undefined &&
               p.studioOutputs.samples.length > 0
-                ? p.studioOutputs.samples.map((s, i) => ({
-                    label:
-                      s.label ?? base.studioOutputs.samples[i]?.label ?? "",
-                    imageUrl:
-                      s.imageUrl ??
-                      base.studioOutputs.samples[i]?.imageUrl ??
-                      "",
-                    imageAlt:
-                      s.imageAlt ??
-                      base.studioOutputs.samples[i]?.imageAlt ??
-                      "",
+                ? p.studioOutputs.samples.map((sam, i) => ({
+                    label: coalesceText(
+                      sam.label,
+                      base.studioOutputs.samples[i]?.label ?? "",
+                    ),
+                    imageUrl: coalesceText(
+                      sam.imageUrl,
+                      base.studioOutputs.samples[i]?.imageUrl ?? "",
+                    ),
+                    imageAlt: coalesceText(
+                      sam.imageAlt,
+                      base.studioOutputs.samples[i]?.imageAlt ?? "",
+                    ),
                   }))
                 : base.studioOutputs.samples,
           }
@@ -197,23 +237,28 @@ export function mergeAiStudioLandingFromSections(
     separator:
       p.separator && typeof p.separator === "object"
         ? {
-            title: p.separator.title ?? base.separator.title,
-            body: p.separator.body ?? base.separator.body,
+            title: coalesceText(p.separator.title, base.separator.title),
+            body: coalesceText(p.separator.body, base.separator.body),
           }
         : base.separator,
     valueProps:
       p.valueProps !== undefined && p.valueProps.length > 0
         ? p.valueProps.map((vp, i) => ({
-            title: vp.title ?? base.valueProps[i]?.title ?? "",
-            body: vp.body ?? base.valueProps[i]?.body ?? "",
+            title: coalesceText(
+              vp.title,
+              base.valueProps[i]?.title ?? "",
+            ),
+            body: coalesceText(vp.body, base.valueProps[i]?.body ?? ""),
           }))
         : base.valueProps,
     offerCards: mergeOfferCards(base.offerCards, p.offerCards),
     deliverablesSnapshot:
       p.deliverablesSnapshot && typeof p.deliverablesSnapshot === "object"
         ? {
-            title:
-              p.deliverablesSnapshot.title ?? base.deliverablesSnapshot.title,
+            title: coalesceText(
+              p.deliverablesSnapshot.title,
+              base.deliverablesSnapshot.title,
+            ),
             items:
               p.deliverablesSnapshot.items !== undefined &&
               p.deliverablesSnapshot.items.length > 0
@@ -223,40 +268,126 @@ export function mergeAiStudioLandingFromSections(
         : base.deliverablesSnapshot,
     whoThisIsFor: mergeWho(base.whoThisIsFor, p.whoThisIsFor),
     howDeliveryWorks: {
-      title: p.howDeliveryWorks?.title ?? base.howDeliveryWorks.title,
+      title: coalesceText(
+        p.howDeliveryWorks?.title,
+        base.howDeliveryWorks.title,
+      ),
       steps: mergeSteps(
         base.howDeliveryWorks.steps,
         p.howDeliveryWorks?.steps,
       ),
     },
     whyDifferent: {
-      title: p.whyDifferent?.title ?? base.whyDifferent.title,
+      title: coalesceText(p.whyDifferent?.title, base.whyDifferent.title),
       items:
         p.whyDifferent?.items !== undefined &&
         p.whyDifferent.items.length > 0
           ? p.whyDifferent.items.map((it, i) => ({
-              title: it.title ?? base.whyDifferent.items[i]?.title ?? "",
-              body: it.body ?? base.whyDifferent.items[i]?.body ?? "",
+              title: coalesceText(
+                it.title,
+                base.whyDifferent.items[i]?.title ?? "",
+              ),
+              body: coalesceText(
+                it.body,
+                base.whyDifferent.items[i]?.body ?? "",
+              ),
             }))
           : base.whyDifferent.items,
     },
     cta: {
-      headline: p.cta?.headline ?? base.cta.headline,
-      body: p.cta?.body ?? base.cta.body,
-      buttonLabel: p.cta?.buttonLabel ?? base.cta.buttonLabel,
-      href: p.cta?.href ?? base.cta.href,
+      headline: coalesceText(p.cta?.headline, base.cta.headline),
+      body: coalesceText(p.cta?.body, base.cta.body),
+      buttonLabel: coalesceText(p.cta?.buttonLabel, base.cta.buttonLabel),
+      href: coalesceText(p.cta?.href, base.cta.href),
     },
     faq: {
-      title: p.faq?.title ?? base.faq.title,
+      title: coalesceText(p.faq?.title, base.faq.title),
       items:
         p.faq?.items !== undefined && p.faq.items.length > 0
           ? p.faq.items.map((fi, i) => ({
-              question:
-                fi.question ?? base.faq.items[i]?.question ?? "",
-              answer: fi.answer ?? base.faq.items[i]?.answer ?? "",
+              question: coalesceText(
+                fi.question,
+                base.faq.items[i]?.question ?? "",
+              ),
+              answer: coalesceText(fi.answer, base.faq.items[i]?.answer ?? ""),
             }))
           : base.faq.items,
     },
+  };
+}
+
+function readAiStudioPatch(
+  sections: unknown,
+): Partial<AiStudioLandingContent> | null {
+  if (!sections || typeof sections !== "object") return null;
+  const ai = (sections as { aiStudio?: unknown }).aiStudio;
+  if (!ai || typeof ai !== "object") return null;
+  return ai as Partial<AiStudioLandingContent>;
+}
+
+function backdropHasMedia(pb: AiStudioPageBackdrop | undefined): boolean {
+  if (!pb) return false;
+  return Boolean(
+    pb.videoUrl?.trim() ||
+      pb.videoMediaAssetId?.trim() ||
+      pb.posterUrl?.trim() ||
+      pb.posterMediaAssetId?.trim(),
+  );
+}
+
+/**
+ * When `/ar/ai-studio` CMS rows omit hero/backdrop media, reuse the English
+ * page's `sections.aiStudio` media fields so Arabic matches English visually.
+ * Copy always stays from `mergedAr` (Arabic static + AR CMS text).
+ */
+export function overlayEnglishAiStudioMediaOnArabic(
+  mergedAr: AiStudioLandingContent,
+  enSections: unknown,
+): AiStudioLandingContent {
+  const enPatch = readAiStudioPatch(enSections);
+  if (!enPatch) return mergedAr;
+
+  const heroEn = enPatch.hero;
+  const h = mergedAr.hero;
+  const nextHero = { ...h };
+
+  if (heroEn) {
+    const keys = [
+      "imageUrl",
+      "imageAlt",
+      "imageMediaAssetId",
+      "videoUrl",
+      "videoMediaAssetId",
+    ] as const;
+    for (const k of keys) {
+      const cur = nextHero[k];
+      const curEmpty =
+        cur == null || (typeof cur === "string" && !cur.trim());
+      const enVal = heroEn[k];
+      const enOk = typeof enVal === "string" && enVal.trim();
+      if (!curEmpty || !enOk) continue;
+      if (k === "imageUrl") nextHero.imageUrl = enVal;
+      else if (k === "imageAlt") nextHero.imageAlt = enVal;
+      else if (k === "imageMediaAssetId")
+        nextHero.imageMediaAssetId = enVal;
+      else if (k === "videoUrl") nextHero.videoUrl = enVal;
+      else if (k === "videoMediaAssetId")
+        nextHero.videoMediaAssetId = enVal;
+    }
+  }
+
+  let nextBackdrop = mergedAr.pageBackdrop;
+  if (!backdropHasMedia(nextBackdrop) && enPatch.pageBackdrop) {
+    const pb = enPatch.pageBackdrop;
+    if (backdropHasMedia(pb as AiStudioPageBackdrop)) {
+      nextBackdrop = { ...pb } as AiStudioPageBackdrop;
+    }
+  }
+
+  return {
+    ...mergedAr,
+    hero: nextHero,
+    pageBackdrop: nextBackdrop,
   };
 }
 

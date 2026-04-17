@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { adminFetch } from "@/lib/admin-fetch";
+import { formatLeadServiceDisplay } from "@/lib/format-lead-service";
 
 type LeadRow = {
   id: string;
@@ -11,6 +12,8 @@ type LeadRow = {
   email: string;
   phone: string | null;
   serviceType: string;
+  subServiceType: string | null;
+  offerType: string | null;
   source: string;
   status: string;
   priority: string;
@@ -154,7 +157,6 @@ export function LeadsManager() {
                   "Priority",
                   "Owner",
                   "Status",
-                  "",
                 ].map((h) => (
                   <th
                     key={h}
@@ -169,7 +171,7 @@ export function LeadsManager() {
               {rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="px-3 py-10 text-center text-[var(--admin-muted)]"
                   >
                     No leads in this view.
@@ -195,7 +197,9 @@ export function LeadsManager() {
                     <td className="max-w-[180px] truncate px-3 py-3 font-mono text-xs">
                       {row.email}
                     </td>
-                    <td className="px-3 py-3 text-xs">{row.serviceType}</td>
+                    <td className="max-w-[240px] px-3 py-3 text-xs leading-snug">
+                      {formatLeadServiceDisplay(row)}
+                    </td>
                     <td className="px-3 py-3 text-xs">{row.stage}</td>
                     <td className="px-3 py-3 text-xs">{row.source}</td>
                     <td className="px-3 py-3 text-xs tabular-nums">{row.score}</td>
@@ -244,14 +248,6 @@ export function LeadsManager() {
                           </option>
                         ))}
                       </select>
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      <Link
-                        href={`/admin/leads/${row.id}`}
-                        className="text-xs font-semibold text-[var(--admin-primary)]"
-                      >
-                        Open
-                      </Link>
                     </td>
                   </tr>
                 ))

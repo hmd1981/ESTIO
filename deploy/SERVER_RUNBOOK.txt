@@ -26,3 +26,15 @@ Estio production — run on the VM (e.g. 82.22.50.142)
    sudo grep -E 'connect\(\) failed|upstream' /var/log/nginx/error.log | tail -20
 
 Ports: web 3000, admin 3001, API 4000. Cloudflare SSL: Full (strict).
+
+7) GPU media worker (SSH reverse tunnel to localhost:9000 on this server)
+   - On Estio host sshd must allow TCP forwarding and gateway ports: AllowTcpForwarding yes, GatewayPorts yes (or clientspecified); then: sudo sshd -t && sudo systemctl reload ssh
+   - Workstation opens SSH -R so FastAPI is reachable on the Estio host at port 9000 (see deploy/MEDIA_WORKER.md).
+   - On the SERVER HOST: curl http://127.0.0.1:9000/health
+   - API runs in Docker: set MEDIA_WORKER_URL=http://host.docker.internal:9000 (compose adds host.docker.internal).
+     Tunnel must listen on 0.0.0.0:9000 on the server, not only 127.0.0.1, so the container can connect.
+   - API on host without Docker: MEDIA_WORKER_URL=http://127.0.0.1:9000
+   - Also set: MEDIA_WORKER_TIMEOUT_MS=660000, MEDIA_WORKER_HEALTH_TIMEOUT_MS=10000
+   - After .env changes: docker compose -f docker-compose.prod.yml up -d api
+   - Verify Nest: curl https://<api-host>/media/worker-health
+   - Full notes: deploy/MEDIA_WORKER.md

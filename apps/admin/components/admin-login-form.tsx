@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { getPublicApiBase } from "@/lib/api-base";
 import { setAdminToken } from "@/lib/admin-token";
 
-export function AdminLoginForm({ nextPath }: { nextPath: string }) {
+export function AdminLoginForm({
+  nextPath,
+  sessionExpired = false,
+}: {
+  nextPath: string;
+  sessionExpired?: boolean;
+}) {
   const router = useRouter();
   const safeNext =
     nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/admin";
@@ -61,6 +67,15 @@ export function AdminLoginForm({ nextPath }: { nextPath: string }) {
         <p className="mt-2 text-sm text-[var(--admin-muted)]">
           Sign in with the configured admin password.
         </p>
+        {sessionExpired ? (
+          <p
+            className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            role="status"
+          >
+            Your session expired or the API rejected your token. Sign in again
+            to continue.
+          </p>
+        ) : null}
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <label className="block">
             <span className="text-xs font-medium text-[var(--admin-muted)]">

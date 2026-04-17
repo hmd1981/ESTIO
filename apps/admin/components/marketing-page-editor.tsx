@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getPublicApiBase } from "@/lib/api-base";
 import { collectArabicLocaleWarnings } from "@/lib/locale-content-guard";
 import { MediaPicker } from "@/components/media-picker";
+import { proxyUploadUrl } from "@/lib/proxy-upload-url";
 import { ENTERPRISE_PROOF_KEYS } from "@/lib/enterprise-cms-keys";
 import {
   applyEnterpriseStructuredMedia,
@@ -163,11 +164,12 @@ function shouldClearVisual(current: CmsVisual, prev: unknown): boolean {
 
 function ImageThumb({ url, alt }: { url: string; alt: string }) {
   if (!url.trim()) return null;
+  const displayUrl = proxyUploadUrl(url) ?? url;
   return (
     <div className="mt-2 aspect-video w-full max-h-32 overflow-hidden rounded border border-[var(--admin-border)] bg-black/10">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={url}
+        src={displayUrl}
         alt={alt.trim() || "Preview"}
         className="h-full w-full object-cover"
       />

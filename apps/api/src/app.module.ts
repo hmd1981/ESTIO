@@ -19,6 +19,8 @@ import { SeoModule } from './modules/seo/seo.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { RevalidationModule } from './modules/revalidation/revalidation.module';
 import { CrmUsersModule } from './modules/crm-users/crm-users.module';
+import { AiJobsModule } from './modules/ai-jobs/ai-jobs.module';
+import { AskEstioAiModule } from './modules/ask-estio-ai/ask-estio-ai.module';
 import { StudioAnalyticsModule } from './modules/studio-analytics/studio-analytics.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
@@ -50,6 +52,8 @@ import { AppService } from './app.service';
     RevalidationModule,
     CrmUsersModule,
     StudioAnalyticsModule,
+    AskEstioAiModule,
+    AiJobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

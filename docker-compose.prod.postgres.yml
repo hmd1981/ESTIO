@@ -1,0 +1,33 @@
+# Database tier for VM 902 — PostgreSQL only. Do not run API or worker here.
+#
+# Listen on a private interface or bind to 0.0.0.0:5432 only behind a firewall that allows
+# VM 901 (app) — never expose 5432 to the public Internet.
+#
+#   export POSTGRES_PASSWORD='strong-secret'
+#   docker compose -f docker-compose.prod.postgres.yml up -d
+#
+# Connection string for VM 901 (.env DATABASE_URL):
+#   postgresql://estio:POSTGRES_PASSWORD@<VM_902_PRIVATE_IP>:5432/estio?schema=public
+
+name: estio-platform-db
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: estio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_estio_db}
+      POSTGRES_DB: estio
+    ports:
+      - "${POSTGRES_BIND:-5432}:5432"
+    volumes:
+      - estio_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estio -d estio"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  estio_pg_data:

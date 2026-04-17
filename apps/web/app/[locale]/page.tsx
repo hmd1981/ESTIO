@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fragment } from "react";
+import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { CtaStripSection } from "@/components/sections/cta-strip-section";
 import { EnterpriseHighlightSection } from "@/components/sections/enterprise-highlight-section";
@@ -23,7 +23,6 @@ import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -62,15 +61,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function HomePage({ params, searchParams }: Props) {
+export default async function HomePage({ params }: Props) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) {
     notFound();
   }
-  const sp = (await searchParams) ?? {};
-  const highlightFromQuery = Array.isArray(sp.highlight)
-    ? sp.highlight[0]
-    : sp.highlight;
   const bundle = await getSiteBundle(raw);
   const cms = (bundle.homePage?.sections ?? {}) as HomeSectionsCMS;
   const cmsEn =
@@ -83,11 +78,6 @@ export default async function HomePage({ params, searchParams }: Props) {
   const sectionOrder = computeHomeSectionOrder(cms);
   const identityBlock = raw === "ar" ? systemIdentityAr : systemIdentity;
   const alignmentBlock = raw === "ar" ? operationalAlignmentAr : operationalAlignment;
-  const highlight = (() => {
-    const q = highlightFromQuery;
-    if (typeof q === "string" && q.trim()) return q.trim();
-    return cms._meta?.highlightSection?.trim();
-  })();
 
   const nodes: Record<string, React.ReactNode> = {
     hero: <HeroSection hero={m.hero} mediaAssets={mediaAssets} />,
@@ -207,18 +197,14 @@ export default async function HomePage({ params, searchParams }: Props) {
   return (
     <MarketingShell>
       {sectionOrder.map((id) => (
-        <Fragment key={id}>
-          <div
-            data-estio-section={id}
-            className={
-              highlight === id
-                ? "ring-2 ring-[var(--accent)]/50 ring-inset"
-                : undefined
-            }
-          >
-            {nodes[id]}
-          </div>
-        </Fragment>
+        <SectionHighlightFrame
+          key={id}
+          sectionId={id}
+          fallbackHighlight={cms._meta?.highlightSection}
+          data-estio-section={id}
+        >
+          {nodes[id]}
+        </SectionHighlightFrame>
       ))}
     </MarketingShell>
   );

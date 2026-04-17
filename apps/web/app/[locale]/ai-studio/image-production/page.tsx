@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ServiceDetailPage } from "@/components/service-detail/service-detail-page";
+import { StudioCreditsPanel } from "@/components/ai-studio/studio-credits-panel";
+import { UnifiedMediaGenerationPanel } from "@/components/ai-studio/unified-media-generation-panel";
 import { AiStudioSubNav } from "@/components/ai-studio/ai-studio-sub-nav";
 import { getAiStudioPage } from "@/lib/content/ai-studio-pages";
 import { resolvePublishedServiceDetail } from "@/lib/cms/resolve-service-detail";
@@ -9,6 +11,8 @@ import { marketingDetailMetadata } from "@/lib/seo/metadata-builders";
 import { isLocale } from "@/lib/i18n/config";
 
 const slug = "image-production";
+
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -33,7 +37,13 @@ export default async function ImageProductionPage({ params }: Props) {
       content={content}
       locale={raw}
       mediaAssets={bundle.mediaAssets ?? {}}
-      preamble={<AiStudioSubNav locale={raw} />}
+      preamble={
+        <>
+          <AiStudioSubNav locale={raw} />
+          <StudioCreditsPanel locale={raw} />
+          <UnifiedMediaGenerationPanel locale={raw} defaultMode="text_to_image" />
+        </>
+      }
     />
   );
 }

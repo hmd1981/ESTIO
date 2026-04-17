@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { getPublicApiBase } from "@/lib/api-base";
+import { proxyUploadUrl } from "@/lib/proxy-upload-url";
 import { collectArabicLocaleWarnings } from "@/lib/locale-content-guard";
 import { MediaPicker } from "@/components/media-picker";
 
@@ -1305,7 +1306,7 @@ export function AiStudioLandingEditor({ pageTitle }: { pageTitle: string }) {
                   {s.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={s.imageUrl}
+                      src={proxyUploadUrl(s.imageUrl) ?? s.imageUrl}
                       alt={s.imageAlt || `Sample ${i + 1}`}
                       className="h-full w-full object-cover"
                     />
@@ -1594,7 +1595,7 @@ export function AiStudioLandingEditor({ pageTitle }: { pageTitle: string }) {
                             <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded bg-[var(--admin-row-header)]">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={card.imageUrl}
+                                src={proxyUploadUrl(card.imageUrl) ?? card.imageUrl}
                                 alt={card.imageAlt || "Card image"}
                                 className="h-full w-full object-cover"
                               />

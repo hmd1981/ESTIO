@@ -6,10 +6,10 @@ export const brand = {
   legalName: "Estio",
   domain: "estio.org",
   tagline:
-    "Scoped delivery firm — platforms, content operations, governed AI, and enterprise automation. Muscat. Named systems. Written scope. Single owner.",
+    "Premium AI-powered visual production and digital execution for brands across the GCC — plus websites, content systems, and applied AI workflows under written scope. Muscat.",
   /** Fallback when CMS has no `footerTextAr` on Arabic routes */
   taglineAr:
-    "إستيو — تنفيذ محدود النطاق للأنظمة التشغيلية والمنصّات الرقمية: نطاق معلن، تكاملات مسماة، قبول مرحلي، وتسليم يشغّله فريقكم. مقرّنا القرم، مسقط.",
+    "إستيو — إنتاج بصري رفيع المستوى مدعوم بالذكاء الاصطناعي وتنفيذ رقمي للعلامات في الخليج، مع مواقع وأنظمة محتوى وسير عمل ذكاء تطبيقي ضمن نطاق معلن. مسقط.",
 } as const;
 
 export const primaryNav: NavItem[] = [

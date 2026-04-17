@@ -12,15 +12,19 @@ import { useSiteBundle } from "@/components/site-bundle-context";
 import { withLocale } from "@/lib/i18n/paths";
 import type { AppLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
+import { normalizeHeaderNavHref } from "@/lib/nav/normalize-header-nav";
 
 function bundleNavToItems(
   rows: Array<Record<string, unknown>>,
   locale: AppLocale,
 ): NavItem[] {
-  return rows.map((r) => ({
-    label: String(r.label ?? ""),
-    href: withLocale(String(r.href ?? "/"), locale),
-  }));
+  return rows.map((r) => {
+    const label = String(r.label ?? "");
+    return {
+      label,
+      href: normalizeHeaderNavHref(label, String(r.href ?? "/"), locale),
+    };
+  });
 }
 
 export function SiteHeader() {
@@ -37,7 +41,7 @@ export function SiteHeader() {
       ? bundleNavToItems(headerRows, locale)
       : fallbackPrimaryNav(locale).map((i) => ({
           ...i,
-          href: withLocale(i.href, locale),
+          href: normalizeHeaderNavHref(i.label, i.href, locale),
         }));
 
   const displayName =
@@ -50,11 +54,14 @@ export function SiteHeader() {
   const contactHref = withLocale("/contact", locale);
   const homeHref = withLocale("/", locale);
   const aiStudioHref = withLocale("/ai-studio", locale);
-  const talkLabel =
-    (locale === "ar"
+  const rawCta =
+    locale === "ar"
       ? (labels?.ar as Record<string, unknown> | undefined)?.primaryCta
-      : (labels?.en as Record<string, unknown> | undefined)?.primaryCta) ??
-    (locale === "ar" ? "بدء التأهيل" : "Start qualification");
+      : (labels?.en as Record<string, unknown> | undefined)?.primaryCta;
+  const ctaText = typeof rawCta === "string" ? rawCta.trim() : "";
+  const talkLabel =
+    (ctaText && ctaText !== "Start qualification" ? ctaText : null) ??
+    (locale === "ar" ? "ابدأ مشروعاً" : "Start a project");
   const aiStudioLabel = locale === "ar" ? "\u0634\u0627\u0647\u062f \u0627\u0644\u0625\u0646\u062a\u0627\u062c" : "See studio output";
   const isOnAiStudio = pathname.startsWith(aiStudioHref);
 

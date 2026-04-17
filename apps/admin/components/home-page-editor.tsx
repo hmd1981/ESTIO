@@ -5,6 +5,7 @@ import { getPublicApiBase } from "@/lib/api-base";
 import { collectArabicLocaleWarnings } from "@/lib/locale-content-guard";
 import { HOME_SECTION_IDS } from "@/lib/home-section-ids";
 import { MediaPicker } from "@/components/media-picker";
+import { proxyUploadUrl } from "@/lib/proxy-upload-url";
 
 type PageRow = {
   id: string;
@@ -118,11 +119,12 @@ function looksLikeVideoUrl(url: string) {
 
 function ImageThumb({ url, alt }: { url: string; alt: string }) {
   if (!url.trim()) return null;
+  const displayUrl = proxyUploadUrl(url) ?? url;
   return (
     <div className="mt-2 aspect-video w-full max-h-32 overflow-hidden rounded border border-[var(--admin-border)] bg-black/10">
       {looksLikeVideoUrl(url) ? (
         <video
-          src={url}
+          src={displayUrl}
           className="h-full w-full object-cover"
           preload="metadata"
           muted
@@ -132,7 +134,7 @@ function ImageThumb({ url, alt }: { url: string; alt: string }) {
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={url}
+          src={displayUrl}
           alt={alt.trim() || "Preview"}
           className="h-full w-full object-cover"
         />

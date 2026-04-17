@@ -15,9 +15,9 @@ type OutputCard = {
 
 const EN_CONTENT = {
   kicker: "What we produce",
-  headline: "Real output, not demos",
+  headline: "Studio output in three tracks",
   subtitle:
-    "Every asset is scoped, reviewed, and delivered as a production-ready file — not a raw generation.",
+    "Pick a track — images, short video, or a brand visual system. Same team, same review bar.",
   cards: [
     {
       title: "Campaign hero visuals",
@@ -47,15 +47,14 @@ const EN_CONTENT = {
       tag: "Brand",
     },
   ] satisfies OutputCard[],
-  cta: "See full studio output",
+  cta: "Open AI Studio",
 };
 
 const AR_CONTENT = {
   kicker: "\u0645\u0627\u0630\u0627 \u0646\u0646\u062a\u062c",
-  headline:
-    "\u0625\u0646\u062a\u0627\u062c \u062d\u0642\u064a\u0642\u064a\u060c \u0644\u064a\u0633 \u0639\u0631\u0648\u0636\u0627\u064b \u062a\u062c\u0631\u064a\u0628\u064a\u0629",
+  headline: "\u062b\u0644\u0627\u062b\u0629 \u0645\u0633\u0627\u0631\u0627\u062a \u0641\u064a \u0627\u0644\u0627\u0633\u062a\u0648\u062f\u064a\u0648",
   subtitle:
-    "\u0643\u0644 \u0645\u0644\u0641 \u0645\u062d\u062f\u062f \u0627\u0644\u0646\u0637\u0627\u0642 \u0648\u0645\u0631\u0627\u062c\u064e\u0639 \u0648\u062c\u0627\u0647\u0632 \u0644\u0644\u0627\u0633\u062a\u062e\u062f\u0627\u0645 \u2014 \u0644\u064a\u0633 \u062a\u0648\u0644\u064a\u062f\u0627\u064b \u062e\u0627\u0645\u0627\u064b.",
+    "\u0627\u062e\u062a\u0631\u0648\u0627 \u2014 \u0635\u0648\u0631\u060c \u0641\u064a\u062f\u064a\u0648 \u0642\u0635\u064a\u0631\u060c \u0623\u0648 \u0646\u0638\u0627\u0645 \u0628\u0635\u0631\u064a \u0644\u0644\u0639\u0644\u0627\u0645\u0629. \u0646\u0641\u0633 \u0627\u0644\u0641\u0631\u064a\u0642\u060c \u0646\u0641\u0633 \u0645\u0639\u064a\u0627\u0631 \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629.",
   cards: [
     {
       title:
@@ -91,7 +90,7 @@ const AR_CONTENT = {
       tag: "\u0647\u0648\u064a\u0629",
     },
   ] satisfies OutputCard[],
-  cta: "\u0634\u0627\u0647\u062f \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0627\u0633\u062a\u0648\u062f\u064a\u0648",
+  cta: "\u0627\u0644\u062f\u062e\u0648\u0644 \u0625\u0644\u0649 \u0627\u0633\u062a\u0648\u062f\u064a\u0648 \u0627\u0644\u0630\u0643\u0627\u0621",
 };
 
 export function AiOutputPreviewSection({ locale }: { locale: AppLocale }) {
@@ -131,6 +130,7 @@ export function AiOutputPreviewSection({ locale }: { locale: AppLocale }) {
                 src={card.imageUrl}
                 alt={card.imageAlt}
                 fill
+                unoptimized
                 className="object-contain p-4 opacity-80 transition-opacity duration-200 ease-out group-hover:opacity-100"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
