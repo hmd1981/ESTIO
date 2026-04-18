@@ -1,8 +1,9 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
-  PaymentRequiredException,
 } from '@nestjs/common';
 import type { Prisma, PrismaClient, CreditLedgerReason } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -81,11 +82,18 @@ export class CreditsService {
     const current = await this.getBalance(args.userId, tx);
     const next = current + args.delta;
     if (args.delta < 0 && next < 0) {
-      throw new PaymentRequiredException({
-        message: 'Insufficient credit balance',
-        balance: current,
-        attempted: args.delta,
-      });
+      // NestJS doesn't ship a PaymentRequiredException, so throw a raw
+      // HttpException with HTTP 402 — the front-end keys off statusCode 402.
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.PAYMENT_REQUIRED,
+          error: 'Payment Required',
+          message: 'Insufficient credit balance',
+          balance: current,
+          attempted: args.delta,
+        },
+        HttpStatus.PAYMENT_REQUIRED,
+      );
     }
 
     try {

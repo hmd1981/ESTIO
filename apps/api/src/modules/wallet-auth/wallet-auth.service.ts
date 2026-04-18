@@ -17,19 +17,19 @@ import {
 } from './wallet-auth.constants';
 import { resolveChainConfig } from '../payments/chain.config';
 
-interface NonceResponse {
+export interface NonceResponse {
   nonce: string;
   expiresAt: string;
   message: string;
 }
 
-interface VerifyInput {
+export interface VerifyInput {
   address: unknown;
   signature: unknown;
   message: unknown;
 }
 
-interface VerifyResponse {
+export interface VerifyResponse {
   accessToken: string;
   expiresInSeconds: number;
   user: {
