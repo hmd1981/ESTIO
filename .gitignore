@@ -18,3 +18,8 @@ coverage
 *id_ed25519*
 *id_rsa*
 *BEGIN_OPENSSH_PRIVATE_KEY*
+
+.env
+backups/
+_ARCHIVE_ESTIO_DO_NOT_USE/
+node_modules/
