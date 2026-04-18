@@ -5,14 +5,14 @@
   - Added the required column `fullName` to the `Lead` table without a default value. This is not possible if the table is not empty.
 
 */
+-- Lead.updatedAt must exist before ALTER COLUMN below (runs before crm_platform adds it).
+ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
 -- AlterTable
 ALTER TABLE "Lead" DROP COLUMN "name",
 ADD COLUMN     "fullName" TEXT NOT NULL,
 ALTER COLUMN "status" SET DEFAULT 'NEW',
 ALTER COLUMN "updatedAt" DROP DEFAULT;
-
--- AlterTable
-ALTER TABLE "SalesSettings" ALTER COLUMN "id" SET DEFAULT 'default';
 
 -- RenameIndex
 ALTER INDEX "MediaPlacement_mediaAssetId_pageSlug_locale_sectionKey_fieldKey" RENAME TO "MediaPlacement_mediaAssetId_pageSlug_locale_sectionKey_fiel_key";

@@ -101,7 +101,7 @@ ALTER TABLE "Lead" ADD COLUMN "landingPage" TEXT;
 ALTER TABLE "Lead" ADD COLUMN "campaignSource" VARCHAR(128);
 ALTER TABLE "Lead" ADD COLUMN "campaignMedium" VARCHAR(128);
 ALTER TABLE "Lead" ADD COLUMN "campaignName" VARCHAR(256);
-ALTER TABLE "Lead" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 CREATE INDEX "Lead_status_createdAt_idx" ON "Lead"("status", "createdAt");
 CREATE INDEX "Lead_stage_createdAt_idx" ON "Lead"("stage", "createdAt");
@@ -246,3 +246,5 @@ CREATE TABLE "MessageTemplate" (
 
 INSERT INTO "SalesSettings" ("id", "staleLeadDays", "followUpReminderHours", "proposalFollowUpDays", "lostReasonWhenLostRequired", "updatedAt")
 VALUES ('default', 14, 48, 7, true, CURRENT_TIMESTAMP);
+
+ALTER TABLE "SalesSettings" ALTER COLUMN "id" SET DEFAULT 'default';
