@@ -9,6 +9,13 @@ async function bootstrap() {
   // Default Express JSON limit is small; worker payloads may include large prompt + extra keys.
   app.useBodyParser('json', { limit: '5mb' });
 
+  // We sit behind nginx (and Cloudflare). Without `trust proxy`, every request
+  // looks like it comes from the nginx container's docker-bridge IP, which
+  // would collapse all users into a single throttler bucket. Trust the local
+  // proxy hop only — Cloudflare's CF-Connecting-IP is normalized into
+  // X-Forwarded-For by our nginx vhost (see deploy/nginx/estio.conf).
+  app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

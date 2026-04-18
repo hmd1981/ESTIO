@@ -676,3 +676,172 @@ model MediaGenerationJob {
   @@index([status, createdAt])
   @@map("media_generation_jobs")
 }
+
+// =============================================================================
+// Phase 2 — wallet auth (SIWE), credit packs, on-chain USDC payments, ledger
+// =============================================================================
+//
+// Money/runtime knobs are env-driven; see deploy/PHASE2_DECISIONS.md for the
+// list of operator-set values (chain, RPC, receiving address allowlist, …).
+//
+// Lifecycle:
+//   - User signs a SIWE message  -> AuthService consumes a SiweNonce, upserts
+//     a User row, returns a JWT keyed by walletAddress.
+//   - User picks a CreditPack    -> PaymentsService creates a Payment with a
+//     unique amountAtomic (base + nudge) and a TTL.
+//   - On-chain watcher sees the matching USDC Transfer to receivingAddress
+//     -> writes Payment.txHash + status='confirmed' AND a CreditLedger row
+//     with reason='payment_credit' atomically.
+//   - User submits a media job   -> MediaJobsService writes a CreditLedger
+//     row with reason='job_debit' in the same Prisma transaction as the
+//     MediaGenerationJob row insert (idempotent by (refType, refId)).
+//   - On terminal failure        -> CreditLedger row with reason='refund'
+//     refunds the original debit (also idempotent by refId).
+
+enum PaymentStatus {
+  pending
+  confirmed
+  expired
+  failed
+}
+
+enum CreditLedgerReason {
+  payment_credit
+  job_debit
+  refund
+  manual_adjust
+}
+
+/// End-user identity. The wallet address (lowercased, with 0x prefix) is the
+/// stable identifier; the JWT `sub` is `walletAddress`. We never store any
+/// PII beyond what the user explicitly provides (none in Phase 2).
+model User {
+  id             String    @id @default(uuid())
+  walletAddress  String    @unique @db.VarChar(64)
+  /// Most recent successful SIWE login.
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  payments       Payment[]
+  ledgerEntries  CreditLedger[]
+
+  @@map("users")
+}
+
+/// One-shot SIWE nonce. Created when the client requests a login challenge,
+/// consumed (`consumedAt`) on successful verification, expires after
+/// `PHASE2_SIWE_NONCE_TTL_SECONDS`. Any attempt to verify a consumed or
+/// expired nonce is rejected (replay protection).
+model SiweNonce {
+  id             String    @id @default(uuid())
+  nonce          String    @unique @db.VarChar(64)
+  /// Optionally bound to a wallet address at issue time (currently unused;
+  /// reserved so a future flow can pre-bind nonces to a specific address).
+  walletAddress  String?   @db.VarChar(64)
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime
+  consumedAt     DateTime?
+
+  @@index([expiresAt])
+  @@map("siwe_nonces")
+}
+
+/// Catalogue of credit packs the user can buy. CMS / admin can toggle
+/// `active`; the PaymentsModule refuses to create a payment for an
+/// inactive pack or for a `usdcAmount` above `PHASE2_MAX_PACK_USDC`.
+model CreditPack {
+  id           String    @id @default(uuid())
+  /// Stable slug used in the URL and in payment receipts (e.g. "starter").
+  code         String    @unique @db.VarChar(40)
+  nameEn       String    @db.VarChar(80)
+  nameAr       String    @db.VarChar(80)
+  /// Price in USDC (6-decimal, stored as Decimal for human readability;
+  /// the on-chain comparison uses the atomic value derived from this).
+  usdcAmount   Decimal   @db.Decimal(20, 6)
+  /// Number of credits granted on confirmed payment.
+  credits      Int
+  active       Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  payments     Payment[]
+
+  @@map("credit_packs")
+}
+
+/// One pending or confirmed on-chain USDC payment. The `expectedAmountAtomic`
+/// includes a per-payment nudge (low ~14 bits derived from the row id) so
+/// two simultaneously-pending payments for the same pack never share an
+/// amount. `paymentRef` is the public id surfaced to the client / receipt.
+model Payment {
+  id                    String        @id @default(uuid())
+  paymentRef            String        @unique @default(uuid()) @db.VarChar(64)
+  userId                String
+  packId                String
+  receivingAddress      String        @db.VarChar(64)
+  /// USDC atomic units (BigInt — USDC has 6 decimals; e.g. $5.00 = 5_000_000).
+  expectedAmountAtomic  BigInt
+  status                PaymentStatus @default(pending)
+  txHash                String?       @db.VarChar(80)
+  fromAddress           String?       @db.VarChar(64)
+  blockNumber           BigInt?
+  confirmedAt           DateTime?
+  expiresAt             DateTime
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  pack                  CreditPack    @relation(fields: [packId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([status, expiresAt])
+  /// Watcher matches incoming Transfers by (receivingAddress, amount) within a
+  /// recent block range, so this composite index is the hot lookup.
+  @@index([receivingAddress, expectedAmountAtomic, status])
+  /// Hard guarantee that we never create two simultaneously-pending payments
+  /// for the same (address, amount). PaymentsService picks the nudge to keep
+  /// this true.
+  @@unique([receivingAddress, expectedAmountAtomic, status], map: "payments_addr_amount_status_uniq")
+  @@map("payments")
+}
+
+/// Append-only credit ledger. Every credit-affecting action is one row; the
+/// user's balance is `sum(delta)` over their rows. `(refType, refId)` is the
+/// idempotency key — a watcher rerun, retried debit, or duplicate refund are
+/// all guaranteed not to double-apply because the unique index rejects the
+/// second insert.
+model CreditLedger {
+  id            String             @id @default(uuid())
+  userId        String
+  delta         Int
+  reason        CreditLedgerReason
+  /// Logical type of the consuming row (e.g. "payment", "job", "manual").
+  refType       String             @db.VarChar(40)
+  /// Primary key of the consuming row (e.g. Payment.id, MediaGenerationJob.id).
+  refId         String             @db.VarChar(80)
+  /// Denormalized convenience for fast last-row reads / audit. Must agree
+  /// with `sum(delta)` over the user's rows up to and including this one.
+  balanceAfter  Int
+  notes         String?            @db.VarChar(280)
+  createdAt     DateTime           @default(now())
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@unique([refType, refId, reason], map: "credit_ledger_ref_reason_uniq")
+  @@map("credit_ledger")
+}
+
+/// Singleton-ish row tracking the last block number our payment watcher has
+/// scanned. Keyed by chain id so we can run base-mainnet and base-sepolia
+/// state side-by-side if you ever want to. The watcher updates this row
+/// after every successful sweep.
+model PaymentWatcherCursor {
+  chainId        Int      @id
+  lastScannedBlock BigInt
+  updatedAt      DateTime @updatedAt
+
+  @@map("payment_watcher_cursor")
+}

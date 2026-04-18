@@ -1,6 +1,14 @@
-import { proxyPaymentsApiRequest } from "@/lib/server/payments-api-proxy";
+import { proxyJson } from "@/lib/bff-proxy";
 
-/** POST /api/payments/create → backend POST /payments/create */
-export function POST(req: Request) {
-  return proxyPaymentsApiRequest(req, ["create"]);
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function POST(req: Request) {
+  const body = await req.text();
+  return proxyJson(
+    req,
+    "/payments/create",
+    { method: "POST", body },
+    { forwardAuth: true },
+  );
 }

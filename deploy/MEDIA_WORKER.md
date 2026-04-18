@@ -1,5 +1,16 @@
 # GPU media worker ↔ Estio API (SSH reverse tunnel)
 
+> **Canonical worker port: `9000`.** `MEDIA_WORKER_URL=http://host.docker.internal:9000` and
+> `MEDIA_JOB_VIEW_PROXY_UPSTREAM=http://host.docker.internal:9000` are the supported settings on
+> VM901. Any non-9000 port that briefly appeared in `.env` was a debugging detour and has been
+> reverted — see `deploy/AVAILABILITY.md` and `deploy/WORKSTATION_TUNNEL_FIX.md` for the
+> workstation-side cleanup.
+>
+> **Availability signal:** the API now exposes `GET /status` (and the web app proxies
+> `GET /api/status`) returning `{ gpu: { online, lastCheckedAt, latencyMs, reason } }`. The Studio
+> UI reads this every 30s and disables Generate / Buy-credits CTAs with a banner when the worker
+> is offline, so the site never fails silently. See `deploy/AVAILABILITY.md` for the full model.
+
 For **async job orchestration** (job id + polling) while keeping this sync path, see **`deploy/MEDIA_JOBS_ASYNC.md`**. Phase A routes: **`POST /media/jobs/generate-image`** (requires **Redis** / `REDIS_URL`), **`GET /media/jobs/:id`**, **`GET /media/jobs/:id/result`**.
 
 **API container cannot reach the worker (health timeout, jobs stuck `running`)?** See **`deploy/MEDIA_WORKER_REACHABILITY_RUNBOOK.md`** — host vs Docker probes, env, logs, and **`MEDIA_WORKER_TIMEOUT_MS`** smoke-test guidance.

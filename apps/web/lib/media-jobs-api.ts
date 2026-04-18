@@ -4,6 +4,20 @@ import {
   mediaJobViewBaseUrl,
   mediaJobViewPath,
 } from "@/lib/comfy-view-url";
+import { getWalletSession } from "@/lib/wallet-session";
+
+/**
+ * Build the headers for a media-jobs request. Always JSON, and attaches
+ * `Authorization: Bearer <walletToken>` if a wallet session exists in
+ * localStorage. The API decides whether the token is required (Phase 2 soft
+ * mode allows anonymous submits unless `PHASE2_ENFORCE_AUTH=true`).
+ */
+function jsonHeaders(): Record<string, string> {
+  const h: Record<string, string> = { "Content-Type": "application/json" };
+  const session = getWalletSession();
+  if (session) h["Authorization"] = `Bearer ${session.token}`;
+  return h;
+}
 
 /** Keep in sync with `apps/api/src/modules/media/generate-image-payload.ts`. */
 export const MEDIA_GENERATE_IMAGE_PROMPT_MAX_LENGTH = 8000;
@@ -148,7 +162,7 @@ export async function createStudioMediaJob(body: {
 }): Promise<CreateMediaGenerateImageResponse> {
   const res = await fetch(JOBS_BASE, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonHeaders(),
     body: JSON.stringify(body),
   });
   const payload = await readBody(res);
@@ -204,7 +218,7 @@ export async function upgradeMediaJobTier(
     `${JOBS_BASE}/${encodeURIComponent(jobId)}/upgrade`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: jsonHeaders(),
       body: JSON.stringify({ generation_tier: tier }),
     },
   );

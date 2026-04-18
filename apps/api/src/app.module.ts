@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { CrmWorkspaceModule } from './modules/crm-workspace/crm-workspace.module';
@@ -21,7 +23,11 @@ import { RevalidationModule } from './modules/revalidation/revalidation.module';
 import { CrmUsersModule } from './modules/crm-users/crm-users.module';
 import { AiJobsModule } from './modules/ai-jobs/ai-jobs.module';
 import { AskEstioAiModule } from './modules/ask-estio-ai/ask-estio-ai.module';
+import { CreditsModule } from './modules/credits/credits.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { StatusModule } from './modules/status/status.module';
 import { StudioAnalyticsModule } from './modules/studio-analytics/studio-analytics.module';
+import { WalletAuthModule } from './modules/wallet-auth/wallet-auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -33,6 +39,16 @@ import { AppService } from './app.service';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads/',
     }),
+    // Global rate limit. Two named tiers:
+    //   short  — burst guard (per IP):     30 req / 10s
+    //   long   — sustained guard (per IP): 600 req / 1h
+    // Submit endpoints (POST /media/jobs*, POST /media/generate-image) override these
+    // with stricter @Throttle() decorators (defence-in-depth before Phase 2 lands real
+    // wallet auth + credit debits).
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 10_000, limit: 30 },
+      { name: 'long', ttl: 3_600_000, limit: 600 },
+    ]),
     PrismaModule,
     AuthModule,
     SalesSettingsModule,
@@ -54,8 +70,15 @@ import { AppService } from './app.service';
     StudioAnalyticsModule,
     AskEstioAiModule,
     AiJobsModule,
+    StatusModule,
+    WalletAuthModule,
+    CreditsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

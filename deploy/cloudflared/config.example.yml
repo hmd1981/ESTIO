@@ -1,0 +1,19 @@
+# Cloudflare Tunnel ingress for a single canonical origin (estioapp).
+# Copy to /etc/cloudflared/config.yml (or your path), set tunnel UUID + credentials file,
+# then: cloudflared service install && systemctl enable --now cloudflared
+#
+# Run cloudflared ONLY on the host that runs Docker web/admin/api (same machine as nginx upstreams).
+
+tunnel: YOUR_TUNNEL_UUID
+credentials-file: /etc/cloudflared/YOUR_TUNNEL_UUID.json
+
+ingress:
+  - hostname: api.estio.org
+    service: http://127.0.0.1:4000
+  - hostname: admin.estio.org
+    service: http://127.0.0.1:3001
+  - hostname: www.estio.org
+    service: http://127.0.0.1:3000
+  - hostname: estio.org
+    service: http://127.0.0.1:3000
+  - service: http_status:404

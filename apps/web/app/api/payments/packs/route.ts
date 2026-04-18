@@ -1,6 +1,10 @@
-import { proxyPaymentsApiRequest } from "@/lib/server/payments-api-proxy";
+import { proxyJson } from "@/lib/bff-proxy";
 
-/** GET /api/payments/packs → backend GET /payments/packs */
-export function GET(req: Request) {
-  return proxyPaymentsApiRequest(req, ["packs"]);
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function GET(req: Request) {
+  return proxyJson(req, "/payments/packs", { method: "GET" }, {
+    cacheControl: "public, max-age=30, s-maxage=30",
+  });
 }

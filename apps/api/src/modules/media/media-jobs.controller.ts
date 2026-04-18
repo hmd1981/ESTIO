@@ -6,21 +6,36 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import type { Request } from 'express';
+import { MaybeWalletAuthGuard } from '../wallet-auth/maybe-wallet-auth.guard';
 import { MediaJobsService } from './media-jobs.service';
+
+// Submit-side rate limit (per IP). Real per-user accounting is the job of the
+// upcoming WalletAuthGuard + credit ledger in Phase 2; until that ships these
+// IP limits are the only thing standing between the open internet and our GPU.
+const SUBMIT_THROTTLE = {
+  short: { limit: 5, ttl: 60_000 }, //  5 submits / minute / IP
+  long: { limit: 50, ttl: 86_400_000 }, // 50 submits / day    / IP
+} as const;
 
 /**
  * Unified async media jobs. **Primary Studio submit:** `POST /media/jobs` with `{ mode, … }`.
  * Legacy: `POST …/generate-image`, `POST …/generate-media`.
  */
 @Controller('media/jobs')
+@UseGuards(MaybeWalletAuthGuard)
 export class MediaJobsController {
   constructor(private readonly mediaJobs: MediaJobsService) {}
 
   @Post('generate-image')
   @HttpCode(HttpStatus.ACCEPTED)
-  createGenerateImage(@Body() body: unknown) {
-    return this.mediaJobs.createGenerateImageJob(body);
+  @Throttle(SUBMIT_THROTTLE)
+  createGenerateImage(@Body() body: unknown, @Req() req: Request) {
+    return this.mediaJobs.createGenerateImageJob(body, req.walletUser?.id ?? null);
   }
 
   /**
@@ -29,15 +44,17 @@ export class MediaJobsController {
    */
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
-  createStudioMediaJob(@Body() body: unknown) {
-    return this.mediaJobs.createStudioMediaJob(body);
+  @Throttle(SUBMIT_THROTTLE)
+  createStudioMediaJob(@Body() body: unknown, @Req() req: Request) {
+    return this.mediaJobs.createStudioMediaJob(body, req.walletUser?.id ?? null);
   }
 
   /** Video-oriented async jobs (`mode`: `text_to_video` | `image_to_video`). Poll/result same as generate-image. */
   @Post('generate-media')
   @HttpCode(HttpStatus.ACCEPTED)
-  createGenerateMedia(@Body() body: unknown) {
-    return this.mediaJobs.createGenerateMediaJob(body);
+  @Throttle(SUBMIT_THROTTLE)
+  createGenerateMedia(@Body() body: unknown, @Req() req: Request) {
+    return this.mediaJobs.createGenerateMediaJob(body, req.walletUser?.id ?? null);
   }
 
   /**

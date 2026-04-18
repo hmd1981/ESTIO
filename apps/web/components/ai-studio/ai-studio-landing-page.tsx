@@ -12,6 +12,7 @@ import { AiStudioStickyNav } from "@/components/ai-studio/ai-studio-sticky-nav";
 import { AskEstioAiSection } from "@/components/ai-studio/ask-estio-ai-section";
 import { AiStudioConversionLayer } from "@/components/ai-studio/ai-studio-conversion-layer";
 import { AiStudioFunnelV3Panel } from "@/components/ai-studio/ai-studio-funnel-v3-panel";
+import { MarketingGpuBanner } from "@/components/ai-studio/marketing-gpu-banner";
 import { StudioCreditsPanel } from "@/components/ai-studio/studio-credits-panel";
 import {
   aiStudioOfferCardBullets,
@@ -112,6 +113,9 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
         ) : null}
 
         <div className="relative z-10">
+          {/* GPU outage banner — only renders when the worker is offline. */}
+          <MarketingGpuBanner locale={locale} />
+
           {/* ── Hero ── */}
           <section id="ai-studio-hero" className={band(ambient, "surface")}>
             <Container as="div" className="py-16 sm:py-20 lg:py-28">

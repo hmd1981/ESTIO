@@ -2,65 +2,71 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Container } from "@/components/layout/container";
+import { GpuOfflineBanner } from "@/components/ai-studio/gpu-offline-banner";
 import type { AppLocale } from "@/lib/i18n/config";
+import { useGpuStatus } from "@/lib/use-gpu-status";
+import {
+  clearWalletSession,
+  loginWithWallet,
+  useCreditBalance,
+  useWalletSession,
+  type WalletSession,
+} from "@/lib/wallet-session";
 
-/* ─── ESTIO payment contract types ─── */
+/* ─── ESTIO payment contract types (matching apps/api PaymentsService) ─── */
 
 type CreditPack = {
+  /** Server-assigned UUID. */
   id: string;
+  /** Stable lookup key — what we POST back as `packCode`. */
+  code: string;
+  /** Display credits granted. */
   credits: number;
-  priceUsd: number;
-  label: string;
-  labelAr: string;
-  note: string;
-  noteAr: string;
+  /** Decimal USDC string (e.g. "10", "39.99"). */
+  usdcAmount: string;
+  nameEn: string;
+  nameAr: string;
 };
 
-type WalletInfo = {
-  address: string;
-  network: string;
-  currency: string;
-  amount: string;
-  instructions: string;
+type ChainName = "base" | "baseSepolia";
+
+type CreatePaymentResponse = {
+  paymentRef: string;
+  packCode: string;
+  receivingAddress: string;
+  expectedAmountAtomic: string;
+  expectedAmountUsdc: string;
+  chain: ChainName;
+  chainId: number;
+  usdcAddress: string;
   expiresAt: string;
+  status: "pending";
 };
 
-type PaymentStatus =
-  | "pending"
-  | "confirmed"
-  | "expired"
-  | "requires_review"
-  | "failed"
-  | "refunded";
-
-type PaymentData = {
-  paymentId: string;
-  pack: string;
-  status: PaymentStatus;
-  wallet: WalletInfo;
+type StatusResponse = {
+  paymentRef: string;
+  status: "pending" | "confirmed" | "expired" | "failed";
+  confirmedAt: string | null;
+  txHash: string | null;
+  receivingAddress: string;
+  expectedAmountUsdc: string;
+  expiresAt: string;
+  pack: { code: string; credits: number };
+  terminal: boolean;
 };
 
 /* ─── UI state machine ─── */
 
 type UiPhase =
   | "loading"
+  | "connect"
   | "browse"
   | "creating"
   | "pending"
   | "confirmed"
   | "expired"
-  | "requires_review"
   | "failed"
-  | "refunded"
   | "error";
-
-const TERMINAL_STATES = new Set<PaymentStatus>([
-  "confirmed",
-  "expired",
-  "requires_review",
-  "failed",
-  "refunded",
-]);
 
 /* ─── Copy ─── */
 
@@ -73,28 +79,35 @@ const COPY = {
     creating: "Creating payment…",
     loading: "Loading packs…",
     packCredits: "credits",
-    walletWarning: "Send only {currency} on {network}. Other tokens or networks will be lost permanently.",
+    walletWarning:
+      "Send only {currency} on {network}. Other tokens or networks will be lost permanently.",
     walletLabel: "Send exactly:",
     toAddress: "To wallet address ({network}):",
-    instructions: "Instructions:",
     qrLabel: "Scan to pay",
     copied: "Copied",
     copy: "Copy",
     expiresIn: "Expires in",
     confirmed: "Payment confirmed",
-    confirmedSub: "Credits will be applied to your account shortly.",
+    confirmedSub: "Credits have been added to your wallet balance.",
     expired: "Payment expired",
     expiredSub: "The payment window has closed. No funds were received.",
-    review: "Payment under review",
-    reviewSub: "We received your payment but it requires manual verification. Credits will be applied once confirmed.",
     failed: "Payment failed",
     failedSub: "The payment could not be processed. No funds were taken.",
-    refunded: "Payment refunded",
-    refundedSub: "Your payment has been returned. Contact support if credits are not restored.",
     tryAgain: "Try again",
     startOver: "Start over",
     errorGeneric: "Something went wrong. Please try again.",
     waitingPayment: "Waiting for payment…",
+    gpuOfflineDisabledTooltip:
+      "GPU services are temporarily offline — credit top-ups are paused.",
+    connectTitle: "Connect your wallet to top up",
+    connectLead:
+      "Sign in with your Ethereum wallet (MetaMask, Coinbase Wallet, Rabby, …) to receive your credit balance and make purchases.",
+    connectButton: "Connect wallet",
+    connecting: "Waiting for wallet…",
+    connectedAs: "Signed in as",
+    signOut: "Sign out",
+    balance: "Balance",
+    creditsUnit: "credits",
   },
   ar: {
     kicker: "رصيد الاستوديو",
@@ -104,28 +117,35 @@ const COPY = {
     creating: "جارٍ إنشاء الدفعة…",
     loading: "جارٍ تحميل الباقات…",
     packCredits: "رصيد",
-    walletWarning: "أرسل فقط {currency} على شبكة {network}. الرموز أو الشبكات الأخرى ستُفقد نهائيًا.",
+    walletWarning:
+      "أرسل فقط {currency} على شبكة {network}. الرموز أو الشبكات الأخرى ستُفقد نهائيًا.",
     walletLabel: "أرسل بالضبط:",
     toAddress: "إلى عنوان المحفظة ({network}):",
-    instructions: "التعليمات:",
     qrLabel: "امسح للدفع",
     copied: "تم النسخ",
     copy: "نسخ",
     expiresIn: "ينتهي خلال",
     confirmed: "تم تأكيد الدفع",
-    confirmedSub: "سيتم إضافة الرصيد لحسابك قريبًا.",
+    confirmedSub: "تمت إضافة الرصيد إلى محفظتك.",
     expired: "انتهت صلاحية الدفع",
     expiredSub: "انتهت نافذة الدفع. لم يتم استلام أي أموال.",
-    review: "الدفع قيد المراجعة",
-    reviewSub: "تم استلام الدفع لكنه يحتاج تحققًا يدويًا. سيتم إضافة الرصيد بعد التأكيد.",
     failed: "فشل الدفع",
     failedSub: "لم يتم معالجة الدفع. لم يتم خصم أي أموال.",
-    refunded: "تم استرداد الدفع",
-    refundedSub: "تم إرجاع المبلغ. تواصل مع الدعم إذا لم يُسترد الرصيد.",
     tryAgain: "حاول مرة أخرى",
     startOver: "البدء من جديد",
     errorGeneric: "حدث خطأ. حاول مرة أخرى.",
     waitingPayment: "في انتظار الدفع…",
+    gpuOfflineDisabledTooltip:
+      "خدمات GPU غير متاحة مؤقتًا — شحن الرصيد متوقف حاليًا.",
+    connectTitle: "اربط محفظتك لشحن الرصيد",
+    connectLead:
+      "سجّل الدخول بمحفظة إيثريوم (MetaMask أو Coinbase Wallet أو Rabby…) لتلقي رصيدك وإجراء عمليات الشراء.",
+    connectButton: "ربط المحفظة",
+    connecting: "في انتظار المحفظة…",
+    connectedAs: "تم تسجيل الدخول بـ",
+    signOut: "تسجيل الخروج",
+    balance: "الرصيد",
+    creditsUnit: "رصيد",
   },
 } as const;
 
@@ -149,7 +169,13 @@ function QrCode({ data, size = 160 }: { data: string; size?: number }) {
 
 /* ─── Countdown ring (SVG) ─── */
 
-function CountdownRing({ secondsLeft, totalSeconds }: { secondsLeft: number; totalSeconds: number }) {
+function CountdownRing({
+  secondsLeft,
+  totalSeconds,
+}: {
+  secondsLeft: number;
+  totalSeconds: number;
+}) {
   const pct = Math.max(0, Math.min(1, secondsLeft / totalSeconds));
   const r = 20;
   const c = 2 * Math.PI * r;
@@ -161,15 +187,31 @@ function CountdownRing({ secondsLeft, totalSeconds }: { secondsLeft: number; tot
   return (
     <div className="relative inline-flex items-center justify-center">
       <svg width="56" height="56" viewBox="0 0 48 48" className="-rotate-90">
-        <circle cx="24" cy="24" r={r} fill="none" stroke="var(--border)" strokeWidth="3" />
         <circle
-          cx="24" cy="24" r={r} fill="none"
-          stroke={color} strokeWidth="3" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={offset}
+          cx="24"
+          cy="24"
+          r={r}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth="3"
+        />
+        <circle
+          cx="24"
+          cy="24"
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
           className="transition-[stroke-dashoffset] duration-1000 ease-linear"
         />
       </svg>
-      <span className="absolute text-[11px] font-mono font-bold tabular-nums" style={{ color }}>
+      <span
+        className="absolute text-[11px] font-mono font-bold tabular-nums"
+        style={{ color }}
+      >
         {minutes}:{String(secs).padStart(2, "0")}
       </span>
     </div>
@@ -178,7 +220,15 @@ function CountdownRing({ secondsLeft, totalSeconds }: { secondsLeft: number; tot
 
 /* ─── Clipboard helper ─── */
 
-function CopyButton({ text, label, copiedLabel }: { text: string; label: string; copiedLabel: string }) {
+function CopyButton({
+  text,
+  label,
+  copiedLabel,
+}: {
+  text: string;
+  label: string;
+  copiedLabel: string;
+}) {
   const [copied, setCopied] = useState(false);
   const tm = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -209,53 +259,39 @@ function tpl(s: string, vars: Record<string, string>): string {
   );
 }
 
-/* ─── Fallback packs (used when /api/payments/packs is unavailable) ─── */
+function shortenAddr(addr: string): string {
+  if (addr.length < 10) return addr;
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
+
+/* ─── Fallback packs (shown only if /api/payments/packs is unavailable) ─── */
 
 const FALLBACK_PACKS: CreditPack[] = [
   {
-    id: "starter",
+    id: "fallback-starter",
+    code: "starter",
     credits: 50,
-    priceUsd: 10,
-    label: "Starter",
-    labelAr: "بداية",
-    note: "Quick tests and previews",
-    noteAr: "اختبارات ومعاينات سريعة",
+    usdcAmount: "5",
+    nameEn: "Starter",
+    nameAr: "بداية",
   },
   {
-    id: "standard",
+    id: "fallback-standard",
+    code: "standard",
     credits: 250,
-    priceUsd: 40,
-    label: "Standard",
-    labelAr: "قياسي",
-    note: "Most popular — everyday production",
-    noteAr: "الأكثر شيوعًا — إنتاج يومي",
+    usdcAmount: "20",
+    nameEn: "Standard",
+    nameAr: "قياسي",
   },
   {
-    id: "pro",
+    id: "fallback-pro",
+    code: "pro",
     credits: 750,
-    priceUsd: 100,
-    label: "Pro",
-    labelAr: "احترافي",
-    note: "Best value for campaigns",
-    noteAr: "أفضل قيمة للحملات",
+    usdcAmount: "50",
+    nameEn: "Pro",
+    nameAr: "احترافي",
   },
 ];
-
-function normalisePack(raw: Record<string, unknown>): CreditPack | null {
-  const id = String(raw.id ?? raw.slug ?? "");
-  const credits = Number(raw.credits ?? 0);
-  const priceUsd = Number(raw.priceUsd ?? raw.price_usd ?? raw.price ?? 0);
-  if (!id || !credits || !priceUsd) return null;
-  return {
-    id,
-    credits,
-    priceUsd,
-    label: String(raw.label ?? raw.name ?? id),
-    labelAr: String(raw.labelAr ?? raw.label_ar ?? raw.label ?? id),
-    note: String(raw.note ?? raw.description ?? ""),
-    noteAr: String(raw.noteAr ?? raw.note_ar ?? raw.note ?? ""),
-  };
-}
 
 /* ═══════════════════════════════════════════════════
    Main panel
@@ -276,14 +312,20 @@ export function StudioCreditsPanel({
 }) {
   const str: Str = COPY[locale === "ar" ? "ar" : "en"];
   const focus = layout === "focus";
+  const gpu = useGpuStatus();
+  const gpuOffline = gpu.online === false;
+  const session = useWalletSession();
+  const { balance, refresh: refreshBalance } = useCreditBalance();
 
   const [packs, setPacks] = useState<CreditPack[]>(FALLBACK_PACKS);
-  const [selectedPack, setSelectedPack] = useState<string>("standard");
+  const [selectedCode, setSelectedCode] = useState<string>("standard");
   const [phase, setPhase] = useState<UiPhase>("loading");
-  const [payment, setPayment] = useState<PaymentData | null>(null);
+  const [payment, setPayment] = useState<CreatePaymentResponse | null>(null);
+  const [chainLabel, setChainLabel] = useState<string>("Base");
   const [uiError, setUiError] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [totalSeconds, setTotalSeconds] = useState(3600);
+  const [totalSeconds, setTotalSeconds] = useState(1800);
+  const [connecting, setConnecting] = useState(false);
 
   const mounted = useRef(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -308,31 +350,74 @@ export function StudioCreditsPanel({
       try {
         const res = await fetch("/api/payments/packs");
         if (!res.ok) throw new Error(`${res.status}`);
-        const payload = await res.json();
+        const payload: unknown = await res.json();
         if (cancelled) return;
-        const items: unknown[] = Array.isArray(payload) ? payload : (payload?.data ?? payload?.packs ?? []);
-        const parsed = items
-          .map((raw) => normalisePack(raw as Record<string, unknown>))
+        const items: unknown[] = Array.isArray(payload)
+          ? payload
+          : (payload as { data?: unknown[]; packs?: unknown[] })?.data ??
+            (payload as { packs?: unknown[] })?.packs ??
+            [];
+        const parsed: CreditPack[] = items
+          .map((raw) => {
+            const r = raw as Record<string, unknown>;
+            const id = String(r.id ?? "");
+            const code = String(r.code ?? r.id ?? "");
+            const credits = Number(r.credits ?? 0);
+            const usdcAmount = String(r.usdcAmount ?? r.priceUsd ?? "");
+            if (!id || !code || !credits || !usdcAmount) return null;
+            return {
+              id,
+              code,
+              credits,
+              usdcAmount,
+              nameEn: String(r.nameEn ?? r.label ?? code),
+              nameAr: String(r.nameAr ?? r.labelAr ?? code),
+            } as CreditPack;
+          })
           .filter((p): p is CreditPack => p !== null);
         if (parsed.length > 0) {
           setPacks(parsed);
-          if (!parsed.find((p) => p.id === "standard")) {
-            setSelectedPack(parsed[0].id);
+          if (!parsed.find((p) => p.code === "standard")) {
+            setSelectedCode(parsed[0].code);
           }
         }
       } catch {
         /* fallback packs already set */
       }
-      if (!cancelled) setPhase("browse");
+      if (!cancelled) {
+        setPhase(session ? "browse" : "connect");
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Re-evaluate browse vs connect when session changes.
+  useEffect(() => {
+    if (phase === "loading") return;
+    if (phase === "connect" && session) {
+      setPhase("browse");
+      setUiError(null);
+    }
+    if (phase === "browse" && !session) {
+      setPhase("connect");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   /* ── Timer helpers ── */
 
   const stopTimers = useCallback(() => {
-    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-    if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
   }, []);
 
   const startCountdown = useCallback((expiresAt: string) => {
@@ -345,33 +430,73 @@ export function StudioCreditsPanel({
     countdownRef.current = setInterval(() => {
       const remaining = Math.max(0, Math.round((exp - Date.now()) / 1000));
       setSecondsLeft(remaining);
-      if (remaining <= 0) {
-        if (countdownRef.current) clearInterval(countdownRef.current);
+      if (remaining <= 0 && countdownRef.current) {
+        clearInterval(countdownRef.current);
       }
     }, 1000);
   }, []);
 
-  const startPolling = useCallback((paymentId: string) => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = setInterval(async () => {
-      if (!mounted.current) return;
-      try {
-        const res = await fetch(`/api/payments/${encodeURIComponent(paymentId)}/status`);
-        if (!res.ok) return;
-        const payload = await res.json();
-        const status = String(payload?.status ?? payload?.data?.status ?? "pending") as PaymentStatus;
-        if (TERMINAL_STATES.has(status) && mounted.current) {
-          setPhase(status);
-          stopTimers();
+  const startPolling = useCallback(
+    (paymentRef: string) => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = setInterval(async () => {
+        if (!mounted.current) return;
+        try {
+          const res = await fetch(
+            `/api/payments/${encodeURIComponent(paymentRef)}/status`,
+          );
+          if (!res.ok) return;
+          const payload = (await res.json()) as StatusResponse;
+          if (payload.terminal && mounted.current) {
+            const next: UiPhase =
+              payload.status === "confirmed"
+                ? "confirmed"
+                : payload.status === "expired"
+                  ? "expired"
+                  : "failed";
+            setPhase(next);
+            stopTimers();
+            if (payload.status === "confirmed") {
+              window.dispatchEvent(new CustomEvent("estio:credits-changed"));
+              refreshBalance();
+            }
+          }
+        } catch {
+          /* retry on next tick */
         }
-      } catch { /* retry on next tick */ }
-    }, 4000);
-  }, [stopTimers]);
+      }, 4000);
+    },
+    [stopTimers, refreshBalance],
+  );
+
+  /* ── Connect wallet ── */
+
+  async function handleConnect() {
+    setConnecting(true);
+    setUiError(null);
+    try {
+      await loginWithWallet();
+      // The hook will pick up the session and flip phase via the effect
+      // above; refresh balance immediately for snappier UI.
+      refreshBalance();
+    } catch (e) {
+      setUiError(e instanceof Error ? e.message : str.errorGeneric);
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  function handleSignOut() {
+    clearWalletSession();
+    setPayment(null);
+    setPhase("connect");
+    stopTimers();
+  }
 
   /* ── Create payment ── */
 
-  async function handleBuy() {
-    const pack = packs.find((p) => p.id === selectedPack);
+  async function handleBuy(currentSession: WalletSession) {
+    const pack = packs.find((p) => p.code === selectedCode);
     if (!pack) return;
 
     setPhase("creating");
@@ -380,42 +505,37 @@ export function StudioCreditsPanel({
     try {
       const res = await fetch("/api/payments/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          packId: pack.id,
-          provider: "onchain",
-        }),
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${currentSession.token}`,
+        },
+        body: JSON.stringify({ packCode: pack.code }),
       });
 
       const payload = await res.json();
       if (!res.ok) {
-        setUiError(payload?.error ?? payload?.message ?? str.errorGeneric);
+        if (res.status === 401) {
+          clearWalletSession();
+          setPhase("connect");
+          setUiError(
+            payload?.message ?? "Your session expired — please sign in again.",
+          );
+          return;
+        }
+        setUiError(
+          payload?.error ?? payload?.message ?? str.errorGeneric,
+        );
         setPhase("error");
         return;
       }
       if (!mounted.current) return;
 
-      const d = (payload?.data ?? payload) as Record<string, unknown>;
-      const w = (d.wallet ?? {}) as Record<string, unknown>;
-
-      const data: PaymentData = {
-        paymentId: String(d.paymentId ?? d.payment_id ?? d.id ?? ""),
-        pack: String(d.pack ?? pack.id),
-        status: (String(d.status ?? "pending")) as PaymentStatus,
-        wallet: {
-          address: String(w.address ?? ""),
-          network: String(w.network ?? "Base"),
-          currency: String(w.currency ?? "USDC"),
-          amount: String(w.amount ?? ""),
-          instructions: String(w.instructions ?? ""),
-          expiresAt: String(w.expiresAt ?? w.expires_at ?? ""),
-        },
-      };
-
+      const data = payload as CreatePaymentResponse;
       setPayment(data);
+      setChainLabel(data.chain === "base" ? "Base" : "Base Sepolia");
       setPhase("pending");
-      if (data.wallet.expiresAt) startCountdown(data.wallet.expiresAt);
-      if (data.paymentId) startPolling(data.paymentId);
+      if (data.expiresAt) startCountdown(data.expiresAt);
+      if (data.paymentRef) startPolling(data.paymentRef);
     } catch (e) {
       if (!mounted.current) return;
       setUiError(e instanceof Error ? e.message : str.errorGeneric);
@@ -427,15 +547,13 @@ export function StudioCreditsPanel({
 
   function handleReset() {
     stopTimers();
-    setPhase("browse");
+    setPhase(session ? "browse" : "connect");
     setPayment(null);
     setUiError(null);
     setSecondsLeft(0);
   }
 
-  /* ── Derived state ── */
-
-  const wallet = payment?.wallet ?? null;
+  /* ── Derived ── */
 
   const bandCls = embedded
     ? "border-t border-[color-mix(in_srgb,var(--accent)_12%,var(--border)_88%)] bg-[color-mix(in_srgb,var(--surface)_94%,#000_6%)]"
@@ -468,262 +586,338 @@ export function StudioCreditsPanel({
         }
       >
         <div className={innerCls}>
-        <p
-          className={`text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)] ${focus ? "text-center" : ""}`}
-        >
-          {str.kicker}
-        </p>
-        <h2
-          className={`font-display mt-3 text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl ${focus ? "text-center" : ""}`}
-        >
-          {str.title}
-        </h2>
-        <p className={headLeadCls}>
-          {str.lead}
-        </p>
-
-        {/* ── Loading packs ── */}
-        {phase === "loading" ? (
-          <p className={`text-sm text-[var(--muted)] ${focus ? "mt-6 text-center" : "mt-10"}`}>
-            {str.loading}
+          <p
+            className={`text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)] ${focus ? "text-center" : ""}`}
+          >
+            {str.kicker}
           </p>
-        ) : null}
+          <h2
+            className={`font-display mt-3 text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl ${focus ? "text-center" : ""}`}
+          >
+            {str.title}
+          </h2>
+          <p className={headLeadCls}>{str.lead}</p>
 
-        {/* ── Browse: credit packs ── */}
-        {phase === "browse" || phase === "creating" || phase === "error" ? (
-          <div className={focus ? "mt-6 sm:mt-8" : "mt-10"}>
+          {/* Wallet status / balance bar */}
+          {session ? (
             <div
-              className={`grid gap-4 sm:grid-cols-3 ${focus ? "mx-auto max-w-3xl" : ""}`}
+              className={`mt-5 inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_90%,#000_10%)] px-4 py-1.5 text-xs ${focus ? "" : "self-start"}`}
             >
-              {packs.map((p) => {
-                const active = selectedPack === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => { setSelectedPack(p.id); setUiError(null); }}
-                    disabled={phase === "creating"}
-                    className={`group relative rounded-sm border p-5 transition-all duration-200 sm:p-6 ${
-                      focus ? "text-center" : "text-left"
-                    } ${
-                      active
-                        ? "border-[color-mix(in_srgb,var(--accent)_60%,var(--border)_40%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] shadow-[0_1px_0_rgba(212,175,55,0.12)]"
-                        : "border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] hover:border-[color-mix(in_srgb,var(--accent)_30%,var(--border)_70%)]"
-                    }`}
-                  >
-                    {p.id === "standard" ? (
-                      <span
-                        className={`absolute -top-2.5 rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a] ${
-                          focus ? "left-1/2 right-auto -translate-x-1/2" : "right-4"
-                        }`}
-                      >
-                        {locale === "ar" ? "شائع" : "Popular"}
-                      </span>
-                    ) : null}
-                    <p className="text-sm font-semibold text-[var(--text)]">
-                      {locale === "ar" ? p.labelAr : p.label}
-                    </p>
-                    <p className="font-display mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
-                      {p.credits}{" "}
-                      <span className="text-sm font-normal text-[var(--muted)]">{str.packCredits}</span>
-                    </p>
-                    <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--accent)]">
-                      ${p.priceUsd}
-                    </p>
-                    <p className="mt-2 text-xs text-[var(--muted)]">
-                      {locale === "ar" ? p.noteAr : p.note}
-                    </p>
-                    {active ? (
-                      <div
-                        className={`mt-3 h-0.5 w-8 bg-[var(--accent)] ${focus ? "mx-auto" : ""}`}
-                      />
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-
-            {uiError ? (
-              <div
-                className={`mt-6 rounded-sm border border-red-500/20 bg-red-950/20 px-4 py-3 text-sm text-red-300 ${focus ? "text-center" : ""}`}
-              >
-                {uiError}
-              </div>
-            ) : null}
-
-            <div
-              className={`mt-6 flex flex-wrap items-center gap-4 sm:mt-8 ${focus ? "justify-center" : ""}`}
-            >
+              <span className="text-[var(--muted)]">{str.connectedAs}</span>
+              <code className="font-mono text-[var(--accent)]">
+                {shortenAddr(session.address)}
+              </code>
+              <span className="h-3 w-px bg-[var(--border)]" aria-hidden />
+              <span className="text-[var(--muted)]">{str.balance}:</span>
+              <span className="font-semibold tabular-nums text-[var(--text)]">
+                {balance == null ? "—" : balance}{" "}
+                <span className="text-[10px] font-normal text-[var(--muted)]">
+                  {str.creditsUnit}
+                </span>
+              </span>
               <button
                 type="button"
-                onClick={() => void handleBuy()}
-                disabled={phase === "creating"}
-                className="rounded-sm bg-[var(--accent)] px-8 py-3 text-sm font-semibold text-[#0a0a0a] transition-opacity hover:opacity-90 disabled:opacity-50"
+                onClick={handleSignOut}
+                className="ms-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)] hover:text-[var(--accent)]"
               >
-                {phase === "creating" ? str.creating : str.buyCredits}
+                {str.signOut}
               </button>
             </div>
-          </div>
-        ) : null}
+          ) : null}
 
-        {/* ── Pending: wallet + QR + countdown ── */}
-        {phase === "pending" && wallet ? (
-          <div
-            className={`rounded-sm border border-[color-mix(in_srgb,var(--accent)_25%,var(--border)_75%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] p-6 sm:p-8 ${focus ? "mt-8 mx-auto max-w-2xl text-start" : "mt-10"}`}
-          >
-            {/* Network / currency warning */}
-            <div className="flex items-start gap-3 rounded-sm border border-amber-500/20 bg-amber-950/10 px-4 py-3">
-              <span className="mt-0.5 text-amber-400" aria-hidden>⚠</span>
-              <p className="text-xs font-medium leading-relaxed text-amber-200/90">
-                {tpl(str.walletWarning, { currency: wallet.currency, network: wallet.network })}
-              </p>
+          {gpuOffline ? (
+            <div
+              className={focus ? "mx-auto mt-6 max-w-2xl text-start" : "mt-6"}
+            >
+              <GpuOfflineBanner locale={locale} snapshot={gpu.status} />
             </div>
+          ) : null}
 
-            <div className="mt-8 grid gap-8 sm:grid-cols-[1fr_auto]">
-              <div className="space-y-6">
-                {/* Amount */}
-                <div>
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                    {str.walletLabel}
-                  </p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span className="font-display text-2xl font-bold tabular-nums text-[var(--text)]">
-                      {wallet.amount} {wallet.currency}
-                    </span>
-                    <CopyButton text={wallet.amount} label={str.copy} copiedLabel={str.copied} />
-                  </div>
+          {/* ── Loading packs ── */}
+          {phase === "loading" ? (
+            <p
+              className={`text-sm text-[var(--muted)] ${focus ? "mt-6 text-center" : "mt-10"}`}
+            >
+              {str.loading}
+            </p>
+          ) : null}
+
+          {/* ── Connect wallet ── */}
+          {phase === "connect" ? (
+            <div
+              className={`rounded-sm border border-[color-mix(in_srgb,var(--accent)_25%,var(--border)_75%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-xl text-center" : "mt-10"}`}
+            >
+              <h3 className="text-base font-semibold text-[var(--text)]">
+                {str.connectTitle}
+              </h3>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                {str.connectLead}
+              </p>
+              {uiError ? (
+                <div className="mt-4 rounded-sm border border-red-500/20 bg-red-950/20 px-3 py-2 text-xs text-red-300">
+                  {uiError}
                 </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void handleConnect()}
+                disabled={connecting}
+                className="mt-5 rounded-sm bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {connecting ? str.connecting : str.connectButton}
+              </button>
+            </div>
+          ) : null}
 
-                {/* Address */}
-                <div>
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                    {tpl(str.toAddress, { network: wallet.network })}
-                  </p>
-                  <div className="mt-2 flex items-start gap-3">
-                    <code className="block break-all rounded-sm bg-[color-mix(in_srgb,var(--canvas)_92%,#000_8%)] px-3 py-2 font-mono text-xs text-[var(--text-body)]">
-                      {wallet.address}
-                    </code>
-                    <CopyButton text={wallet.address} label={str.copy} copiedLabel={str.copied} />
-                  </div>
+          {/* ── Browse: credit packs ── */}
+          {phase === "browse" ||
+          phase === "creating" ||
+          phase === "error" ? (
+            <div className={focus ? "mt-6 sm:mt-8" : "mt-10"}>
+              <div
+                className={`grid gap-4 sm:grid-cols-3 ${focus ? "mx-auto max-w-3xl" : ""}`}
+              >
+                {packs.map((p) => {
+                  const active = selectedCode === p.code;
+                  return (
+                    <button
+                      key={p.code}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCode(p.code);
+                        setUiError(null);
+                      }}
+                      disabled={phase === "creating"}
+                      className={`group relative rounded-sm border p-5 transition-all duration-200 sm:p-6 ${
+                        focus ? "text-center" : "text-left"
+                      } ${
+                        active
+                          ? "border-[color-mix(in_srgb,var(--accent)_60%,var(--border)_40%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] shadow-[0_1px_0_rgba(212,175,55,0.12)]"
+                          : "border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] hover:border-[color-mix(in_srgb,var(--accent)_30%,var(--border)_70%)]"
+                      }`}
+                    >
+                      {p.code === "standard" ? (
+                        <span
+                          className={`absolute -top-2.5 rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a] ${
+                            focus
+                              ? "left-1/2 right-auto -translate-x-1/2"
+                              : "right-4"
+                          }`}
+                        >
+                          {locale === "ar" ? "شائع" : "Popular"}
+                        </span>
+                      ) : null}
+                      <p className="text-sm font-semibold text-[var(--text)]">
+                        {locale === "ar" ? p.nameAr : p.nameEn}
+                      </p>
+                      <p className="font-display mt-2 text-2xl font-semibold tabular-nums text-[var(--text)]">
+                        {p.credits}{" "}
+                        <span className="text-sm font-normal text-[var(--muted)]">
+                          {str.packCredits}
+                        </span>
+                      </p>
+                      <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--accent)]">
+                        ${p.usdcAmount}
+                      </p>
+                      {active ? (
+                        <div
+                          className={`mt-3 h-0.5 w-8 bg-[var(--accent)] ${focus ? "mx-auto" : ""}`}
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {uiError ? (
+                <div
+                  className={`mt-6 rounded-sm border border-red-500/20 bg-red-950/20 px-4 py-3 text-sm text-red-300 ${focus ? "text-center" : ""}`}
+                >
+                  {uiError}
                 </div>
+              ) : null}
 
-                {/* Instructions (if provided) */}
-                {wallet.instructions ? (
+              <div
+                className={`mt-6 flex flex-wrap items-center gap-4 sm:mt-8 ${focus ? "justify-center" : ""}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => session && void handleBuy(session)}
+                  disabled={phase === "creating" || gpuOffline || !session}
+                  title={
+                    gpuOffline ? str.gpuOfflineDisabledTooltip : undefined
+                  }
+                  aria-disabled={
+                    phase === "creating" || gpuOffline || !session
+                  }
+                  className="rounded-sm bg-[var(--accent)] px-8 py-3 text-sm font-semibold text-[#0a0a0a] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {phase === "creating" ? str.creating : str.buyCredits}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {/* ── Pending: wallet + QR + countdown ── */}
+          {phase === "pending" && payment ? (
+            <div
+              className={`rounded-sm border border-[color-mix(in_srgb,var(--accent)_25%,var(--border)_75%)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)] p-6 sm:p-8 ${focus ? "mt-8 mx-auto max-w-2xl text-start" : "mt-10"}`}
+            >
+              <div className="flex items-start gap-3 rounded-sm border border-amber-500/20 bg-amber-950/10 px-4 py-3">
+                <span className="mt-0.5 text-amber-400" aria-hidden>
+                  ⚠
+                </span>
+                <p className="text-xs font-medium leading-relaxed text-amber-200/90">
+                  {tpl(str.walletWarning, {
+                    currency: "USDC",
+                    network: chainLabel,
+                  })}
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-8 sm:grid-cols-[1fr_auto]">
+                <div className="space-y-6">
                   <div>
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                      {str.instructions}
+                      {str.walletLabel}
                     </p>
-                    <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">
-                      {wallet.instructions}
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="font-display text-2xl font-bold tabular-nums text-[var(--text)]">
+                        {payment.expectedAmountUsdc} USDC
+                      </span>
+                      <CopyButton
+                        text={payment.expectedAmountUsdc}
+                        label={str.copy}
+                        copiedLabel={str.copied}
+                      />
+                    </div>
+                    <p className="mt-1 text-[10px] uppercase tracking-wider text-[var(--muted)]">
+                      USDC contract:{" "}
+                      <code className="font-mono">
+                        {shortenAddr(payment.usdcAddress)}
+                      </code>
                     </p>
                   </div>
-                ) : null}
 
-                {/* Status + countdown */}
-                <div className="flex items-center gap-4">
-                  <CountdownRing secondsLeft={secondsLeft} totalSeconds={totalSeconds} />
                   <div>
-                    <p className="text-sm font-medium text-[var(--text)]">{str.waitingPayment}</p>
-                    <p className="text-xs text-[var(--muted)]">
-                      {str.expiresIn} {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                      {tpl(str.toAddress, { network: chainLabel })}
                     </p>
+                    <div className="mt-2 flex items-start gap-3">
+                      <code className="block break-all rounded-sm bg-[color-mix(in_srgb,var(--canvas)_92%,#000_8%)] px-3 py-2 font-mono text-xs text-[var(--text-body)]">
+                        {payment.receivingAddress}
+                      </code>
+                      <CopyButton
+                        text={payment.receivingAddress}
+                        label={str.copy}
+                        copiedLabel={str.copied}
+                      />
+                    </div>
                   </div>
+
+                  <div className="flex items-center gap-4">
+                    <CountdownRing
+                      secondsLeft={secondsLeft}
+                      totalSeconds={totalSeconds}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text)]">
+                        {str.waitingPayment}
+                      </p>
+                      <p className="text-xs text-[var(--muted)]">
+                        {str.expiresIn}{" "}
+                        {Math.floor(secondsLeft / 60)}:
+                        {String(secondsLeft % 60).padStart(2, "0")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-2">
+                  <QrCode data={payment.receivingAddress} size={140} />
+                  <p className="text-[10px] text-[var(--muted)]">
+                    {str.qrLabel}
+                  </p>
                 </div>
               </div>
 
-              {/* QR code */}
-              <div className="flex flex-col items-center gap-2">
-                <QrCode data={wallet.address} size={140} />
-                <p className="text-[10px] text-[var(--muted)]">{str.qrLabel}</p>
-              </div>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="mt-6 text-xs font-medium text-[var(--muted)] underline-offset-4 hover:text-[var(--accent)] hover:underline"
+              >
+                {str.startOver}
+              </button>
             </div>
+          ) : null}
 
-            <button
-              type="button"
-              onClick={handleReset}
-              className="mt-6 text-xs font-medium text-[var(--muted)] underline-offset-4 hover:text-[var(--accent)] hover:underline"
-            >
-              {str.startOver}
-            </button>
-          </div>
-        ) : null}
-
-        {/* ── Terminal: confirmed ── */}
-        {phase === "confirmed" ? (
-          <div
-            className={`rounded-sm border border-emerald-500/25 bg-emerald-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
-          >
+          {/* ── Terminal: confirmed ── */}
+          {phase === "confirmed" ? (
             <div
-              className={`flex gap-3 ${focus ? "flex-col items-center" : "items-center"}`}
+              className={`rounded-sm border border-emerald-500/25 bg-emerald-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
             >
-              <span className="text-2xl text-emerald-400" aria-hidden>✓</span>
-              <div>
-                <p className="text-base font-semibold text-emerald-300">{str.confirmed}</p>
-                <p className="mt-1 text-sm text-emerald-200/70">{str.confirmedSub}</p>
+              <div
+                className={`flex gap-3 ${focus ? "flex-col items-center" : "items-center"}`}
+              >
+                <span className="text-2xl text-emerald-400" aria-hidden>
+                  ✓
+                </span>
+                <div>
+                  <p className="text-base font-semibold text-emerald-300">
+                    {str.confirmed}
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-200/70">
+                    {str.confirmedSub}
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40"
+              >
+                {str.startOver}
+              </button>
             </div>
-            <button type="button" onClick={handleReset}
-              className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40">
-              {str.startOver}
-            </button>
-          </div>
-        ) : null}
+          ) : null}
 
-        {/* ── Terminal: expired ── */}
-        {phase === "expired" ? (
-          <div
-            className={`rounded-sm border border-red-500/20 bg-red-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
-          >
-            <p className="text-base font-semibold text-red-300">{str.expired}</p>
-            <p className="mt-1 text-sm text-red-200/60">{str.expiredSub}</p>
-            <button type="button" onClick={handleReset}
-              className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40">
-              {str.tryAgain}
-            </button>
-          </div>
-        ) : null}
+          {/* ── Terminal: expired ── */}
+          {phase === "expired" ? (
+            <div
+              className={`rounded-sm border border-red-500/20 bg-red-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
+            >
+              <p className="text-base font-semibold text-red-300">
+                {str.expired}
+              </p>
+              <p className="mt-1 text-sm text-red-200/60">{str.expiredSub}</p>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40"
+              >
+                {str.tryAgain}
+              </button>
+            </div>
+          ) : null}
 
-        {/* ── Terminal: requires_review ── */}
-        {phase === "requires_review" ? (
-          <div
-            className={`rounded-sm border border-amber-500/20 bg-amber-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
-          >
-            <p className="text-base font-semibold text-amber-300">{str.review}</p>
-            <p className="mt-1 text-sm text-amber-200/60">{str.reviewSub}</p>
-            <button type="button" onClick={handleReset}
-              className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40">
-              {str.startOver}
-            </button>
-          </div>
-        ) : null}
-
-        {/* ── Terminal: failed ── */}
-        {phase === "failed" ? (
-          <div
-            className={`rounded-sm border border-red-500/20 bg-red-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
-          >
-            <p className="text-base font-semibold text-red-300">{str.failed}</p>
-            <p className="mt-1 text-sm text-red-200/60">{str.failedSub}</p>
-            <button type="button" onClick={handleReset}
-              className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40">
-              {str.tryAgain}
-            </button>
-          </div>
-        ) : null}
-
-        {/* ── Terminal: refunded ── */}
-        {phase === "refunded" ? (
-          <div
-            className={`rounded-sm border border-sky-500/20 bg-sky-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
-          >
-            <p className="text-base font-semibold text-sky-300">{str.refunded}</p>
-            <p className="mt-1 text-sm text-sky-200/60">{str.refundedSub}</p>
-            <button type="button" onClick={handleReset}
-              className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40">
-              {str.startOver}
-            </button>
-          </div>
-        ) : null}
+          {/* ── Terminal: failed ── */}
+          {phase === "failed" ? (
+            <div
+              className={`rounded-sm border border-red-500/20 bg-red-950/10 p-6 sm:p-8 ${focus ? "mx-auto mt-8 max-w-lg text-center" : "mt-10"}`}
+            >
+              <p className="text-base font-semibold text-red-300">
+                {str.failed}
+              </p>
+              <p className="mt-1 text-sm text-red-200/60">{str.failedSub}</p>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="mt-6 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text)] hover:border-[var(--accent)]/40"
+              >
+                {str.tryAgain}
+              </button>
+            </div>
+          ) : null}
         </div>
       </Container>
     </Root>

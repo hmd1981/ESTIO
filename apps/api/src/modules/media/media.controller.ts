@@ -13,6 +13,7 @@ import {
   Res,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { isAxiosError } from 'axios';
 import type { Response } from 'express';
 import { firstValueFrom } from 'rxjs';
@@ -34,7 +35,13 @@ export class MediaController {
     private readonly http: HttpService,
   ) {}
 
+  // Same per-IP submit envelope as POST /media/jobs* (defence-in-depth before
+  // Phase 2 lands real wallet auth + credit debits).
   @Post('generate-image')
+  @Throttle({
+    short: { limit: 5, ttl: 60_000 },
+    long: { limit: 50, ttl: 86_400_000 },
+  })
   generateImage(@Body() body: unknown) {
     const payload = assertGenerateImagePayload(body);
     return this.mediaService.forwardGenerateImageToWorker(payload);

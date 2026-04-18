@@ -5,11 +5,29 @@ import type { AppLocale } from "@/lib/i18n/config";
 import type { MediaAssetMap, PublicSiteBundle } from "@/lib/cms/types";
 
 /**
- * Rewrite external `api.estio.org/uploads/…` URLs to same-origin `/api/uploads/…`
- * so the web app proxies them through its own BFF — avoids dependency on the
- * `api.estio.org` DNS record pointing to the correct origin.
+ * Rewrite external `{NEXT_PUBLIC_API_URL}/uploads/…` URLs to same-origin `/api/uploads/…`
+ * so the web app proxies them through its own BFF. Host comes from build-time env
+ * (defaults to api.estio.org) so the canonical origin is not hardcoded.
  */
-const UPLOAD_RE = /^https?:\/\/api\.estio\.org\/uploads\//;
+function buildPublicApiUploadPattern(): RegExp {
+  const raw = (
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.PUBLIC_FILE_BASE_URL ||
+    "https://api.estio.org"
+  )
+    .trim()
+    .replace(/\/$/, "");
+  try {
+    const host = new URL(
+      raw.startsWith("http") ? raw : `https://${raw}`,
+    ).hostname.replace(/\./g, "\\.");
+    return new RegExp(`^https?:\\/\\/${host}\\/uploads\\/`, "i");
+  } catch {
+    return /^https?:\/\/api\.estio\.org\/uploads\//i;
+  }
+}
+const UPLOAD_RE = buildPublicApiUploadPattern();
+
 function internaliseUploadUrl(url: string): string {
   return url.replace(UPLOAD_RE, "/api/uploads/");
 }
@@ -67,12 +85,10 @@ export const fetchPublicSite = cache(async function fetchPublicSite(
 ): Promise<PublicSiteBundle | null> {
   const base = getServerApiBase();
   try {
-    const res = await fetch(`${base}/public/site/${locale}`, {
-      next: {
-        revalidate: 60,
-        tags: [`public-site:${locale}`],
-      },
-    });
+    // Always fetch fresh CMS data on the server. `revalidate: 60` caused production
+    // (estio.org) to lag behind local `next dev` and behind admin edits until the
+    // window expired — the site looked "stuck" on an older build. Match dev behavior.
+    const res = await fetch(`${base}/public/site/${locale}`, { cache: "no-store" });
     if (!res.ok) return null;
     const raw = (await res.json()) as PublicSiteBundle;
     const bundle = rewriteBundle(raw);

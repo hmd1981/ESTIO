@@ -1,6 +1,8 @@
 import { Test } from '@nestjs/testing';
 import type { MediaGenerationJob } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreditsService } from '../credits/credits.service';
+import { StatusService } from '../status/status.service';
 import { MediaJobsService } from './media-jobs.service';
 import { MediaWorkerService } from './media-worker.service';
 
@@ -46,13 +48,22 @@ describe('MediaJobsService', () => {
       mediaGenerationJob: {
         create: jest.fn(async () => ({ ...rowSnapshot })),
         findUnique: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
+        // Phase 2 helper: createJobRowWithDebit calls findUniqueOrThrow after the
+        // tx insert. Mock it the same way as findUnique for tests that don't
+        // exercise the credit-debit path (anonymous = no debit, no tx).
+        findUniqueOrThrow: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
         update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
           Object.assign(rowSnapshot, data);
           return { ...rowSnapshot } as MediaGenerationJob;
         }),
         delete: jest.fn(),
       },
-    };
+      // Phase 2: also stub creditLedger.findFirst — refundJobIfDebited reads it
+      // and returns early when no debit row exists (anonymous job).
+      creditLedger: {
+        findFirst: jest.fn(async () => null),
+      },
+    } as unknown as typeof prisma;
 
     mediaWorker = {
       submitMediaJobToWorker: jest.fn().mockResolvedValue({
@@ -62,11 +73,29 @@ describe('MediaJobsService', () => {
       getMediaWorkerMode: jest.fn().mockReturnValue('sync'),
     };
 
+    const status = {
+      isWorkerOnlineFast: jest.fn().mockReturnValue(true),
+      lastReason: jest.fn().mockReturnValue(null),
+    };
+
+    const credits = {
+      // Anonymous-job tests only ever look at the refund path, which returns
+      // early because creditLedger.findFirst is stubbed null. Provide stubs
+      // for the debit/refund methods so the type check is happy.
+      debitForJob: jest.fn(async () => ({ created: true, balanceAfter: 0, rowId: 'x' })),
+      refundJob: jest.fn(async () => ({ created: true, balanceAfter: 0, rowId: 'y' })),
+      creditForPayment: jest.fn(),
+      append: jest.fn(),
+      getBalance: jest.fn(async () => 0),
+    };
+
     const moduleRef = await Test.createTestingModule({
       providers: [
         MediaJobsService,
         { provide: PrismaService, useValue: prisma },
         { provide: MediaWorkerService, useValue: mediaWorker },
+        { provide: StatusService, useValue: status },
+        { provide: CreditsService, useValue: credits },
       ],
     }).compile();
 

@@ -9,6 +9,7 @@ import { IndustriesSection } from "@/components/sections/industries-section";
 import { ServicesOverviewSection } from "@/components/sections/services-overview-section";
 import { TrustSection } from "@/components/sections/trust-section";
 import { AiOutputPreviewSection } from "@/components/sections/ai-output-preview-section";
+import { MarketingGpuBanner } from "@/components/ai-studio/marketing-gpu-banner";
 import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
 import { computeHomeSectionOrder } from "@/lib/cms/home-section-order";
 import { mergeHomeSections } from "@/lib/cms/merge-home";
@@ -196,6 +197,8 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <MarketingShell>
+      {/* Renders only when the GPU worker is offline; otherwise nothing. */}
+      <MarketingGpuBanner locale={raw} />
       {sectionOrder.map((id) => (
         <SectionHighlightFrame
           key={id}

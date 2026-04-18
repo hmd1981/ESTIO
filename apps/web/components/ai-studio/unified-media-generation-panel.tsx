@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Container } from "@/components/layout/container";
+import { GpuOfflineBanner } from "@/components/ai-studio/gpu-offline-banner";
 import type { AppLocale } from "@/lib/i18n/config";
+import { useGpuStatus } from "@/lib/use-gpu-status";
+import { useCreditBalance, useWalletSession } from "@/lib/wallet-session";
 import {
   createStudioMediaJob,
   extractRenderableImageUrl,
@@ -83,6 +86,14 @@ const COPY = {
     errorUpstream: "The media service timed out or was unreachable.",
     errorNeedImage: "Add an image URL or upload a file.",
     errorNeedPrompt: "Enter a prompt.",
+    gpuOfflineDisabledTooltip:
+      "GPU services are temporarily offline — please try again in a few minutes.",
+    noCreditsDisabledTooltip:
+      "You're out of credits. Top up below to continue generating.",
+    noCreditsBannerTitle: "Out of credits",
+    noCreditsBannerLead:
+      "Top up below to keep generating. Your wallet balance will refresh automatically once payment is confirmed on-chain.",
+    topUpCta: "Top up credits",
   },
   ar: {
     kicker: "عرض مباشر",
@@ -129,6 +140,14 @@ const COPY = {
     errorUpstream: "انتهت مهلة الخدمة أو تعذر الوصول إليها.",
     errorNeedImage: "أضف رابط صورة أو ارفع ملفًا.",
     errorNeedPrompt: "أدخل وصفًا.",
+    gpuOfflineDisabledTooltip:
+      "خدمات GPU غير متاحة مؤقتًا — يُرجى المحاولة بعد بضع دقائق.",
+    noCreditsDisabledTooltip:
+      "لقد نفد رصيدك. اشحن من الأسفل للمتابعة.",
+    noCreditsBannerTitle: "نفد الرصيد",
+    noCreditsBannerLead:
+      "اشحن من الأسفل لمتابعة التوليد. سيتم تحديث الرصيد تلقائيًا بعد تأكيد الدفع على السلسلة.",
+    topUpCta: "شحن الرصيد",
   },
 } as const;
 
@@ -191,6 +210,16 @@ export function UnifiedMediaGenerationPanel({
   defaultMode = "text_to_image",
 }: UnifiedMediaGenerationPanelProps) {
   const c = COPY[locale === "ar" ? "ar" : "en"];
+  const gpu = useGpuStatus();
+  const gpuOffline = gpu.online === false;
+  const session = useWalletSession();
+  const { balance } = useCreditBalance();
+  // Hard-block submit only when we know the wallet is logged in AND its
+  // balance is exactly zero. We don't block anonymous users here because
+  // the API is in soft-auth mode (PHASE2_ENFORCE_AUTH=false): anonymous
+  // submits are still allowed end-to-end. When auth is later enforced,
+  // the API itself will return 401 and the panel surfaces the message.
+  const noCredits = session != null && balance === 0;
   const [mode, setMode] = useState<MediaStudioJobMode>(defaultMode);
   const [prompt, setPrompt] = useState("");
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -435,11 +464,19 @@ export function UnifiedMediaGenerationPanel({
     phase === "submitting" || phase === "queued" || phase === "running";
 
   const canSubmit =
-    mode === "text_to_image"
+    !gpuOffline &&
+    !noCredits &&
+    (mode === "text_to_image"
       ? prompt.trim().length > 0
       : mode === "text_to_video"
         ? prompt.trim().length > 0
-        : imageUrlInput.trim().length > 0 || imageFile != null;
+        : imageUrlInput.trim().length > 0 || imageFile != null);
+
+  const submitDisabledTooltip = gpuOffline
+    ? c.gpuOfflineDisabledTooltip
+    : noCredits
+      ? c.noCreditsDisabledTooltip
+      : undefined;
 
   return (
     <section
@@ -459,6 +496,29 @@ export function UnifiedMediaGenerationPanel({
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--text-body)] sm:text-base">
           {c.lead}
         </p>
+
+        {gpuOffline ? (
+          <div className="mt-6 max-w-2xl">
+            <GpuOfflineBanner locale={locale} snapshot={gpu.status} />
+          </div>
+        ) : null}
+
+        {!gpuOffline && noCredits ? (
+          <div className="mt-6 max-w-2xl rounded-md border border-amber-500/25 bg-amber-950/10 p-4">
+            <p className="text-sm font-semibold text-amber-200">
+              {c.noCreditsBannerTitle}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+              {c.noCreditsBannerLead}
+            </p>
+            <a
+              href="#studio-credits"
+              className="mt-3 inline-block rounded-sm bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[#0a0a0a] hover:opacity-90"
+            >
+              {c.topUpCta}
+            </a>
+          </div>
+        ) : null}
 
         <form
           onSubmit={handleSubmit}
@@ -606,6 +666,8 @@ export function UnifiedMediaGenerationPanel({
             <button
               type="submit"
               disabled={!canSubmit || busy}
+              title={submitDisabledTooltip}
+              aria-disabled={!canSubmit || busy}
               className="rounded-md bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-contrast,#0a0a0a)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {phase === "submitting" ? c.submitting : c.submit}

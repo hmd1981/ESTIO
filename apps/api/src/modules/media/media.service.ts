@@ -6,6 +6,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import type { SiteLocale } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,6 +15,7 @@ import { CreateMediaAssetDto } from './dto/create-media-asset.dto';
 import type { ImportMediaUrlDto } from './dto/import-media-url.dto';
 import { UpdateMediaAssetDto } from './dto/update-media-asset.dto';
 import { MediaWorkerService } from './media-worker.service';
+import { StatusService } from '../status/status.service';
 
 const IMPORT_MAX_BYTES = 15 * 1024 * 1024;
 
@@ -76,10 +78,18 @@ export class MediaService implements MediaPort {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mediaWorker: MediaWorkerService,
+    private readonly status: StatusService,
   ) {}
 
   /** Forwards the JSON body unchanged after prompt validation (see controller). */
   forwardGenerateImageToWorker(body: Record<string, unknown>): Promise<unknown> {
+    if (!this.status.isWorkerOnlineFast()) {
+      throw new ServiceUnavailableException({
+        code: 'WORKER_OFFLINE',
+        message: 'GPU services are temporarily offline. Please try again later.',
+        reason: this.status.lastReason() ?? 'unreachable',
+      });
+    }
     return this.mediaWorker.forwardGenerateImage(body);
   }
 

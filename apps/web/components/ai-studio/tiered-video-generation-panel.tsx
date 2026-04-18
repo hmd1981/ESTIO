@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Container } from "@/components/layout/container";
+import { GpuOfflineBanner } from "@/components/ai-studio/gpu-offline-banner";
 import type { AppLocale } from "@/lib/i18n/config";
+import { useGpuStatus } from "@/lib/use-gpu-status";
+import { useCreditBalance, useWalletSession } from "@/lib/wallet-session";
 import {
   createStudioMediaJob,
   extractRenderableVideoUrl,
@@ -91,6 +94,10 @@ const COPY = {
     errorNeedPrompt: "Enter a short description.",
     errorNeedImage: "Add a photo URL or upload an image.",
     errorUpgrade: "Could not start the upgrade. Try again.",
+    gpuOfflineDisabledTooltip:
+      "GPU services are temporarily offline — please try again in a few minutes.",
+    noCreditsDisabledTooltip:
+      "You're out of credits. Top up below to keep generating.",
   },
   ar: {
     kicker: "استوديو الفيديو",
@@ -144,6 +151,10 @@ const COPY = {
     errorNeedPrompt: "أدخل وصفًا قصيرًا.",
     errorNeedImage: "أضف رابط صورة أو ارفع صورة.",
     errorUpgrade: "تعذر بدء الترقية. حاول مرة أخرى.",
+    gpuOfflineDisabledTooltip:
+      "خدمات GPU غير متاحة مؤقتًا — يُرجى المحاولة بعد بضع دقائق.",
+    noCreditsDisabledTooltip:
+      "نفد رصيدك. اشحن من الأسفل للمتابعة.",
   },
 } as const;
 
@@ -264,6 +275,8 @@ function JobCardView({
   onUpgrade,
   upgradeTarget,
   upgradeBusy,
+  gpuOffline = false,
+  noCredits = false,
 }: {
   card: JobCard;
   str: Str;
@@ -271,6 +284,8 @@ function JobCardView({
   onUpgrade: ((tier: "standard" | "premium") => void) | null;
   upgradeTarget: "standard" | "premium" | null;
   upgradeBusy: boolean;
+  gpuOffline?: boolean;
+  noCredits?: boolean;
 }) {
   const pct = useFakeProgress(card.status, card.tier);
   const isActive = card.status === "queued" || card.status === "running";
@@ -344,12 +359,20 @@ function JobCardView({
             <p className="text-xs font-medium text-[var(--muted)]">{str.upgradeHint}</p>
             <button
               type="button"
-              disabled={upgradeBusy}
+              disabled={upgradeBusy || gpuOffline || noCredits}
+              title={
+                gpuOffline
+                  ? str.gpuOfflineDisabledTooltip
+                  : noCredits
+                    ? str.noCreditsDisabledTooltip
+                    : undefined
+              }
+              aria-disabled={upgradeBusy || gpuOffline || noCredits}
               onClick={() => onUpgrade(upgradeTarget)}
               className={
                 upgradeTarget === "standard"
-                  ? "rounded-md bg-amber-600 px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                  : "rounded-md bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  ? "rounded-md bg-amber-600 px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  : "rounded-md bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               }
             >
               {upgradeBusy
@@ -395,6 +418,11 @@ function ChainConnector({ label }: { label: string }) {
 
 export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
   const str = COPY[locale === "ar" ? "ar" : "en"];
+  const gpu = useGpuStatus();
+  const gpuOffline = gpu.online === false;
+  const session = useWalletSession();
+  const { balance } = useCreditBalance();
+  const noCredits = session != null && balance === 0;
   const [intent, setIntent] = useState<VideoIntent>("text_to_video");
   const [prompt, setPrompt] = useState("");
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -625,6 +653,12 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
           {str.title}
         </h2>
 
+        {gpuOffline ? (
+          <div className="mt-5 max-w-2xl">
+            <GpuOfflineBanner locale={locale} snapshot={gpu.status} />
+          </div>
+        ) : null}
+
         {/* Tier overview cards */}
         <ul className="mt-5 grid gap-3 sm:grid-cols-3">
           {([
@@ -708,7 +742,9 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={!canStart || busy || cards.length > 0}
+            <button type="submit" disabled={!canStart || busy || cards.length > 0 || gpuOffline || noCredits}
+              title={gpuOffline ? str.gpuOfflineDisabledTooltip : noCredits ? str.noCreditsDisabledTooltip : undefined}
+              aria-disabled={!canStart || busy || cards.length > 0 || gpuOffline || noCredits}
               className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast,#0a0a0a)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
               {submitBusy ? str.submitting : str.submit}
             </button>
@@ -756,6 +792,8 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
                     onUpgrade={upgradeTargetFor(card) ? (t) => void handleUpgrade(t) : null}
                     upgradeTarget={upgradeTargetFor(card)}
                     upgradeBusy={upgradeBusy}
+                    gpuOffline={gpuOffline}
+                    noCredits={noCredits}
                   />
                 </div>
               ))}

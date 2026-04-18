@@ -1,0 +1,37 @@
+Single-node production (docker-compose.prod.yml) on a host that also ran local dev (docker-compose.yml)
+=====================================================================================================
+
+Why the site can look “wiped” while DeepSeek / media “stopped working”
+-----------------------------------------------------------------------
+
+1) Two different Postgres Docker volumes
+
+   - Production uses volume **estio_pg_data** (mapped in docker-compose.prod.yml).
+   - Local dev previously used **estio_postgres** (older docker-compose.yml). On disk you may see both:
+       estio-platform_estio_pg_data      ← production data (pages, media rows, jobs)
+       estio-platform_estio_postgres     ← legacy dev cluster (often empty or stale schema)
+
+   If you inspect the wrong DB, or temporarily point a container at the dev volume, the CMS shows
+   no media and “all videos gone” even though files still exist under **estio_uploads**.
+
+   Dev compose now uses **estio_dev_pg_data** so new `docker compose up` dev DBs are clearly named
+   and less likely to be confused with **estio_pg_data**.
+
+2) Videos “missing” in Studio
+
+   Job rows live in **media_generation_jobs**. Many failures are normal when the GPU worker tunnel is
+   down, Comfy errors, or timeouts — that is not the same as deleting data. Check statuses in the DB
+   or admin, and **curl http://127.0.0.1:9000/health** on the host when using MEDIA_WORKER_URL via
+   host.docker.internal.
+
+3) DeepSeek (Ask Estio)
+
+   The API container must receive **ASK_ESTIO_AI_ENABLED** and **DEEPSEEK_API_KEY** from `.env`
+   (see docker-compose.prod.yml: key is not hardcoded in `environment:` so `.env` wins). After
+   editing `.env`, recreate the api service:  
+   `docker compose -f docker-compose.prod.yml up -d api`
+
+4) Safe cleanup
+
+   Do **not** `docker volume rm` anything until you confirm which volume production uses
+   (`docker inspect <postgres-container> --format '{{json .Mounts}}'`). Keep backups before pruning.

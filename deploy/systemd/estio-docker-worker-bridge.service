@@ -1,0 +1,43 @@
+# OPTIONAL — DISABLED BY DEFAULT (Phase 1, see deploy/AVAILABILITY.md).
+#
+# Bridges Docker bridge gateway :9000 → 127.0.0.1:9000 so the API container can reach
+# MEDIA_WORKER_URL=http://host.docker.internal:9000 when the SSH reverse tunnel binds
+# only to loopback (127.0.0.1:9000).
+#
+# Why this unit is normally OFF:
+#   The canonical setup is sshd `GatewayPorts clientspecified` (already enabled via
+#   /etc/ssh/sshd_config.d/99-estio-gateway-ports.conf) + the workstation forwarding with
+#   `ssh -R 0.0.0.0:9000:127.0.0.1:<worker>`. That binds the listener directly on
+#   0.0.0.0:9000 on the control plane, which is reachable from inside the Docker network
+#   as host.docker.internal:9000 with no extra hop. In that mode this socat shim is
+#   redundant and competes for the same port — keep it stopped/disabled.
+#
+# When you actually need it:
+#   Only when the workstation supervisor cannot bind 0.0.0.0:9000 (older OpenSSH or
+#   policy that forbids `GatewayPorts`) and is forced to a loopback-only `-R` of
+#   127.0.0.1:9000:.... In that case socat publishes the loopback port to the Docker
+#   gateway IP so containers can still reach it via host.docker.internal.
+#
+# Disable command (run on VM901 if it is currently active):
+#   sudo systemctl disable --now estio-docker-worker-bridge
+#
+# Enable command (only if you fall back to loopback-only tunnels):
+#   sudo cp deploy/systemd/estio-docker-worker-bridge.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now estio-docker-worker-bridge
+#
+# DO NOT delete this file — it is the documented escape hatch.
+
+[Unit]
+Description=Estio: bridge Docker host-gateway :9000 to loopback (media worker SSH tunnel)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Default bridge gateway (matches `host.docker.internal` on Linux Docker)
+ExecStart=/usr/bin/socat TCP-LISTEN:9000,bind=172.17.0.1,fork,reuseaddr TCP:127.0.0.1:9000
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

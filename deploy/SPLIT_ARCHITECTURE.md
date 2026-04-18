@@ -86,7 +86,51 @@ fetch(b+'/health').then(async r=>console.log(r.status, await r.text())).catch(e=
 | `docker-compose.prod.postgres.yml` | VM **902** — Postgres |
 | `docker-compose.prod.yml` | Single-node (Postgres + Redis + apps) |
 | `deploy/env.split.example` | Template `.env` for split **901** |
+| `deploy/MIGRATION_TO_VM901.md` | Full migration from single-node to **901/902/900** (DB, uploads, cutover) |
 | `deploy/nginx/estio.conf` | Reverse proxy to localhost **3000 / 3001 / 4000** on **901** |
+
+---
+
+## Troubleshooting: empty site, missing images/videos, admin looks “reset”
+
+These symptoms usually mean the **API is connected to the wrong Postgres** or **upload URLs no longer match** `PUBLIC_FILE_BASE_URL` — not that an “AI” rewrote the product.
+
+### Root cause A — wrong Compose file on VM 901 (most common)
+
+**`deploy/stack-up.sh`** and many tutorials use **`docker-compose.prod.yml`**, which starts **Postgres on the same host** and sets `DATABASE_URL` to that container. On **split** production, the real data lives on **VM 902**.
+
+If someone runs the **single-node** stack on **901** (or `docker compose -f docker-compose.prod.yml up`):
+
+- The API uses a **new or separate local** `estio` database — **empty** of CMS rows, media metadata, and persisted job history.
+- The public site and admin look **blank or default**; previously uploaded files may still exist in the Docker volume `estio_uploads`, but **nothing points to them** until the DB on **902** is used again.
+- Rebuilding **web/admin** images can change UI details; combined with an empty DB, it feels like the “admin panel was completely altered.”
+
+**Fix (no architecture change):**
+
+1. Stop the single-node stack if it was started by mistake:  
+   `docker compose -f docker-compose.prod.yml down`  
+   (omit `-v` unless you intend to remove volumes — see below.)
+2. Ensure repo root `.env` has **`ESTIO_DEPLOY_MODE=split`** (see `deploy/env.split.example`) and a correct **`DATABASE_URL`** to **902**.
+3. Bring up the app tier only:  
+   `docker compose -f docker-compose.prod.split.yml up -d --build`
+4. Confirm the API sees 902:  
+   `docker compose -f docker-compose.prod.split.yml exec api printenv DATABASE_URL`  
+   (host must be your **902** address, not `postgres` unless you have a custom network to 902.)
+
+Optional: run **`bash deploy/diagnose-vm901.sh`** from the repo on **901** for a quick compose/volume summary.
+
+### Root cause B — different Docker project name → new empty volume
+
+Compose prefixes named volumes with the **project name** (`docker compose ls`). If you deploy with a different **`-p` / `COMPOSE_PROJECT_NAME`** / checkout directory name than before, Docker may create **`…_estio_uploads`** again — **empty**. Files from the old volume still exist under the old project name; **reattach** by using the same project name as before or inspect `docker volume ls` and align the stack.
+
+### Root cause C — `PUBLIC_FILE_BASE_URL` / `NEXT_PUBLIC_API_URL` wrong after a change
+
+Rows in the DB store **`/uploads/...`** URLs built from **`PUBLIC_FILE_BASE_URL`**. If that env no longer matches how nginx/API exposes files, images and videos **404** in the browser even though files and DB rows exist. Align `.env` with your public API origin and redeploy **api** (and **web** if needed).
+
+### Restoring data
+
+- **902:** Restore from backup if the database was dropped or overwritten; re-run **`prisma migrate deploy`** against that URL if schema is behind.
+- **901 uploads volume:** If files are missing from the volume, restore **`estio_uploads`** from backup; keep the same volume name/project as production.
 
 ---
 
@@ -94,7 +138,7 @@ fetch(b+'/health').then(async r=>console.log(r.status, await r.text())).catch(e=
 
 - [ ] **902:** Postgres running, data volume backed up, **5432** not public.
 - [ ] **902:** `DATABASE_URL` user/password match **`docker-compose.prod.postgres.yml`** (or managed equivalent).
-- [ ] **901:** `.env` has **`DATABASE_URL`** → 902, **`REDIS_URL`** → local Redis service, **`MEDIA_WORKER_URL`** → 900 (or tunnel via `host.docker.internal`).
+- [ ] **901:** `.env` has **`ESTIO_DEPLOY_MODE=split`**, **`DATABASE_URL`** → 902, **`REDIS_URL`** → local Redis service, **`MEDIA_WORKER_URL`** → 900 (or tunnel via `host.docker.internal`).
 - [ ] **901:** Migrations applied to 902 with production **`DATABASE_URL`**.
 - [ ] **900:** Worker `/health` OK; async paths (`/jobs/...`) match **`MEDIA_WORKER_*`** env on **901**.
 - [ ] **901:** `docker compose -f docker-compose.prod.split.yml up -d` healthy; **`NEXT_PUBLIC_API_URL`** matches public API URL.

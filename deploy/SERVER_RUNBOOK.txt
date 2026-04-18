@@ -3,10 +3,14 @@ Estio production — run on the VM (e.g. 82.22.50.142)
 1) Put the FULL repo in one directory, e.g. /opt/estio-platform
    - Must include: docker-compose.prod.yml, apps/, deploy/, package.json, install-estio-nginx-remote.sh
 
-2) ASCII-only database password, then start Docker stack:
-   cd /opt/estio-platform
-   export POSTGRES_PASSWORD='YourStrongAsciiSecret'
-   bash deploy/stack-up.sh
+2) Start Docker stack:
+   - Single-node (Postgres on same host): ASCII-only POSTGRES_PASSWORD, then:
+     cd /opt/estio-platform
+     export POSTGRES_PASSWORD='YourStrongAsciiSecret'
+     bash deploy/stack-up.sh
+   - Split VM 901 (DB on VM 902): copy deploy/env.split.example to .env, set DATABASE_URL to 902,
+     include ESTIO_DEPLOY_MODE=split, then bash deploy/stack-up.sh (uses docker-compose.prod.split.yml).
+     Do NOT use single-node compose on 901 — the site will look empty. See deploy/SPLIT_ARCHITECTURE.md.
 
 3) Install / refresh nginx (TLS files: /etc/ssl/cloudflare/estio-origin.pem + .key):
    sudo bash install-estio-nginx-remote.sh
@@ -27,7 +31,12 @@ Estio production — run on the VM (e.g. 82.22.50.142)
 
 Ports: web 3000, admin 3001, API 4000. Cloudflare SSL: Full (strict).
 
-7) GPU media worker (SSH reverse tunnel to localhost:9000 on this server)
+6b) Same host, dev + prod: read deploy/SINGLE_NODE_VOLUME_NOTE.txt — two Postgres volume names
+   (estio_pg_data vs legacy estio_postgres / new estio_dev_pg_data) explain “empty site” confusion.
+
+7) Canonical origin (estioapp): run `bash deploy/verify-canonical-origin.sh` — DB local, tunnel on same host as Docker; see `deploy/cloudflared/README.md`.
+
+8) GPU media worker (SSH reverse tunnel to localhost:9000 on this server)
    - On Estio host sshd must allow TCP forwarding and gateway ports: AllowTcpForwarding yes, GatewayPorts yes (or clientspecified); then: sudo sshd -t && sudo systemctl reload ssh
    - Workstation opens SSH -R so FastAPI is reachable on the Estio host at port 9000 (see deploy/MEDIA_WORKER.md).
    - On the SERVER HOST: curl http://127.0.0.1:9000/health
@@ -38,3 +47,27 @@ Ports: web 3000, admin 3001, API 4000. Cloudflare SSL: Full (strict).
    - After .env changes: docker compose -f docker-compose.prod.yml up -d api
    - Verify Nest: curl https://<api-host>/media/worker-health
    - Full notes: deploy/MEDIA_WORKER.md
+   - The optional socat unit deploy/systemd/estio-docker-worker-bridge.service is now disabled by
+     default (canonical setup binds 0.0.0.0:9000 directly via sshd GatewayPorts). Re-enable only
+     when forced into loopback-only -R; see the file's header for the disable/enable commands.
+   - sshd is hard-locked to PermitListen 9000 via deploy/sshd/99-estio-permit-listen.conf, so any
+     stray -R bind attempt (e.g. the historical leaky :19000) is refused at the server. To install
+     on a fresh VM:
+       sudo cp deploy/sshd/99-estio-permit-listen.conf /etc/ssh/sshd_config.d/
+       sudo sshd -t && sudo systemctl reload ssh
+     Verify: `ss -tlnp | grep -E ':9000|:19000'` should show ONLY :9000.
+
+9) Availability / status (workstation ON vs OFF)
+   - API exposes GET /status with cached worker probe; web app proxies GET /api/status.
+     Schema: { gpu: { online, lastCheckedAt, latencyMs, reason } }.
+     Cache TTL: STATUS_PROBE_TTL_MS (default 10000). Force fresh: /status?force=1.
+   - Studio panels (text-to-image, image-to-video, text-to-video, Buy credits) read this every
+     30s and disable submit buttons + show GpuOfflineBanner when gpu.online is false. The
+     submit endpoints (POST /media/jobs, POST /media/generate-image) also fast-fail with 503
+     { code: "WORKER_OFFLINE" } so the UI does not hang on a tunnel timeout.
+   - Verification on VM901:
+       curl -sS https://api.estio.org/status | jq .gpu
+       docker compose -f docker-compose.prod.yml exec api node -e \
+         "fetch('http://host.docker.internal:9000/health').then(r=>r.text()).then(console.log)"
+   - Full design + verification checklist: deploy/AVAILABILITY.md
+   - Workstation-side cleanup of leftover :19000 tunnel: deploy/WORKSTATION_TUNNEL_FIX.md

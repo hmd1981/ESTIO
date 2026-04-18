@@ -35,7 +35,7 @@ check_https_sni() {
 }
 
 echo "=== Upstreams (Docker host ports) ==="
-check_http "web"  "http://127.0.0.1:3000/" "2xx"
+check_http "web"  "http://127.0.0.1:3000/" "2xx3xx"
 check_http "admin" "http://127.0.0.1:3001/" "2xx3xx"
 check_http "api"   "http://127.0.0.1:4000/" "2xx"
 
@@ -47,10 +47,48 @@ check_https_sni "api"   "api.estio.org"
 
 echo ""
 echo "=== Docker compose (if run from repo root) ==="
-if [ -f "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/docker-compose.prod.yml" ]; then
-  (cd "$(dirname "${BASH_SOURCE[0]}")/.." && docker compose -f docker-compose.prod.yml ps 2>/dev/null) || true
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "$ROOT/docker-compose.prod.yml" ]; then
+  VERIFY_COMPOSE="docker-compose.prod.yml"
+  if [ -f "$ROOT/.env" ] && grep -E '^[[:space:]]*ESTIO_DEPLOY_MODE[[:space:]]*=[[:space:]]*split[[:space:]]*' "$ROOT/.env" >/dev/null 2>&1; then
+    VERIFY_COMPOSE="docker-compose.prod.split.yml"
+  fi
+  (cd "$ROOT" && docker compose -f "$VERIFY_COMPOSE" ps 2>/dev/null) || true
 else
   echo "(skipped: docker-compose.prod.yml not found from this script path)"
+fi
+
+echo ""
+echo "=== Postgres volumes (single-node + dev: expect distinct names) ==="
+docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E 'estio.*pg|postgres' || true
+
+echo ""
+echo "=== DB + uploads sanity (if api + postgres containers exist) ==="
+API_C=$(docker ps -q -f name=estio-platform-api 2>/dev/null | head -1)
+PG_C=$(docker ps -q -f name=estio-platform-postgres 2>/dev/null | head -1)
+if [ -n "$API_C" ] && [ -n "$PG_C" ]; then
+  ASK_ON=$(docker exec "$API_C" printenv ASK_ESTIO_AI_ENABLED 2>/dev/null || true)
+  KEY_SET=$(docker exec "$API_C" printenv DEEPSEEK_API_KEY 2>/dev/null | wc -c | tr -d ' ')
+  if [ "${ASK_ON:-}" = "true" ]; then
+    if [ "${KEY_SET:-0}" -gt 8 ]; then
+      echo "OK  Ask Estio AI: ASK_ESTIO_AI_ENABLED=true and DEEPSEEK_API_KEY present in api container"
+      pass=$((pass + 1))
+    else
+      echo "FAIL Ask Estio AI enabled but DEEPSEEK_API_KEY missing in api — fix .env and: docker compose -f docker-compose.prod.yml up -d api"
+      fail=$((fail + 1))
+    fi
+  else
+    echo "OK  Ask Estio AI skipped (ASK_ESTIO_AI_ENABLED not true)"
+    pass=$((pass + 1))
+  fi
+  SAMPLE=$(docker exec "$PG_C" psql -U estio -d estio -tAc 'SELECT "fileName" FROM "MediaAsset" LIMIT 1;' 2>/dev/null | tr -d '[:space:]')
+  if [ -n "$SAMPLE" ]; then
+    check_http "api-upload-file" "http://127.0.0.1:4000/uploads/${SAMPLE}" "200"
+  else
+    echo "WARN  No rows in MediaAsset — skip /uploads/ check"
+  fi
+else
+  echo "(skipped: estio api/postgres containers not found or not running)"
 fi
 
 echo ""
