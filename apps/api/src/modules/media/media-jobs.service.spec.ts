@@ -44,25 +44,24 @@ describe('MediaJobsService', () => {
       workerTargetHost: null,
     };
 
+    const mediaJobApi = {
+      create: jest.fn(async () => ({ ...rowSnapshot })),
+      findUnique: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
+      findUniqueOrThrow: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
+      update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        Object.assign(rowSnapshot, data);
+        return { ...rowSnapshot } as MediaGenerationJob;
+      }),
+      delete: jest.fn(),
+    };
     prisma = {
-      mediaGenerationJob: {
-        create: jest.fn(async () => ({ ...rowSnapshot })),
-        findUnique: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
-        // Phase 2 helper: createJobRowWithDebit calls findUniqueOrThrow after the
-        // tx insert. Mock it the same way as findUnique for tests that don't
-        // exercise the credit-debit path (anonymous = no debit, no tx).
-        findUniqueOrThrow: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
-        update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
-          Object.assign(rowSnapshot, data);
-          return { ...rowSnapshot } as MediaGenerationJob;
-        }),
-        delete: jest.fn(),
-      },
-      // Phase 2: also stub creditLedger.findFirst — refundJobIfDebited reads it
-      // and returns early when no debit row exists (anonymous job).
+      mediaGenerationJob: mediaJobApi,
       creditLedger: {
         findFirst: jest.fn(async () => null),
       },
+      $transaction: jest.fn(async (fn: (tx: { mediaGenerationJob: typeof mediaJobApi }) => Promise<unknown>) =>
+        fn({ mediaGenerationJob: mediaJobApi }),
+      ),
     } as unknown as typeof prisma;
 
     mediaWorker = {
@@ -103,10 +102,13 @@ describe('MediaJobsService', () => {
   });
 
   it('runs text_to_image through worker and marks job completed (in-process queue)', async () => {
-    await service.createStudioMediaJob({
-      mode: 'text_to_image',
-      prompt: 'hi',
-    });
+    await service.createStudioMediaJob(
+      {
+        mode: 'text_to_image',
+        prompt: 'hi',
+      },
+      'user-1',
+    );
     await flushMicrotasks();
     await flushMicrotasks();
 
@@ -131,11 +133,14 @@ describe('MediaJobsService', () => {
       ...rowSnapshot,
     } as MediaGenerationJob);
 
-    await service.createStudioMediaJob({
-      mode: 'image_to_video',
-      prompt: 'move',
-      image_base64: 'QQ==',
-    });
+    await service.createStudioMediaJob(
+      {
+        mode: 'image_to_video',
+        prompt: 'move',
+        image_base64: 'QQ==',
+      },
+      'user-1',
+    );
     await flushMicrotasks();
     await flushMicrotasks();
 

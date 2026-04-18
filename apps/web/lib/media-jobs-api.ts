@@ -9,8 +9,7 @@ import { getWalletSession } from "@/lib/wallet-session";
 /**
  * Build the headers for a media-jobs request. Always JSON, and attaches
  * `Authorization: Bearer <walletToken>` if a wallet session exists in
- * localStorage. The API decides whether the token is required (Phase 2 soft
- * mode allows anonymous submits unless `PHASE2_ENFORCE_AUTH=true`).
+ * localStorage. Phase 4: `POST /media/jobs` requires a valid wallet JWT.
  */
 function jsonHeaders(): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };
@@ -50,6 +49,27 @@ export type CreateMediaGenerateImageResponse = {
   error: null;
   createdAt: string;
   mediaWorkerMode: "sync" | "async";
+  /** Present when credits were debited atomically with job acceptance. */
+  credits?: { debited: number; balanceAfter: number };
+};
+
+/** Public pricing DTO from `GET /credits/generation-pricing` (matches API). */
+export type GenerationPricingResponse = {
+  currency: "credits";
+  version: number;
+  modes: Record<string, { credits: number; envKey: string }>;
+  tiers: Record<string, unknown>;
+  modifiers: Record<string, unknown>;
+};
+
+/** Authenticated quote from `GET /media/jobs/preflight?mode=…`. */
+export type PreflightQuoteResponse = {
+  mode: string;
+  costCredits: number;
+  balance: number;
+  sufficient: boolean;
+  shortfall: number;
+  currency: "credits";
 };
 
 /** Normalized primary asset from `GET /media/jobs/:id/result` (200). */
@@ -113,6 +133,20 @@ export class MediaJobApiError extends Error {
   }
 }
 
+/** True when the API rejected submit with `402` and `INSUFFICIENT_CREDITS`. */
+export function isInsufficientCreditsError(e: unknown): boolean {
+  if (!(e instanceof MediaJobApiError) || e.status !== 402) return false;
+  const body = e.body;
+  if (!body || typeof body !== "object" || Array.isArray(body)) return false;
+  return (body as Record<string, unknown>).code === "INSUFFICIENT_CREDITS";
+}
+
+/** Notify {@link useCreditBalance} listeners to refetch (after debit/refund paths). */
+export function dispatchCreditsChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("estio:credits-changed"));
+}
+
 /** True when GET …/result returned 409 with `error.code` RESULT_NOT_READY (keep polling status/result). */
 export function isMediaJobResultNotReadyError(e: unknown): boolean {
   if (!(e instanceof MediaJobApiError) || e.status !== 409) return false;
@@ -151,6 +185,33 @@ function errMessage(status: number, body: unknown): string {
   }
   if (typeof body === "string" && body.trim()) return body.trim().slice(0, 500);
   return `Request failed (${status})`;
+}
+
+/** Same-origin fetch of public generation pricing (for UI cost labels). */
+export async function fetchGenerationPricing(): Promise<GenerationPricingResponse> {
+  const res = await fetch("/api/credits/generation-pricing", { cache: "no-store" });
+  const payload = await readBody(res);
+  if (!res.ok) {
+    throw new MediaJobApiError(errMessage(res.status, payload), res.status, payload);
+  }
+  return payload as GenerationPricingResponse;
+}
+
+/** Authenticated pre-submit quote (same rules as debit). Uses `/api/media/jobs/preflight` BFF. */
+export async function fetchPreflightQuote(
+  mode: MediaStudioJobMode,
+): Promise<PreflightQuoteResponse> {
+  const qs = new URLSearchParams({ mode });
+  const res = await fetch(`/api/media/jobs/preflight?${qs.toString()}`, {
+    method: "GET",
+    headers: jsonHeaders(),
+    cache: "no-store",
+  });
+  const payload = await readBody(res);
+  if (!res.ok) {
+    throw new MediaJobApiError(errMessage(res.status, payload), res.status, payload);
+  }
+  return payload as PreflightQuoteResponse;
 }
 
 /**

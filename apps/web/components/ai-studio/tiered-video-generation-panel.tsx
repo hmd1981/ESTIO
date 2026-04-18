@@ -8,18 +8,24 @@ import { useGpuStatus } from "@/lib/use-gpu-status";
 import { useCreditBalance, useWalletSession } from "@/lib/wallet-session";
 import {
   createStudioMediaJob,
+  dispatchCreditsChanged,
   extractRenderableVideoUrl,
   extractVideoGenerationTierFromResult,
+  fetchGenerationPricing,
+  fetchPreflightQuote,
   getMediaJobResult,
   getMediaJobStatus,
+  isInsufficientCreditsError,
   isMediaJobResultNotReadyError,
   mediaPlaybackSrc,
   MEDIA_GENERATE_IMAGE_PROMPT_MAX_LENGTH,
   MediaJobApiError,
+  type GenerationPricingResponse,
   type MediaJobLifecycleStatus,
   type MediaStudioJobMode,
   requestVideoTierUpgrade,
   type VideoGenerationTier,
+  type PreflightQuoteResponse,
 } from "@/lib/media-jobs-api";
 
 const POLL_MS = 2000;
@@ -97,7 +103,23 @@ const COPY = {
     gpuOfflineDisabledTooltip:
       "GPU services are temporarily offline — please try again in a few minutes.",
     noCreditsDisabledTooltip:
-      "You're out of credits. Top up below to keep generating.",
+      "Not enough credits for this mode. Top up below.",
+    signInDisabledTooltip: "Connect your wallet in the credits section first.",
+    checkingCreditsTooltip: "Checking your balance for this mode…",
+    creditCheckFailedTooltip:
+      "Could not verify credits. Refresh the page or try again shortly.",
+    insufficientCreditsDetail:
+      "Insufficient credits — need {required} ({shortfall} short). Buy credits below.",
+    signInBannerTitle: "Wallet required",
+    signInBannerLead:
+      "Connect your wallet in the credits section to generate video. Each step uses credits.",
+    connectWalletCta: "Go to credits",
+    checkingCredits: "Checking credits…",
+    costLine: "Cost: {cost} credits",
+    balanceLine: "Your balance: {balance}",
+    noCreditsBannerTitle: "Not enough credits",
+    noCreditsBannerLead: "Top up below to continue.",
+    topUpCta: "Buy credits",
   },
   ar: {
     kicker: "استوديو الفيديو",
@@ -154,7 +176,23 @@ const COPY = {
     gpuOfflineDisabledTooltip:
       "خدمات GPU غير متاحة مؤقتًا — يُرجى المحاولة بعد بضع دقائق.",
     noCreditsDisabledTooltip:
-      "نفد رصيدك. اشحن من الأسفل للمتابعة.",
+      "لا يكفي الرصيد لهذا الوضع. اشحن من الأسفل.",
+    signInDisabledTooltip: "اربط محفظتك من قسم الرصيد أولًا.",
+    checkingCreditsTooltip: "جاري التحقق من رصيدك لهذا الوضع…",
+    creditCheckFailedTooltip:
+      "تعذر التحقق من الرصيد. حدّث الصفحة أو أعد المحاولة لاحقًا.",
+    insufficientCreditsDetail:
+      "رصيد غير كافٍ — تحتاج {required} ({shortfall} ناقص). اشحن من الأسفل.",
+    signInBannerTitle: "يلزم ربط المحفظة",
+    signInBannerLead:
+      "اربط محفظتك من قسم الرصيد لتوليد الفيديو. كل خطوة تستخدم اعتمادات.",
+    connectWalletCta: "الانتقال إلى الرصيد",
+    checkingCredits: "جاري التحقق من الرصيد…",
+    costLine: "التكلفة: {cost} اعتمادًا",
+    balanceLine: "رصيدك: {balance}",
+    noCreditsBannerTitle: "رصيد غير كافٍ",
+    noCreditsBannerLead: "اشحن من الأسفل للمتابعة.",
+    topUpCta: "شراء اعتمادات",
   },
 } as const;
 
@@ -163,6 +201,14 @@ type Str = (typeof COPY)["en"] | (typeof COPY)["ar"];
 function friendlyApiError(e: unknown, s: Str): string {
   if (e instanceof MediaJobApiError) {
     if (e.status === 503) return s.error503;
+    if (e.status === 402 && isInsufficientCreditsError(e)) {
+      const b = e.body as Record<string, unknown>;
+      const req = typeof b.requiredCredits === "number" ? b.requiredCredits : "?";
+      const sf = typeof b.shortfall === "number" ? b.shortfall : "?";
+      return s.insufficientCreditsDetail
+        .replace("{required}", String(req))
+        .replace("{shortfall}", String(sf));
+    }
     if (e.status === 400 || e.status === 422) return s.errorValidation;
     if (e.status === 502 || e.status === 504) return s.errorUpstream;
     return s.errorGeneric;
@@ -234,11 +280,15 @@ function useFakeProgress(status: CardStatus, tier: VideoGenerationTier): number 
 
   useEffect(() => {
     if (status === "completed" || status === "failed") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync progress to terminal job state
       setPct(status === "completed" ? 100 : 0);
       if (raf.current) clearInterval(raf.current);
       return;
     }
-    if (status === "queued") { setPct(2); return; }
+    if (status === "queued") {
+      setPct(2);
+      return;
+    }
 
     const maxPct = tier === "preview" ? 95 : tier === "standard" ? 90 : 85;
     const stepMs = tier === "preview" ? 400 : tier === "standard" ? 800 : 1500;
@@ -276,7 +326,7 @@ function JobCardView({
   upgradeTarget,
   upgradeBusy,
   gpuOffline = false,
-  noCredits = false,
+  upgradeCreditBlocked = false,
 }: {
   card: JobCard;
   str: Str;
@@ -285,7 +335,8 @@ function JobCardView({
   upgradeTarget: "standard" | "premium" | null;
   upgradeBusy: boolean;
   gpuOffline?: boolean;
-  noCredits?: boolean;
+  /** True when not enough credits or quote unavailable (blocks tier upgrade). */
+  upgradeCreditBlocked?: boolean;
 }) {
   const pct = useFakeProgress(card.status, card.tier);
   const isActive = card.status === "queued" || card.status === "running";
@@ -359,15 +410,15 @@ function JobCardView({
             <p className="text-xs font-medium text-[var(--muted)]">{str.upgradeHint}</p>
             <button
               type="button"
-              disabled={upgradeBusy || gpuOffline || noCredits}
+              disabled={upgradeBusy || gpuOffline || upgradeCreditBlocked}
               title={
                 gpuOffline
                   ? str.gpuOfflineDisabledTooltip
-                  : noCredits
+                  : upgradeCreditBlocked
                     ? str.noCreditsDisabledTooltip
                     : undefined
               }
-              aria-disabled={upgradeBusy || gpuOffline || noCredits}
+              aria-disabled={upgradeBusy || gpuOffline || upgradeCreditBlocked}
               onClick={() => onUpgrade(upgradeTarget)}
               className={
                 upgradeTarget === "standard"
@@ -422,7 +473,9 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
   const gpuOffline = gpu.online === false;
   const session = useWalletSession();
   const { balance } = useCreditBalance();
-  const noCredits = session != null && balance === 0;
+  const [pricing, setPricing] = useState<GenerationPricingResponse | null>(null);
+  const [preflight, setPreflight] = useState<PreflightQuoteResponse | null>(null);
+  const [preflightLoading, setPreflightLoading] = useState(false);
   const [intent, setIntent] = useState<VideoIntent>("text_to_video");
   const [prompt, setPrompt] = useState("");
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -442,6 +495,47 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchGenerationPricing()
+      .then((p) => {
+        if (!cancelled) setPricing(p);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const studioMode: MediaStudioJobMode =
+    intent === "text_to_video" ? "text_to_video" : "image_to_video";
+
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    void Promise.resolve()
+      .then(() => {
+        if (cancelled) return undefined;
+        setPreflightLoading(true);
+        setPreflight(null);
+        return fetchPreflightQuote(studioMode);
+      })
+      .then((q) => {
+        if (cancelled || q === undefined) return;
+        setPreflight(q);
+        setPreflightLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreflight(null);
+          setPreflightLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, studioMode, session?.token]);
 
   const patchCard = useCallback((jobId: string, patch: Partial<JobCard>) => {
     setCards((prev) => prev.map((c) => (c.jobId === jobId ? { ...c, ...patch } : c)));
@@ -473,6 +567,7 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
           });
 
           if (row.status === "failed") {
+            dispatchCreditsChanged();
             activePollIds.current.delete(jobId);
             return;
           }
@@ -554,6 +649,7 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
       // Do NOT send generation_tier — let API default to preview
       const created = await createStudioMediaJob(template);
       if (!mounted.current) return;
+      dispatchCreditsChanged();
 
       const card: JobCard = {
         jobId: created.id,
@@ -596,6 +692,7 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
         replayBody: { ...replayTemplate },
       });
       if (!mounted.current) return;
+      dispatchCreditsChanged();
 
       const card: JobCard = {
         jobId: created.id,
@@ -626,13 +723,35 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
 
   /* ── Derived state ── */
   const busy = submitBusy || upgradeBusy;
-  const previewCard = cards.find((c) => c.tier === "preview");
   const standardCard = cards.find((c) => c.tier === "standard");
   const premiumCard = cards.find((c) => c.tier === "premium");
+
+  const hasWallet = session != null;
+  const quote = session ? preflight : null;
+  const quoteLoading = session ? preflightLoading : false;
+
+  const insufficientCredits =
+    hasWallet && quote != null && !quote.sufficient;
+  const creditsGateLoading = hasWallet && quoteLoading;
+
+  const costCredits =
+    pricing?.modes[studioMode]?.credits ?? quote?.costCredits ?? null;
+  const displayBalance = quote?.balance ?? balance;
 
   const canStart = intent === "text_to_video"
     ? prompt.trim().length > 0
     : imageUrlInput.trim().length > 0 || imageFile != null;
+
+  const upgradeCreditBlocked =
+    insufficientCredits ||
+    (hasWallet && quote === null && !quoteLoading);
+
+  const canSubmitVideo =
+    canStart &&
+    hasWallet &&
+    quote != null &&
+    !insufficientCredits &&
+    !creditsGateLoading;
 
   function upgradeTargetFor(card: JobCard): "standard" | "premium" | null {
     if (card.status !== "completed") return null;
@@ -656,6 +775,59 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
         {gpuOffline ? (
           <div className="mt-5 max-w-2xl">
             <GpuOfflineBanner locale={locale} snapshot={gpu.status} />
+          </div>
+        ) : null}
+
+        {!gpuOffline ? (
+          <div className="mt-5 max-w-2xl space-y-1 text-sm text-[var(--text-body)]">
+            {costCredits != null ? (
+              <p>{str.costLine.replace("{cost}", String(costCredits))}</p>
+            ) : (
+              <p className="text-[var(--muted)]">{str.checkingCredits}</p>
+            )}
+            {hasWallet ? (
+              <p>
+                {creditsGateLoading
+                  ? str.checkingCredits
+                  : displayBalance != null
+                    ? str.balanceLine.replace("{balance}", String(displayBalance))
+                    : "—"}
+              </p>
+            ) : (
+              <p className="text-[var(--muted)]">{str.signInBannerLead}</p>
+            )}
+          </div>
+        ) : null}
+
+        {!gpuOffline && !hasWallet ? (
+          <div className="mt-5 max-w-2xl rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-sm font-semibold text-[var(--text)]">{str.signInBannerTitle}</p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--text-body)]">{str.signInBannerLead}</p>
+            <a
+              href="#studio-credits"
+              className="mt-3 inline-block rounded-sm bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent-contrast,#0a0a0a)] hover:opacity-90"
+            >
+              {str.connectWalletCta}
+            </a>
+          </div>
+        ) : null}
+
+        {!gpuOffline && hasWallet && insufficientCredits ? (
+          <div className="mt-5 max-w-2xl rounded-md border border-amber-500/25 bg-amber-950/10 p-4">
+            <p className="text-sm font-semibold text-amber-200">{str.noCreditsBannerTitle}</p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+              {quote != null && quote.shortfall > 0
+                ? str.insufficientCreditsDetail
+                    .replace("{required}", String(quote.costCredits))
+                    .replace("{shortfall}", String(quote.shortfall))
+                : str.noCreditsBannerLead}
+            </p>
+            <a
+              href="#studio-credits"
+              className="mt-3 inline-block rounded-sm bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[#0a0a0a] hover:opacity-90"
+            >
+              {str.topUpCta}
+            </a>
           </div>
         ) : null}
 
@@ -742,9 +914,21 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={!canStart || busy || cards.length > 0 || gpuOffline || noCredits}
-              title={gpuOffline ? str.gpuOfflineDisabledTooltip : noCredits ? str.noCreditsDisabledTooltip : undefined}
-              aria-disabled={!canStart || busy || cards.length > 0 || gpuOffline || noCredits}
+            <button type="submit" disabled={!canSubmitVideo || busy || cards.length > 0 || gpuOffline}
+              title={
+                gpuOffline
+                  ? str.gpuOfflineDisabledTooltip
+                  : !hasWallet
+                    ? str.signInDisabledTooltip
+                      : creditsGateLoading
+                      ? str.checkingCreditsTooltip
+                      : quote === null
+                        ? str.creditCheckFailedTooltip
+                        : insufficientCredits
+                          ? str.noCreditsDisabledTooltip
+                          : undefined
+              }
+              aria-disabled={!canSubmitVideo || busy || cards.length > 0 || gpuOffline}
               className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast,#0a0a0a)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
               {submitBusy ? str.submitting : str.submit}
             </button>
@@ -793,7 +977,7 @@ export function TieredVideoGenerationPanel({ locale }: { locale: AppLocale }) {
                     upgradeTarget={upgradeTargetFor(card)}
                     upgradeBusy={upgradeBusy}
                     gpuOffline={gpuOffline}
-                    noCredits={noCredits}
+                    upgradeCreditBlocked={upgradeCreditBlocked}
                   />
                 </div>
               ))}

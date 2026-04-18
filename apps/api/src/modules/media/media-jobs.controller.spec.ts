@@ -2,7 +2,7 @@ import { PATH_METADATA } from '@nestjs/common/constants';
 import { Test } from '@nestjs/testing';
 import { MediaJobsController } from './media-jobs.controller';
 import { MediaJobsService } from './media-jobs.service';
-import { MaybeWalletAuthGuard } from '../wallet-auth/maybe-wallet-auth.guard';
+import { WalletAuthGuard } from '../wallet-auth/wallet-auth.guard';
 
 describe('MediaJobsController', () => {
   let controller: MediaJobsController;
@@ -26,7 +26,7 @@ describe('MediaJobsController', () => {
       controllers: [MediaJobsController],
       providers: [{ provide: MediaJobsService, useValue: mediaJobs }],
     })
-      .overrideGuard(MaybeWalletAuthGuard)
+      .overrideGuard(WalletAuthGuard)
       .useValue({ canActivate: () => true })
       .compile();
     controller = moduleRef.get(MediaJobsController);
@@ -41,7 +41,9 @@ describe('MediaJobsController', () => {
   it('POST / (createStudioMediaJob) forwards body to service', async () => {
     const res = { jobId: 'a', id: 'a' };
     mediaJobs.createStudioMediaJob.mockResolvedValue(res);
-    const fakeReq = { walletUser: null } as unknown as import('express').Request;
+    const fakeReq = {
+      walletUser: { id: 'user-1' },
+    } as unknown as import('express').Request;
     await expect(
       controller.createStudioMediaJob(
         { mode: 'text_to_image', prompt: 'sunset' },
@@ -50,7 +52,7 @@ describe('MediaJobsController', () => {
     ).resolves.toBe(res);
     expect(mediaJobs.createStudioMediaJob).toHaveBeenCalledWith(
       { mode: 'text_to_image', prompt: 'sunset' },
-      null,
+      'user-1',
     );
   });
 

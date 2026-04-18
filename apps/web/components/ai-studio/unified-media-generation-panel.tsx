@@ -8,16 +8,22 @@ import { useGpuStatus } from "@/lib/use-gpu-status";
 import { useCreditBalance, useWalletSession } from "@/lib/wallet-session";
 import {
   createStudioMediaJob,
+  dispatchCreditsChanged,
   extractRenderableImageUrl,
   extractRenderableVideoUrl,
+  fetchGenerationPricing,
+  fetchPreflightQuote,
   getMediaJobResult,
   getMediaJobStatus,
+  isInsufficientCreditsError,
   isMediaJobResultNotReadyError,
   mediaPlaybackSrc,
   MEDIA_GENERATE_IMAGE_PROMPT_MAX_LENGTH,
   MediaJobApiError,
+  type GenerationPricingResponse,
   type MediaJobLifecycleStatus,
   type MediaStudioJobMode,
+  type PreflightQuoteResponse,
 } from "@/lib/media-jobs-api";
 
 const POLL_INTERVAL_MS = 2500;
@@ -86,14 +92,30 @@ const COPY = {
     errorUpstream: "The media service timed out or was unreachable.",
     errorNeedImage: "Add an image URL or upload a file.",
     errorNeedPrompt: "Enter a prompt.",
+    insufficientCreditsDetail:
+      "Insufficient credits — need {required} ({shortfall} short). Buy credits below.",
+    signInBannerTitle: "Wallet required",
+    signInBannerLead:
+      "Connect your wallet in the credits section to generate media. Generation is charged in credits per job.",
+    connectWalletCta: "Go to credits",
+    checkingCredits: "Checking credits…",
+    costLine: "Cost: {cost} credits",
+    balanceLine: "Your balance: {balance}",
+    chargedLine: "Charged {debited} credits · New balance: {balance}",
+    creditsRefundedHint:
+      "If the job did not finish successfully, credits may have been refunded — balance refreshes automatically.",
     gpuOfflineDisabledTooltip:
       "GPU services are temporarily offline — please try again in a few minutes.",
     noCreditsDisabledTooltip:
-      "You're out of credits. Top up below to continue generating.",
-    noCreditsBannerTitle: "Out of credits",
+      "Not enough credits for this mode. Top up below.",
+    signInDisabledTooltip: "Connect your wallet in the credits section first.",
+    checkingCreditsTooltip: "Checking your balance for this mode…",
+    creditCheckFailedTooltip:
+      "Could not verify credits. Refresh the page or try again shortly.",
+    noCreditsBannerTitle: "Not enough credits",
     noCreditsBannerLead:
-      "Top up below to keep generating. Your wallet balance will refresh automatically once payment is confirmed on-chain.",
-    topUpCta: "Top up credits",
+      "You need more credits for this generation mode. Top up below; your balance updates after on-chain confirmation.",
+    topUpCta: "Buy credits",
   },
   ar: {
     kicker: "عرض مباشر",
@@ -140,14 +162,30 @@ const COPY = {
     errorUpstream: "انتهت مهلة الخدمة أو تعذر الوصول إليها.",
     errorNeedImage: "أضف رابط صورة أو ارفع ملفًا.",
     errorNeedPrompt: "أدخل وصفًا.",
+    insufficientCreditsDetail:
+      "رصيد غير كافٍ — تحتاج {required} ({shortfall} ناقص). اشحن من الأسفل.",
+    signInBannerTitle: "يلزم ربط المحفظة",
+    signInBannerLead:
+      "اربط محفظتك من قسم الرصيد لتوليد الوسائط. يُخصم رصيد بالاعتمادات لكل مهمة.",
+    connectWalletCta: "الانتقال إلى الرصيد",
+    checkingCredits: "جاري التحقق من الرصيد…",
+    costLine: "التكلفة: {cost} اعتمادًا",
+    balanceLine: "رصيدك: {balance}",
+    chargedLine: "تم خصم {debited} اعتمادًا · الرصيد الجديد: {balance}",
+    creditsRefundedHint:
+      "إذا لم تكتمل المهمة بنجاح، قد يُعاد الرصيد — يُحدَّث تلقائيًا.",
     gpuOfflineDisabledTooltip:
       "خدمات GPU غير متاحة مؤقتًا — يُرجى المحاولة بعد بضع دقائق.",
     noCreditsDisabledTooltip:
-      "لقد نفد رصيدك. اشحن من الأسفل للمتابعة.",
-    noCreditsBannerTitle: "نفد الرصيد",
+      "لا يكفي الرصيد لهذا الوضع. اشحن من الأسفل.",
+    signInDisabledTooltip: "اربط محفظتك من قسم الرصيد أولًا.",
+    checkingCreditsTooltip: "جاري التحقق من رصيدك لهذا الوضع…",
+    creditCheckFailedTooltip:
+      "تعذر التحقق من الرصيد. حدّث الصفحة أو أعد المحاولة لاحقًا.",
+    noCreditsBannerTitle: "رصيد غير كافٍ",
     noCreditsBannerLead:
-      "اشحن من الأسفل لمتابعة التوليد. سيتم تحديث الرصيد تلقائيًا بعد تأكيد الدفع على السلسلة.",
-    topUpCta: "شحن الرصيد",
+      "تحتاج مزيدًا من الاعتمادات لهذا الوضع. اشحن من الأسفل؛ يُحدَّث الرصيد بعد تأكيد الدفع.",
+    topUpCta: "شراء اعتمادات",
   },
 } as const;
 
@@ -166,6 +204,14 @@ function friendlyApiError(
 ): string {
   if (e instanceof MediaJobApiError) {
     if (e.status === 503) return str.error503;
+    if (e.status === 402 && isInsufficientCreditsError(e)) {
+      const b = e.body as Record<string, unknown>;
+      const req = typeof b.requiredCredits === "number" ? b.requiredCredits : "?";
+      const sf = typeof b.shortfall === "number" ? b.shortfall : "?";
+      return str.insufficientCreditsDetail
+        .replace("{required}", String(req))
+        .replace("{shortfall}", String(sf));
+    }
     if (e.status === 400 || e.status === 422) return str.errorValidation;
     if (e.status === 502 || e.status === 504) return str.errorUpstream;
     return e.message || str.errorGeneric;
@@ -214,12 +260,13 @@ export function UnifiedMediaGenerationPanel({
   const gpuOffline = gpu.online === false;
   const session = useWalletSession();
   const { balance } = useCreditBalance();
-  // Hard-block submit only when we know the wallet is logged in AND its
-  // balance is exactly zero. We don't block anonymous users here because
-  // the API is in soft-auth mode (PHASE2_ENFORCE_AUTH=false): anonymous
-  // submits are still allowed end-to-end. When auth is later enforced,
-  // the API itself will return 401 and the panel surfaces the message.
-  const noCredits = session != null && balance === 0;
+  const [pricing, setPricing] = useState<GenerationPricingResponse | null>(null);
+  const [preflight, setPreflight] = useState<PreflightQuoteResponse | null>(null);
+  const [preflightLoading, setPreflightLoading] = useState(false);
+  const [creditMeta, setCreditMeta] = useState<{
+    debited: number;
+    balanceAfter: number;
+  } | null>(null);
   const [mode, setMode] = useState<MediaStudioJobMode>(defaultMode);
   const [prompt, setPrompt] = useState("");
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -243,6 +290,44 @@ export function UnifiedMediaGenerationPanel({
       mounted.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchGenerationPricing()
+      .then((p) => {
+        if (!cancelled) setPricing(p);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    void Promise.resolve()
+      .then(() => {
+        if (cancelled) return undefined;
+        setPreflightLoading(true);
+        setPreflight(null);
+        return fetchPreflightQuote(mode);
+      })
+      .then((q) => {
+        if (cancelled || q === undefined) return;
+        setPreflight(q);
+        setPreflightLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPreflight(null);
+          setPreflightLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, mode, session?.token]);
 
   const stopPollingRef = useRef(false);
   useEffect(() => {
@@ -284,6 +369,7 @@ export function UnifiedMediaGenerationPanel({
           setPhase(next);
 
           if (row.status === "failed") {
+            dispatchCreditsChanged();
             setErrorMessage(
               row.error?.message?.trim() || str.statusFailed,
             );
@@ -375,6 +461,7 @@ export function UnifiedMediaGenerationPanel({
     setRawResult(null);
     setShowRaw(false);
     setJobId(null);
+    setCreditMeta(null);
 
     const durationSeconds = parseDuration(durationRaw);
 
@@ -385,6 +472,17 @@ export function UnifiedMediaGenerationPanel({
           prompt: p,
         });
         if (!mounted.current) return;
+        if (
+          created.credits &&
+          created.credits.debited > 0 &&
+          created.credits.balanceAfter != null
+        ) {
+          setCreditMeta({
+            debited: created.credits.debited,
+            balanceAfter: created.credits.balanceAfter,
+          });
+        }
+        dispatchCreditsChanged();
         setJobId(created.id);
         setPhase("queued");
         void runPollLoop(created.id, "text_to_image");
@@ -398,6 +496,17 @@ export function UnifiedMediaGenerationPanel({
           ...(durationSeconds != null ? { duration_seconds: durationSeconds } : {}),
         });
         if (!mounted.current) return;
+        if (
+          created.credits &&
+          created.credits.debited > 0 &&
+          created.credits.balanceAfter != null
+        ) {
+          setCreditMeta({
+            debited: created.credits.debited,
+            balanceAfter: created.credits.balanceAfter,
+          });
+        }
+        dispatchCreditsChanged();
         setJobId(created.id);
         setPhase("queued");
         void runPollLoop(created.id, "text_to_video");
@@ -417,6 +526,17 @@ export function UnifiedMediaGenerationPanel({
         ...(durationSeconds != null ? { duration_seconds: durationSeconds } : {}),
       });
       if (!mounted.current) return;
+      if (
+        created.credits &&
+        created.credits.debited > 0 &&
+        created.credits.balanceAfter != null
+      ) {
+        setCreditMeta({
+          debited: created.credits.debited,
+          balanceAfter: created.credits.balanceAfter,
+        });
+      }
+      dispatchCreditsChanged();
       setJobId(created.id);
       setPhase("queued");
       void runPollLoop(created.id, "image_to_video");
@@ -436,6 +556,7 @@ export function UnifiedMediaGenerationPanel({
     setPreviewKind(null);
     setRawResult(null);
     setShowRaw(false);
+    setCreditMeta(null);
   }
 
   const completedCopy =
@@ -463,20 +584,43 @@ export function UnifiedMediaGenerationPanel({
   const busy =
     phase === "submitting" || phase === "queued" || phase === "running";
 
+  const hasWallet = session != null;
+  /** Quote is only shown when logged in; stale state is ignored after logout. */
+  const quote = session ? preflight : null;
+  const quoteLoading = session ? preflightLoading : false;
+
+  const insufficientCredits =
+    hasWallet && quote != null && !quote.sufficient;
+  const creditsGateLoading = hasWallet && quoteLoading;
+
+  const inputsValid =
+    mode === "text_to_image" || mode === "text_to_video"
+      ? prompt.trim().length > 0
+      : imageUrlInput.trim().length > 0 || imageFile != null;
+
   const canSubmit =
     !gpuOffline &&
-    !noCredits &&
-    (mode === "text_to_image"
-      ? prompt.trim().length > 0
-      : mode === "text_to_video"
-        ? prompt.trim().length > 0
-        : imageUrlInput.trim().length > 0 || imageFile != null);
+    hasWallet &&
+    quote != null &&
+    !insufficientCredits &&
+    !creditsGateLoading &&
+    inputsValid;
 
   const submitDisabledTooltip = gpuOffline
     ? c.gpuOfflineDisabledTooltip
-    : noCredits
-      ? c.noCreditsDisabledTooltip
-      : undefined;
+    : !hasWallet
+      ? c.signInDisabledTooltip
+      : creditsGateLoading
+        ? c.checkingCreditsTooltip
+        : quote === null
+          ? c.creditCheckFailedTooltip
+          : insufficientCredits
+            ? c.noCreditsDisabledTooltip
+            : undefined;
+
+  const costCredits =
+    pricing?.modes[mode]?.credits ?? quote?.costCredits ?? null;
+  const displayBalance = quote?.balance ?? balance;
 
   return (
     <section
@@ -503,13 +647,57 @@ export function UnifiedMediaGenerationPanel({
           </div>
         ) : null}
 
-        {!gpuOffline && noCredits ? (
+        {!gpuOffline ? (
+          <div className="mt-6 max-w-2xl space-y-1 text-sm leading-relaxed text-[var(--text-body)]">
+            {costCredits != null ? (
+              <p>
+                {c.costLine.replace("{cost}", String(costCredits))}
+              </p>
+            ) : (
+              <p className="text-[var(--muted)]">{c.checkingCredits}</p>
+            )}
+            {hasWallet ? (
+              <p>
+                {creditsGateLoading
+                  ? c.checkingCredits
+                  : displayBalance != null
+                    ? c.balanceLine.replace("{balance}", String(displayBalance))
+                    : "—"}
+              </p>
+            ) : (
+              <p className="text-[var(--muted)]">{c.signInBannerLead}</p>
+            )}
+          </div>
+        ) : null}
+
+        {!gpuOffline && !hasWallet ? (
+          <div className="mt-6 max-w-2xl rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-sm font-semibold text-[var(--text)]">
+              {c.signInBannerTitle}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--text-body)]">
+              {c.signInBannerLead}
+            </p>
+            <a
+              href="#studio-credits"
+              className="mt-3 inline-block rounded-sm bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent-contrast,#0a0a0a)] hover:opacity-90"
+            >
+              {c.connectWalletCta}
+            </a>
+          </div>
+        ) : null}
+
+        {!gpuOffline && hasWallet && insufficientCredits ? (
           <div className="mt-6 max-w-2xl rounded-md border border-amber-500/25 bg-amber-950/10 p-4">
             <p className="text-sm font-semibold text-amber-200">
               {c.noCreditsBannerTitle}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
-              {c.noCreditsBannerLead}
+              {quote != null && quote.shortfall > 0
+                ? c.insufficientCreditsDetail
+                    .replace("{required}", String(quote.costCredits))
+                    .replace("{shortfall}", String(quote.shortfall))
+                : c.noCreditsBannerLead}
             </p>
             <a
               href="#studio-credits"
@@ -694,6 +882,21 @@ export function UnifiedMediaGenerationPanel({
           <p className="text-sm leading-relaxed text-[var(--text-body)]">
             {statusMessage}
           </p>
+          {creditMeta &&
+          (phase === "queued" ||
+            phase === "running" ||
+            phase === "completed") ? (
+            <p className="mt-2 text-xs font-medium text-[var(--muted)]">
+              {c.chargedLine
+                .replace("{debited}", String(creditMeta.debited))
+                .replace("{balance}", String(creditMeta.balanceAfter))}
+            </p>
+          ) : null}
+          {phase === "failed" && creditMeta ? (
+            <p className="mt-2 text-xs text-[var(--muted)]">
+              {c.creditsRefundedHint}
+            </p>
+          ) : null}
           {jobId ? (
             <p className="mt-3 font-mono text-xs text-[var(--muted)] break-all">
               <span className="font-sans text-[var(--text-body)]">
