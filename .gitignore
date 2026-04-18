@@ -9,3 +9,12 @@ dist
 coverage
 .idea
 .vscode
+
+# Defensive: never commit anything that looks like an SSH/PGP key, even if a
+# typo creates a file named like a shell command (we have had `ssh-keygen
+# "git push origin main"` accidents before — see /root/.cursor-quarantine/).
+*.pem
+*.key
+*id_ed25519*
+*id_rsa*
+*BEGIN_OPENSSH_PRIVATE_KEY*
