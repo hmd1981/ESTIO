@@ -8,10 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  CrmLeadStatus,
-  CrmPipelineStage,
-} from '@prisma/client';
+import { CrmLeadStatus, CrmPipelineStage } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { CreateLeadNoteDto } from './dto/create-lead-note.dto';
 import { CreateLeadTaskDto } from './dto/create-lead-task.dto';
@@ -105,7 +102,7 @@ export class LeadsAdminController {
       currentStage: lead.stage,
       currentStatus: lead.status,
       gates: DEAL_FLOW_GATES,
-      nextRequirements: nextStageRequirements(lead.stage as CrmPipelineStage),
+      nextRequirements: nextStageRequirements(lead.stage),
     };
   }
 

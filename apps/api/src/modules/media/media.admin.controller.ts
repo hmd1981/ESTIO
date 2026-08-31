@@ -46,10 +46,7 @@ export class MediaAdminController {
         },
         filename: (_req, file, cb) => {
           const ext = extname(file.originalname) || '';
-          cb(
-            null,
-            `${Date.now()}-${randomBytes(8).toString('hex')}${ext}`,
-          );
+          cb(null, `${Date.now()}-${randomBytes(8).toString('hex')}${ext}`);
         },
       }),
       limits: { fileSize: 15 * 1024 * 1024 },
@@ -59,8 +56,7 @@ export class MediaAdminController {
     if (!file?.filename) {
       throw new BadRequestException('file is required');
     }
-    const base =
-      process.env.PUBLIC_FILE_BASE_URL?.replace(/\/$/, '') ?? '';
+    const base = process.env.PUBLIC_FILE_BASE_URL?.replace(/\/$/, '') ?? '';
     const publicUrl = `${base}/uploads/${file.filename}`;
     return this.mediaService.create({
       fileName: file.filename,

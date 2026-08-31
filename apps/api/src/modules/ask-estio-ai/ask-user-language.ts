@@ -42,11 +42,8 @@ export function detectUserMessageLanguage(text: string): DetectedUserLanguage {
   if (totalLetters < 3) return 'unknown';
 
   const persianSignal = PERSIAN_LETTERS.test(s) ? 1 : 0;
-  const persianWords = /(می‌|می |هستم|می‌خوام|می‌خواهم|باشه|چطور|چیزی|برای)/.test(
-    s,
-  )
-    ? 1
-    : 0;
+  const persianWords =
+    /(می‌|می |هستم|می‌خوام|می‌خواهم|باشه|چطور|چیزی|برای)/.test(s) ? 1 : 0;
 
   const lShare = latin / totalLetters;
   const aShare = arabic / totalLetters;

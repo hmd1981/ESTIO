@@ -7,7 +7,9 @@ import type { LoginDto } from './dto/login.dto';
 export class AuthService {
   constructor(private readonly jwt: JwtService) {}
 
-  async login(dto: LoginDto): Promise<{ access_token: string; expires_in: string }> {
+  async login(
+    dto: LoginDto,
+  ): Promise<{ access_token: string; expires_in: string }> {
     const hash = process.env.ADMIN_PASSWORD_HASH?.trim();
     const plain = process.env.ADMIN_PASSWORD?.trim();
     let ok = false;

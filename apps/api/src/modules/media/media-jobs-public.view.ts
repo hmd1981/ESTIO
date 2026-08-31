@@ -40,6 +40,11 @@ export type MediaJobSubmitResponse = {
   error: null;
   createdAt: string;
   mediaWorkerMode: 'sync' | 'async';
+  /** Present when credits were debited for this job (wallet-authenticated submit). */
+  credits?: {
+    debited: number;
+    balanceAfter: number;
+  };
 };
 
 export type MediaJobStatusResponse = {
@@ -161,8 +166,9 @@ export function mediaJobPublicErrorFromRow(
 export function buildMediaJobSubmitResponse(
   row: { id: string; createdAt: Date; type: string },
   mediaWorkerMode: 'sync' | 'async',
+  credits?: { debited: number; balanceAfter: number | null },
 ): MediaJobSubmitResponse {
-  return {
+  const base: MediaJobSubmitResponse = {
     jobId: row.id,
     id: row.id,
     type: row.type,
@@ -173,6 +179,18 @@ export function buildMediaJobSubmitResponse(
     createdAt: row.createdAt.toISOString(),
     mediaWorkerMode,
   };
+  if (
+    credits &&
+    credits.debited > 0 &&
+    credits.balanceAfter != null &&
+    Number.isFinite(credits.balanceAfter)
+  ) {
+    base.credits = {
+      debited: credits.debited,
+      balanceAfter: credits.balanceAfter,
+    };
+  }
+  return base;
 }
 
 export function buildMediaJobStatusResponse(
@@ -191,7 +209,7 @@ export function buildMediaJobStatusResponse(
     id: row.id,
     type: row.type,
     mediaKind: publicMediaKindFromStoredType(row.type),
-    status: row.status as MediaJobUiStatus,
+    status: row.status,
     createdAt: row.createdAt.toISOString(),
     startedAt: row.startedAt?.toISOString() ?? null,
     completedAt: row.completedAt?.toISOString() ?? null,
@@ -239,7 +257,7 @@ export function buildMediaJobResultNotReadyBody(
     id: row.id,
     type: row.type,
     mediaKind: publicMediaKindFromStoredType(row.type),
-    status: row.status as MediaJobUiStatus,
+    status: row.status,
     resultReady: false,
     error: {
       code: 'RESULT_NOT_READY',

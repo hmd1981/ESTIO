@@ -7,8 +7,7 @@ export const DEFAULT_RESPONSE_TEMPLATES = [
   {
     name: 'ready-enterprise',
     channel: 'EMAIL' as const,
-    subject:
-      'Estio — Qualified: {{serviceType}} engagement for {{company}}',
+    subject: 'Estio — Qualified: {{serviceType}} engagement for {{company}}',
     body: `{{firstName}},
 
 Your submission has been classified and qualified under {{serviceType}}.
@@ -53,8 +52,7 @@ estio.org`,
   {
     name: 'clarify-enterprise',
     channel: 'EMAIL' as const,
-    subject:
-      'Estio — Clarification required: {{serviceType}} qualification',
+    subject: 'Estio — Clarification required: {{serviceType}} qualification',
     body: `{{firstName}},
 
 Your enterprise submission under {{serviceType}} has been received but cannot advance to qualification without the following:

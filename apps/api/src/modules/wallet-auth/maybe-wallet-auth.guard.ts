@@ -53,23 +53,27 @@ export class MaybeWalletAuthGuard implements CanActivate {
     const token = m[1];
     let payload: WalletJwtPayload | null = null;
     try {
-      payload = (await this.jwt.verifyAsync(token)) as WalletJwtPayload;
+      payload = await this.jwt.verifyAsync<WalletJwtPayload>(token);
     } catch {
-      if (this.strict) throw new UnauthorizedException('Token is invalid or expired');
+      if (this.strict)
+        throw new UnauthorizedException('Token is invalid or expired');
       return true;
     }
     if (!payload || payload.kind !== 'wallet') {
-      if (this.strict) throw new UnauthorizedException('Token is not a wallet token');
+      if (this.strict)
+        throw new UnauthorizedException('Token is not a wallet token');
       return true;
     }
     const address = normalizeWalletAddress(payload.sub);
     if (!address) {
-      if (this.strict) throw new UnauthorizedException('Token sub is not a wallet address');
+      if (this.strict)
+        throw new UnauthorizedException('Token sub is not a wallet address');
       return true;
     }
     const expectedAud = process.env.PHASE2_SIWE_DOMAIN?.trim() || 'estio.org';
     if (payload.aud !== expectedAud) {
-      if (this.strict) throw new UnauthorizedException('Token audience mismatch');
+      if (this.strict)
+        throw new UnauthorizedException('Token audience mismatch');
       return true;
     }
     const user = await this.prisma.user.findUnique({

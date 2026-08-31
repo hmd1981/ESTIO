@@ -29,11 +29,7 @@ export const DEAL_FLOW_GATES: DealGate[] = [
       'First response sent',
       'Scoping call scheduled or scope document requested',
     ],
-    blockedWithout: [
-      'company',
-      'project_scope',
-      'contact_method',
-    ],
+    blockedWithout: ['company', 'project_scope', 'contact_method'],
   },
   {
     stage: 'PROPOSAL',
@@ -45,11 +41,7 @@ export const DEAL_FLOW_GATES: DealGate[] = [
       'Internal owner identified',
       'Phase-one acceptance criteria defined',
     ],
-    blockedWithout: [
-      'budget_range',
-      'timeline',
-      'scoping_call_completed',
-    ],
+    blockedWithout: ['budget_range', 'timeline', 'scoping_call_completed'],
   },
   {
     stage: 'NEGOTIATION',
@@ -60,9 +52,7 @@ export const DEAL_FLOW_GATES: DealGate[] = [
       'Commercial terms under discussion',
       'Decision-maker identified and engaged',
     ],
-    blockedWithout: [
-      'proposal_sent',
-    ],
+    blockedWithout: ['proposal_sent'],
   },
   {
     stage: 'WON',
@@ -72,20 +62,14 @@ export const DEAL_FLOW_GATES: DealGate[] = [
       'Contract signed or PO received',
       'Engagement value recorded',
     ],
-    blockedWithout: [
-      'won_value',
-    ],
+    blockedWithout: ['won_value'],
   },
   {
     stage: 'LOST',
     label: 'Closed — lost',
     requiredFields: ['lostReason'],
-    requiredConditions: [
-      'Lost reason documented',
-    ],
-    blockedWithout: [
-      'lost_reason',
-    ],
+    requiredConditions: ['Lost reason documented'],
+    blockedWithout: ['lost_reason'],
   },
 ];
 
@@ -107,7 +91,12 @@ export function validateStageGate(
   const missing: string[] = [];
   for (const field of gate.requiredFields) {
     const value = lead[field];
-    if (value === null || value === undefined || value === '' || value === 'UNSPECIFIED') {
+    if (
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      value === 'UNSPECIFIED'
+    ) {
       missing.push(field);
     }
   }
@@ -125,7 +114,7 @@ export function nextStageRequirements(currentStage: CrmPipelineStage): string {
   ];
   const idx = order.indexOf(currentStage);
   if (idx < 0 || idx >= order.length - 1) return '';
-  const next = order[idx + 1]!;
+  const next = order[idx + 1];
   const gate = getGateForStage(next);
   if (!gate) return '';
   return [

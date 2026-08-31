@@ -32,9 +32,7 @@ function assertNonEmptyPrompt(
   body: Record<string, unknown>,
 ): void {
   if (typeof body.prompt !== 'string' || !body.prompt.trim()) {
-    throw new BadRequestException(
-      `${mode}: prompt must be a non-empty string`,
-    );
+    throw new BadRequestException(`${mode}: prompt must be a non-empty string`);
   }
   if (body.prompt.length > GENERATE_IMAGE_PROMPT_MAX_LENGTH) {
     throw new BadRequestException(

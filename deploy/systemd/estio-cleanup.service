@@ -1,0 +1,16 @@
+[Unit]
+Description=Estio daily operational cleanup (API)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/estio-platform
+Environment=COMPOSE_FILE=docker-compose.prod.yml
+ExecStart=/bin/bash /root/estio-platform/deploy/scripts/run-cleanup.sh
+User=root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

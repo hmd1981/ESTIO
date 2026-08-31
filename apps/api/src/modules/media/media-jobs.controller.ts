@@ -6,63 +6,70 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
-import { MaybeWalletAuthGuard } from '../wallet-auth/maybe-wallet-auth.guard';
+import { WalletAuthGuard } from '../wallet-auth/wallet-auth.guard';
 import { MediaJobsService } from './media-jobs.service';
 
-// Submit-side rate limit (per IP). Real per-user accounting is the job of the
-// upcoming WalletAuthGuard + credit ledger in Phase 2; until that ships these
-// IP limits are the only thing standing between the open internet and our GPU.
 const SUBMIT_THROTTLE = {
-  short: { limit: 5, ttl: 60_000 }, //  5 submits / minute / IP
-  long: { limit: 50, ttl: 86_400_000 }, // 50 submits / day    / IP
+  short: { limit: 5, ttl: 60_000 },
+  long: { limit: 50, ttl: 86_400_000 },
 } as const;
 
 /**
  * Unified async media jobs. **Primary Studio submit:** `POST /media/jobs` with `{ mode, … }`.
- * Legacy: `POST …/generate-image`, `POST …/generate-media`.
+ * Phase 4: all submits require wallet JWT; credit debit is atomic with job row creation.
+ * Status/result polling stays public so clients can poll by job id.
  */
 @Controller('media/jobs')
-@UseGuards(MaybeWalletAuthGuard)
 export class MediaJobsController {
   constructor(private readonly mediaJobs: MediaJobsService) {}
 
+  /**
+   * Credit quote for a mode (authenticated). Same cost rules as submit.
+   * GET /media/jobs/preflight?mode=text_to_image
+   */
+  @Get('preflight')
+  @UseGuards(WalletAuthGuard)
+  @Throttle({
+    short: { limit: 30, ttl: 60_000 },
+    long: { limit: 500, ttl: 86_400_000 },
+  })
+  preflight(@Query('mode') mode: string | undefined, @Req() req: Request) {
+    return this.mediaJobs.getPreflightQuote(
+      mode ?? 'text_to_image',
+      req.walletUser!.id,
+    );
+  }
+
   @Post('generate-image')
+  @UseGuards(WalletAuthGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @Throttle(SUBMIT_THROTTLE)
   createGenerateImage(@Body() body: unknown, @Req() req: Request) {
-    return this.mediaJobs.createGenerateImageJob(body, req.walletUser?.id ?? null);
+    return this.mediaJobs.createGenerateImageJob(body, req.walletUser!.id);
   }
 
-  /**
-   * Unified Studio submit: `{ "mode": "text_to_image" | "image_to_video" | "text_to_video", ... }`.
-   * Same queue, status, and result endpoints as `generate-image`.
-   */
   @Post()
+  @UseGuards(WalletAuthGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @Throttle(SUBMIT_THROTTLE)
   createStudioMediaJob(@Body() body: unknown, @Req() req: Request) {
-    return this.mediaJobs.createStudioMediaJob(body, req.walletUser?.id ?? null);
+    return this.mediaJobs.createStudioMediaJob(body, req.walletUser!.id);
   }
 
-  /** Video-oriented async jobs (`mode`: `text_to_video` | `image_to_video`). Poll/result same as generate-image. */
   @Post('generate-media')
+  @UseGuards(WalletAuthGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   @Throttle(SUBMIT_THROTTLE)
   createGenerateMedia(@Body() body: unknown, @Req() req: Request) {
-    return this.mediaJobs.createGenerateMediaJob(body, req.walletUser?.id ?? null);
+    return this.mediaJobs.createGenerateMediaJob(body, req.walletUser!.id);
   }
 
-  /**
-   * Completed: **200** — `jobId`, `id`, `type`, `mediaKind`, `status`, `resultReady`, `error`, `playback`, `result`.
-   * `playback` is a browser-safe descriptor when inferable; otherwise `null` (use `result`).
-   * Not ready: **409** — same identity fields + `resultReady: false`, `error.code` **RESULT_NOT_READY**.
-   * Failed: **422** — `resultReady: false`, `error` safe for UI (no raw upstream body).
-   */
   @Get(':id/result')
   getResult(@Param('id') id: string) {
     return this.mediaJobs.getJobResult(id);

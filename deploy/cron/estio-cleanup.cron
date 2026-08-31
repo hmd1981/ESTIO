@@ -1,0 +1,3 @@
+# Estio daily cleanup (cron alternative to systemd timer)
+# Runs at 04:15 UTC — after in-process cron rollup (03:00) and cleanup cron (04:00).
+15 4 * * * root cd /root/estio-platform && bash deploy/scripts/run-cleanup.sh >> /var/log/estio-cleanup.log 2>&1

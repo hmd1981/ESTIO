@@ -94,7 +94,11 @@ export class LeadScoringService {
   compute(
     lead: LeadScoreInput,
     rulesJson?: Prisma.JsonValue | null,
-  ): { score: number; priority: CrmPriority; breakdown: Record<string, number> } {
+  ): {
+    score: number;
+    priority: CrmPriority;
+    breakdown: Record<string, number>;
+  } {
     const rules = this.mergeRules(rulesJson);
     const breakdown: Record<string, number> = {};
 
@@ -115,17 +119,20 @@ export class LeadScoringService {
 
     let complete = 0;
     if (lead.phone?.trim()) complete += rules.completenessFieldPts.phone ?? 0;
-    if (lead.whatsapp?.trim()) complete += rules.completenessFieldPts.whatsapp ?? 0;
-    if (lead.company?.trim()) complete += rules.completenessFieldPts.company ?? 0;
-    if (lead.jobTitle?.trim()) complete += rules.completenessFieldPts.jobTitle ?? 0;
-    if (lead.country?.trim()) complete += rules.completenessFieldPts.country ?? 0;
+    if (lead.whatsapp?.trim())
+      complete += rules.completenessFieldPts.whatsapp ?? 0;
+    if (lead.company?.trim())
+      complete += rules.completenessFieldPts.company ?? 0;
+    if (lead.jobTitle?.trim())
+      complete += rules.completenessFieldPts.jobTitle ?? 0;
+    if (lead.country?.trim())
+      complete += rules.completenessFieldPts.country ?? 0;
     if (lead.city?.trim()) complete += rules.completenessFieldPts.city ?? 0;
-    if (lead.projectScope?.trim()) complete += rules.completenessFieldPts.projectScope ?? 0;
+    if (lead.projectScope?.trim())
+      complete += rules.completenessFieldPts.projectScope ?? 0;
     breakdown.completeness = complete;
 
-    let score = Math.round(
-      sSvc + sBd + sTl + sTm + sBt + complete,
-    );
+    let score = Math.round(sSvc + sBd + sTl + sTm + sBt + complete);
     const cap = rules.maxScore ?? 100;
     if (score > cap) score = cap;
 
@@ -144,7 +151,11 @@ export class LeadScoringService {
   }
 
   private mergeRules(rulesJson?: Prisma.JsonValue | null): ScoreRules {
-    if (!rulesJson || typeof rulesJson !== 'object' || Array.isArray(rulesJson)) {
+    if (
+      !rulesJson ||
+      typeof rulesJson !== 'object' ||
+      Array.isArray(rulesJson)
+    ) {
       return DEFAULT_RULES;
     }
     const r = rulesJson as Partial<ScoreRules>;

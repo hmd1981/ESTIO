@@ -7,7 +7,9 @@ export const GENERATE_IMAGE_PROMPT_MAX_LENGTH = 8000;
  * Validates the minimum contract (`prompt`) and returns the same object reference
  * so all JSON fields are forwarded to the worker.
  */
-export function assertGenerateImagePayload(body: unknown): Record<string, unknown> {
+export function assertGenerateImagePayload(
+  body: unknown,
+): Record<string, unknown> {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new BadRequestException('Body must be a JSON object');
   }

@@ -19,11 +19,7 @@ import { MediaService } from './media.service';
     WalletAuthModule,
     CreditsModule,
   ],
-  controllers: [
-    MediaController,
-    MediaJobsController,
-    MediaAdminController,
-  ],
+  controllers: [MediaController, MediaJobsController, MediaAdminController],
   providers: [MediaService, MediaWorkerService, MediaJobsService],
   exports: [MediaService],
 })

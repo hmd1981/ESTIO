@@ -14,9 +14,12 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health', () => {
+    it('should return api health payload', () => {
+      const result = appController.health();
+      expect(result.ok).toBe(true);
+      expect(result.service).toBe('estio-api');
+      expect(typeof result.timestamp).toBe('string');
     });
   });
 });

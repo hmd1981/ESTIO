@@ -17,7 +17,7 @@ if [[ ! -f "$CERT_PEM" || ! -f "$CERT_KEY" ]]; then
   echo "Missing TLS material. Create Cloudflare Origin Certificate, then:"
   echo "  sudo mkdir -p $CERT_DIR"
   echo "  sudo nano $CERT_PEM      # paste certificate (BEGIN CERTIFICATE)"
-  echo "  sudo nano $CERT_KEY      # paste private key (BEGIN PRIVATE KEY)"
+  echo "  sudo nano $CERT_KEY      # paste the origin private key file"
   echo "  sudo chmod 600 $CERT_KEY"
   exit 1
 fi

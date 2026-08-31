@@ -82,11 +82,14 @@ export class MediaService implements MediaPort {
   ) {}
 
   /** Forwards the JSON body unchanged after prompt validation (see controller). */
-  forwardGenerateImageToWorker(body: Record<string, unknown>): Promise<unknown> {
+  forwardGenerateImageToWorker(
+    body: Record<string, unknown>,
+  ): Promise<unknown> {
     if (!this.status.isWorkerOnlineFast()) {
       throw new ServiceUnavailableException({
         code: 'WORKER_OFFLINE',
-        message: 'GPU services are temporarily offline. Please try again later.',
+        message:
+          'GPU services are temporarily offline. Please try again later.',
         reason: this.status.lastReason() ?? 'unreachable',
       });
     }
@@ -141,22 +144,19 @@ export class MediaService implements MediaPort {
     const headerMime =
       res.headers.get('content-type')?.split(';')[0]?.trim() ?? '';
     let ext =
-      extname(u.pathname).toLowerCase() ||
-      extFromMime(headerMime) ||
-      '.bin';
+      extname(u.pathname).toLowerCase() || extFromMime(headerMime) || '.bin';
     if (ext.length > 10) ext = '.bin';
     const fileName = `${Date.now()}-${randomBytes(8).toString('hex')}${ext}`;
     const dir = uploadDir();
     await writeFile(join(dir, fileName), buf);
-    const base =
-      process.env.PUBLIC_FILE_BASE_URL?.replace(/\/$/, '') ?? '';
+    const base = process.env.PUBLIC_FILE_BASE_URL?.replace(/\/$/, '') ?? '';
     const publicUrl = `${base}/uploads/${fileName}`;
     const mimeType = headerMime || 'application/octet-stream';
-    const original =
-      (dto.originalName?.trim() || basename(u.pathname) || 'imported').slice(
-        0,
-        500,
-      );
+    const original = (
+      dto.originalName?.trim() ||
+      basename(u.pathname) ||
+      'imported'
+    ).slice(0, 500);
     return this.create({
       fileName,
       originalName: original,

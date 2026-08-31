@@ -41,7 +41,11 @@ export class AskContextDto {
   @Transform(({ value }) =>
     Array.isArray(value)
       ? value
-          .map((v) => String(v ?? '').trim().slice(0, 500))
+          .map((v) =>
+            String(v ?? '')
+              .trim()
+              .slice(0, 500),
+          )
           .filter((s) => s.length > 0)
           .slice(0, 8)
       : undefined,

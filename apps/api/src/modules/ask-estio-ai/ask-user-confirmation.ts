@@ -8,7 +8,8 @@ export function detectUserConfirmation(message: string): boolean {
 
   const lower = t.toLowerCase();
   if (t.length <= 32) {
-    const en = /^(yes|yep|yeah|ok|okay|sure|fine|go ahead|let'?s do it|let us do it|sounds good|cool|agreed|confirm(ed)?|absolutely)\.?$/i;
+    const en =
+      /^(yes|yep|yeah|ok|okay|sure|fine|go ahead|let'?s do it|let us do it|sounds good|cool|agreed|confirm(ed)?|absolutely)\.?$/i;
     if (en.test(lower)) return true;
     const ar =
       /^(نعم|تمام|تم|اوكي|أوكي|اوکی|موافق|يلا|تمام\s*يا\s*غالي|زين)\.?$/u;

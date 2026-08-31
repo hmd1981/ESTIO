@@ -230,7 +230,9 @@ export class ResponseOrchestratorService {
             '',
             `Your submission under ${this.formatServiceType(lead.serviceType)} has been received but cannot proceed to qualification without the following:`,
             '',
-            ...classification.missingFields.map((f) => `— ${this.formatFieldName(f)}`),
+            ...classification.missingFields.map(
+              (f) => `— ${this.formatFieldName(f)}`,
+            ),
             '',
             'We do not schedule calls or produce proposals without these inputs. This is not a formality — incomplete briefs produce wrong scopes.',
             '',
@@ -267,7 +269,8 @@ export class ResponseOrchestratorService {
     const map: Record<string, string> = {
       company: 'Company / organisation name',
       contact_method: 'Phone or WhatsApp number',
-      project_scope: 'Written scope: systems, outcomes, constraints (minimum 40 characters)',
+      project_scope:
+        'Written scope: systems, outcomes, constraints (minimum 40 characters)',
       budget_range: 'Budget range indication',
       timeline: 'Expected timeline',
       job_title: 'Job title / role of submitter',

@@ -61,9 +61,9 @@ body {
     linear-gradient(180deg, rgba(212, 175, 55, 0.03), transparent 30%);
 }
 
-/* RTL: Arabic script reads best with system fonts alongside Latin variable font */
+/* RTL: self-hosted Noto Sans Arabic avoids system-font fallback jank */
 [dir="rtl"] body {
-  font-family: var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--font-noto-sans-arabic), var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 /* RTL: avoid LTR-default text alignment in form controls */
@@ -79,7 +79,7 @@ body {
 
 /* Arabic headlines: Latin display font has weak Arabic coverage */
 [dir="rtl"] .font-display {
-  font-family: var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
+  font-family: var(--font-noto-sans-arabic), var(--font-dm-sans), "Segoe UI", Tahoma, Arial, sans-serif;
   font-weight: 600;
 }
 

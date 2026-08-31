@@ -16,6 +16,6 @@ export function resolveServiceType(input: {
 }): CrmServiceType {
   if (input.serviceType) return input.serviceType;
   const key = input.legacyServiceInterest?.trim().toUpperCase();
-  if (key && LEGACY_MAP[key]) return LEGACY_MAP[key]!;
+  if (key && LEGACY_MAP[key]) return LEGACY_MAP[key];
   return 'GENERAL';
 }

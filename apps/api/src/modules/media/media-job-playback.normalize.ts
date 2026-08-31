@@ -304,11 +304,7 @@ export function normalizeMediaJobPlayback(
     }
     const comfyBase = comfyViewBaseFromEnv();
     if (comfyBase) {
-      const comfy = pickComfyViewImageUrl(
-        o,
-        comfyBase,
-        comfyViewPathFromEnv(),
-      );
+      const comfy = pickComfyViewImageUrl(o, comfyBase, comfyViewPathFromEnv());
       if (comfy && isSafeHttpMediaUrl(comfy, 'image')) {
         return { kind: 'http_url', media: 'image', url: comfy };
       }

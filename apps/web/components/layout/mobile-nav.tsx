@@ -40,7 +40,7 @@ export function MobileNav({ items, contactHref, aiStudioHref, aiStudioLabel }: P
   const ctaText = typeof rawCta === "string" ? rawCta.trim() : "";
   const talkLabel =
     (ctaText && ctaText !== "Start qualification" ? ctaText : null) ??
-    (bundle.locale === "ar" ? "ابدأ مشروعاً" : "Start a project");
+    (bundle.locale === "ar" ? "عرض سعر" : "Get a quote");
 
   useEffect(() => {
     if (!open) return;

@@ -6,27 +6,33 @@ export const brand = {
   legalName: "Estio",
   domain: "estio.org",
   tagline:
-    "Premium AI-powered visual production and digital execution for brands across the GCC — plus websites, content systems, and applied AI workflows under written scope. Muscat.",
+    "Launch-ready AI visuals, bilingual websites, and campaign content for GCC brands — scoped quotes, formatted deliverables, Muscat.",
   /** Fallback when CMS has no `footerTextAr` on Arabic routes */
   taglineAr:
-    "إستيو — إنتاج بصري رفيع المستوى مدعوم بالذكاء الاصطناعي وتنفيذ رقمي للعلامات في الخليج، مع مواقع وأنظمة محتوى وسير عمل ذكاء تطبيقي ضمن نطاق معلن. مسقط.",
+    "مرئيات ومواقع ومحتوى جاهز للإطلاق لعلامات الخليج — مخرجات منسّقة، عروض أسعار واضحة، من مسقط.",
 } as const;
 
 export const primaryNav: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "Work", href: "/work" },
+  { label: "Resources", href: "/resources" },
   { label: "AI Studio", href: "/ai-studio" },
   { label: "Enterprise", href: "/enterprise" },
   { label: "About", href: "/about" },
+  { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
 ];
 
 export const primaryNavAr: NavItem[] = [
   { label: "الرئيسية", href: "/" },
   { label: "الخدمات", href: "/services" },
+  { label: "أعمالنا", href: "/work" },
+  { label: "المقالات", href: "/resources" },
   { label: "استوديو الذكاء", href: "/ai-studio" },
   { label: "المؤسسات", href: "/enterprise" },
   { label: "من نحن", href: "/about" },
+  { label: "الأسئلة الشائعة", href: "/faq" },
   { label: "اتصل بنا", href: "/contact" },
 ];
 
@@ -39,7 +45,12 @@ export const footerColumns: FooterColumn[] = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
+      { label: "Our work", href: "/work" },
+      { label: "Resources", href: "/resources" },
+      { label: "FAQ", href: "/faq" },
       { label: "Contact", href: "/contact" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
   },
   {
@@ -49,12 +60,13 @@ export const footerColumns: FooterColumn[] = [
         label: "Website Design & Development",
         href: "/services/web-design-development",
       },
+      { label: "Our work", href: "/work" },
       {
         label: "Content & Campaign Execution",
         href: "/services/content-campaigns",
       },
       { label: "AI Creative Services", href: "/services/ai-creative" },
-      { label: "Operational systems & integrations", href: "/enterprise" },
+      { label: "Enterprise automation & AI", href: "/enterprise" },
     ],
   },
   {
@@ -72,7 +84,12 @@ export const footerColumnsAr: FooterColumn[] = [
     title: "الشركة",
     links: [
       { label: "من نحن", href: "/about" },
+      { label: "أعمالنا", href: "/work" },
+      { label: "المقالات", href: "/resources" },
+      { label: "الأسئلة الشائعة", href: "/faq" },
       { label: "اتصل بنا", href: "/contact" },
+      { label: "الخصوصية", href: "/privacy" },
+      { label: "الشروط", href: "/terms" },
     ],
   },
   {
@@ -82,12 +99,13 @@ export const footerColumnsAr: FooterColumn[] = [
         label: "تصميم وتطوير المواقع",
         href: "/services/web-design-development",
       },
+      { label: "أعمالنا", href: "/work" },
       {
         label: "تنفيذ المحتوى والحملات",
         href: "/services/content-campaigns",
       },
       { label: "خدمات الإبداع بالذكاء الاصطناعي", href: "/services/ai-creative" },
-      { label: "أنظمة التشغيل والتكامل", href: "/enterprise" },
+      { label: "أتمتة وذكاء مؤسسي", href: "/enterprise" },
     ],
   },
   {

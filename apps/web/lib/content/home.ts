@@ -1,11 +1,12 @@
 import type { IndustryItem, ServiceCard } from "./types";
 
 export const homeHero = {
-  headline: "Campaign-ready visuals, fast \u2014 without running a studio in-house.",
+  headline:
+    "Campaign-ready AI visuals, websites, and bilingual content for GCC brands.",
   subheadline:
-    "AI-powered images, short video, and on-brand assets for the GCC. You say what you need; we deliver files you can ship.",
-  primaryCta: { label: "Start a project", href: "/contact" },
-  secondaryCta: { label: "Get a quick quote", href: "/contact" },
+    "Launch assets, social-ready exports, premium sites, and production calendars — for hospitality, retail, healthcare, real estate, and modern enterprises. Scoped in writing from Muscat; you receive formatted files, handoff documentation, and one coordinated lead from brief to delivery.",
+  primaryCta: { label: "Get a project quote", href: "/contact" },
+  secondaryCta: { label: "Book a consultation", href: "/contact" },
 } as const;
 
 /** Hero intent row — links to AI Studio tracks (EN). */
@@ -16,174 +17,175 @@ export const homeHeroIntentLinks = [
 ] as const;
 
 export const systemIdentity = {
-  heading: "What this is",
-  body: "A commercial system for scoping, building, and handing over bounded workflow automation and governed retrieval on top of your named applications — under written acceptance tests and your change control.",
-  contrast: "Not a generalist agency. Not a software reseller. Not an unfunded innovation lab.",
+  heading: "What you receive",
+  body: "Estio produces what your team publishes: ad-ready stills and short video, bilingual websites with CMS handoff, campaign content packs, and — when required — automated workflows your operations team can run. Every engagement lists deliverables, review stages, and launch-ready files before production starts.",
+  contrast:
+    "Not a generalist agency. Not a software reseller. A production partner for brands that need assets in market, not abstract strategy decks.",
 } as const;
 
 export const operationalAlignment = {
-  kicker: "Operational alignment",
-  title: "Organisations we align with typically operate",
+  kicker: "Who we serve",
+  title: "Built for GCC businesses that need speed without sacrificing quality",
   points: [
-    "Multi-system environments (CRM + finance + internal tools)",
-    "Approval-heavy workflows with named gatekeepers",
-    "Controlled data and access boundaries enforced by IT and compliance",
+    "Premium brands in hospitality, retail, real estate, and healthcare launching or refreshing presence",
+    "Marketing teams running seasonal campaigns who need faster creative rounds and clearer approvals",
+    "Enterprises that need Arabic + English deployment, WhatsApp-friendly coordination, and documented handover",
   ],
   footer:
-    "Engagements run under procurement rules, IT sign-off, and production risk ownership — not marketing experiments or unpaid pilots.",
+    "One business day to first reply. Guided scope on call or WhatsApp. Deliverables agreed before we produce — from Muscat across the GCC.",
 } as const;
 
 export const guidedIntents = [
   {
     id: "website",
-    label: "Design and deploy a production website or web platform",
+    label: "Launch a premium website with bilingual handoff",
     href: "/services/web-design-development",
   },
   {
     id: "content",
-    label: "Operate a structured content and campaign programme",
+    label: "Ship launch content and channel-ready campaigns",
     href: "/services/content-campaigns",
   },
   {
     id: "creative-ai",
-    label: "Scale creative output under governed AI controls",
+    label: "Get ad-ready AI visuals and short video",
     href: "/services/ai-creative",
   },
   {
     id: "enterprise",
-    label: "Scope workflow automation or governed retrieval on named systems",
+    label: "Reduce manual handoffs between business tools",
     href: "/enterprise",
   },
 ] as const;
 
 export const trustSectionIntro = {
-  title: "Clear process, real delivery",
+  title: "Why teams choose Estio",
   description:
-    "We scope in writing, review before we ship, and hand over files you own. Based in Muscat; we work with teams across the GCC.",
+    "Collaborative production, clear delivery stages, and files you can deploy the same week — with bilingual support and premium quality control throughout.",
 } as const;
 
 export const trustPoints = [
   {
-    title: "Scope before pixels",
-    body: "You know what you are getting and when \u2014 before production starts.",
+    title: "Deliverables agreed upfront",
+    body: "File types, volumes, languages, and review rounds are listed in your quote — so you know exactly what lands in your inbox.",
   },
   {
-    title: "Brand-reviewed output",
-    body: "Nothing goes live until it matches your direction and quality bar.",
+    title: "Launch-ready files",
+    body: "Social exports, web handoff, print-ready where scoped — brand-reviewed before you publish.",
   },
   {
-    title: "Built for GCC teams",
-    body: "Bilingual delivery and messaging that fits how your stakeholders actually decide.",
+    title: "Built for the GCC",
+    body: "Arabic and English assets, regional launch pacing, and coordination that fits how Gulf teams actually approve work.",
   },
   {
-    title: "One lead, end to end",
-    body: "Same person owns your job from brief to final files \u2014 no mystery handoffs.",
+    title: "Responsive from Muscat",
+    body: "One production lead, reply within one business day — email, call, or WhatsApp when that is faster.",
   },
 ] as const;
 
 export const servicesSectionIntro = {
-  title: "Four delivery practices — scoped, not bundled",
+  title: "What you can buy from Estio",
   description:
-    "Each practice operates independently with its own scope, deliverables, and acceptance criteria. Combined engagements are sequenced explicitly — not sold as a package.",
+    "Four production lines — each with a written deliverable list and commercial outcome. Pick one for a focused quote, or combine lines when your launch needs website, content, and visuals together.",
 } as const;
 
 export const pillarServices: ServiceCard[] = [
   {
     id: "web",
-    title: "Platform design & deployment",
+    title: "Premium websites & platforms",
     description:
-      "Production websites, web applications, and bilingual digital platforms — architected for performance, accessibility, CMS ownership, and institutional credibility. Not templates. Not themes.",
+      "Corporate sites and launch pages with bilingual copy, CMS handoff, and performance built in — so your team updates content and publishes campaigns without developer dependency.",
     href: "/services/web-design-development",
     categoryKey: "WEB_DESIGN_DEVELOPMENT",
   },
   {
     id: "content",
-    title: "Content operations & campaign execution",
+    title: "Content & campaign production",
     description:
-      "Structured production calendars, campaign execution, and channel management tied to your commercial rhythm — not ad-hoc posting against a quota.",
+      "Editorial calendars, ad-ready creative, and channel posts tied to launches — unified brand voice that accelerates rollout and improves presentation quality.",
     href: "/services/content-campaigns",
     categoryKey: "CONTENT_CAMPAIGNS",
   },
   {
     id: "ai-creative",
-    title: "Governed AI creative production",
+    title: "AI visuals & video (governed)",
     description:
-      "AI-generated imagery, video, and copy deployed under brand, legal, and quality guardrails — with review checkpoints and version control before any output ships.",
+      "Hero visuals, product stills, and short promo clips — formatted for Meta, TikTok, print, and site heroes. Faster rounds, consistent look, premium positioning in market.",
     href: "/services/ai-creative",
     categoryKey: "AI_CREATIVE",
   },
   {
     id: "enterprise",
-    title: "Workflow automation & governed retrieval",
+    title: "Automation & enterprise AI",
     description:
-      "Deterministic automation across named systems, retrieval bound to approved corpora under identity rules, and internal operator tools — scoped in writing, deployed for IT-operated production.",
+      "Fewer manual steps between CRM, finance, and ticketing; internal Q&A from approved documents — with runbooks your team operates after go-live.",
     href: "/enterprise",
     categoryKey: "ENTERPRISE_AI",
   },
 ];
 
 export const enterpriseHighlight = {
-  headline: "When you need systems, not just assets",
-  body: "Beyond campaigns: automation across the apps you already use, and governed internal tools your IT can run. Named systems, written scope, clean handover.",
+  headline: "When launches need more than creative files",
+  body: "Beyond campaigns: connect the business tools you already use, give teams faster answers from approved policies, and hand over documented workflows your operations staff can run. Written scope, phased go-live, clear ownership.",
   bullets: [
     {
-      title: "Governed retrieval",
-      text: "Retrieval grounded on allow-listed corpora with identity-scoped access, configured blocklists, and logging retention matched to your record-keeping policy. Not prompt engineering on a public model.",
+      title: "Governed internal AI",
+      text: "Answers from approved knowledge, role-based access, and logging your compliance team can review — not open-ended chat experiments.",
     },
     {
       title: "Workflow automation",
-      text: "Deterministic orchestration across CRM, finance, ticketing, and messaging — with retry logic, typed exception queues, and rollback paths your operations team can execute.",
+      text: "Reliable flows across the tools you already pay for — with visible exceptions, retries, and rollback your operations team controls.",
     },
     {
-      title: "Internal operator tools",
-      text: "Dashboards, admin UIs, and monitoring surfaces with clear ownership, runbooks, and escalation matrices. Designed for handover on day one.",
+      title: "IT-ready handover",
+      text: "Runbooks, dashboards, and documentation so production ownership stays with your team unless you want managed support.",
     },
   ],
-  cta: { label: "Start a project", href: "/contact" },
+  cta: { label: "Book a consultation", href: "/contact" },
 } as const;
 
 export const industriesSectionIntro = {
-  title: "Sectors where we operate",
+  title: "Sectors we know well",
   description:
-    "Delivery is calibrated to sector-specific compliance, procurement, and operational constraints — not generic industry slides.",
+    "We adapt tone, channels, and production pace to how each sector sells and approves work in the GCC.",
 } as const;
 
 export const industries: IndustryItem[] = [
   {
     label: "Retail & E-commerce",
     description:
-      "Brand websites, promotional campaigns, and omnichannel consistency for consumer-facing businesses.",
+      "Brand sites, product visuals, and campaigns that convert — online and in-store.",
   },
   {
     label: "Hospitality & Tourism",
     description:
-      "Booking experiences, local presence optimisation, and sustained guest communication across digital channels.",
+      "Hero imagery, short video, and digital presence that match a premium guest experience.",
   },
   {
     label: "Real estate & property",
     description:
-      "Listings platforms, inquiry management systems, and marketing collateral for professional brokerages and developers.",
+      "Listing visuals, launch campaigns, and credibility-first digital assets for developers and brokerages.",
   },
   {
     label: "Healthcare & Clinics",
     description:
-      "Clear, trustworthy digital presence with compliance-oriented content and patient communication workflows.",
+      "Trustworthy bilingual presence, compliant messaging, and patient-facing content workflows.",
   },
   {
     label: "Professional services",
     description:
-      "Firm websites, thought leadership programmes, and market-facing campaigns suited to advisory, legal, and consulting practices.",
+      "Institutional websites and thought-leadership content for firms that sell on reputation.",
   },
   {
     label: "Government & Semi-government",
     description:
-      "Digital infrastructure, public-facing portals, and AI readiness programmes designed for national digital strategy alignment.",
+      "Digital programmes and content aligned to public-sector governance and bilingual requirements.",
   },
 ];
 
 export const finalCta = {
-  headline: "Ready when you are",
-  body: "Tell us what you are building. We reply within one business day with next steps \u2014 or an honest no if we are not the right fit.",
-  buttonLabel: "Start a project",
+  headline: "Tell us what you are launching",
+  body: "Share the deliverables you need, your timeline, and where assets will run. We reply within one business day with a scoped quote, sample direction, or an honest redirect if we are not the right fit.",
+  buttonLabel: "Get a project quote",
   href: "/contact",
 } as const;

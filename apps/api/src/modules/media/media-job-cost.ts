@@ -11,10 +11,7 @@
  */
 
 export type MediaJobMode =
-  | 'text_to_image'
-  | 'image_to_video'
-  | 'text_to_video'
-  | 'generate_image';
+  'text_to_image' | 'image_to_video' | 'text_to_video' | 'generate_image';
 
 const DEFAULTS: Record<MediaJobMode, number> = {
   text_to_image: 1,

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { LeadTaskStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -52,10 +60,13 @@ export class CrmTasksAdminController {
       return { ok: false, error: 'Task not found' };
     }
 
-    const data: { status?: LeadTaskStatus; dueAt?: Date | null; completedAt?: Date | null } =
-      {};
-    if (dto.status && Object.values(LeadTaskStatus).includes(dto.status as LeadTaskStatus)) {
-      data.status = dto.status as LeadTaskStatus;
+    const data: {
+      status?: LeadTaskStatus;
+      dueAt?: Date | null;
+      completedAt?: Date | null;
+    } = {};
+    if (dto.status && Object.values(LeadTaskStatus).includes(dto.status)) {
+      data.status = dto.status;
       data.completedAt = dto.status === 'DONE' ? new Date() : null;
     }
     if (dto.dueAt !== undefined) {
@@ -70,10 +81,14 @@ export class CrmTasksAdminController {
 
     if (updated.lead?.id) {
       if (data.status === 'DONE') {
-        await this.automation.appendActivity(updated.lead.id, 'TASK_COMPLETED', {
-          taskId: updated.id,
-          title: updated.title,
-        });
+        await this.automation.appendActivity(
+          updated.lead.id,
+          'TASK_COMPLETED',
+          {
+            taskId: updated.id,
+            title: updated.title,
+          },
+        );
       } else if (data.status) {
         await this.automation.appendActivity(updated.lead.id, 'FIELD_UPDATED', {
           fields: ['task.status'],

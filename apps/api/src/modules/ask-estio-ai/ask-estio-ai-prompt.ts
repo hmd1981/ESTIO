@@ -5,14 +5,7 @@ import type { AiStudioAskDto } from './dto/ai-studio-ask.dto';
 import type { AskReplyLocale } from './ask-user-language';
 import { resolveReplyLocale } from './ask-user-language';
 
-const GCC_COUNTRIES = new Set([
-  'AE',
-  'SA',
-  'OM',
-  'QA',
-  'KW',
-  'BH',
-]);
+const GCC_COUNTRIES = new Set(['AE', 'SA', 'OM', 'QA', 'KW', 'BH']);
 
 /** Prefer simple modern Arabic (not Gulf colloquial) when user likely outside GCC. */
 const MSA_LEAN_COUNTRIES = new Set([
@@ -86,10 +79,13 @@ export const STATEMENT_CTA_BY_REPLY: Record<
   Record<AskToneIntentBias, string>
 > = {
   en: {
-    images: 'We can start with a focused set of visuals whenever you are ready.',
+    images:
+      'We can start with a focused set of visuals whenever you are ready.',
     video: 'We can start with a few short clips whenever you are ready.',
-    brand: 'We can line up stills or short motion for your brand — ready when you are.',
-    unknown: 'Tell us if you want to start with visuals or a short quote — we will take it from there.',
+    brand:
+      'We can line up stills or short motion for your brand — ready when you are.',
+    unknown:
+      'Tell us if you want to start with visuals or a short quote — we will take it from there.',
   },
   ar: {
     images: 'نقدر نبدأ بمجموعة صور مركّزة بمجرد ما تكون جاهز.',
@@ -100,7 +96,8 @@ export const STATEMENT_CTA_BY_REPLY: Record<
   fa: {
     images: 'هر وقت آماده‌ای می‌تونیم با چند تصویر هدفمند شروع کنیم.',
     video: 'هر وقت آماده‌ای می‌تونیم با چند ویدیوی کوتاه شروع کنیم.',
-    brand: 'می‌تونیم برای برندت تصویر یا ویدیوی کوتاه بچینیم — هر وقت بگی ادامه می‌دیم.',
+    brand:
+      'می‌تونیم برای برندت تصویر یا ویدیوی کوتاه بچینیم — هر وقت بگی ادامه می‌دیم.',
     unknown: 'بگو تصویر می‌خوای یا یک برآورد سریع — از همونجا جلو می‌ریم.',
   },
 };
@@ -123,9 +120,7 @@ function dialectFromAcceptLanguage(req: Request): 'gcc' | 'msa' | null {
   return null;
 }
 
-function normalizeIntentBias(
-  v: string | undefined,
-): AskToneIntentBias {
+function normalizeIntentBias(v: string | undefined): AskToneIntentBias {
   const x = String(v ?? '')
     .trim()
     .toLowerCase();
@@ -141,7 +136,8 @@ export function buildToneContext(
   dto: AiStudioAskDto,
   replyLocale: AskReplyLocale,
 ): ToneContext {
-  const pageLocale: 'en' | 'ar' = dto.pageLocale === 'ar' || dto.locale === 'ar' ? 'ar' : 'en';
+  const pageLocale: 'en' | 'ar' =
+    dto.pageLocale === 'ar' || dto.locale === 'ar' ? 'ar' : 'en';
   const country = headerCountry(req);
   const alDialect = dialectFromAcceptLanguage(req);
 
@@ -166,9 +162,7 @@ export function buildToneContext(
     dialect,
     formality: 'casual',
     verbosity: 'short',
-    intentBias: normalizeIntentBias(
-      dto.intentHint ?? dto.context?.intent,
-    ),
+    intentBias: normalizeIntentBias(dto.intentHint ?? dto.context?.intent),
   };
 }
 
@@ -373,7 +367,8 @@ export function formatAskSessionContextForUserPrompt(
   ];
   if (context.intent) lines.push(`intent: ${context.intent}`);
   if (context.useCase?.trim()) lines.push(`useCase: ${context.useCase.trim()}`);
-  if (context.platform?.trim()) lines.push(`platform: ${context.platform.trim()}`);
+  if (context.platform?.trim())
+    lines.push(`platform: ${context.platform.trim()}`);
   if (context.stage?.trim()) lines.push(`stage: ${context.stage.trim()}`);
   if (context.recentUserMessages?.length) {
     lines.push('Previous user messages (oldest first):');
@@ -587,7 +582,7 @@ export function normalizeAskMessage(
     postConfirmationShort?: boolean;
   },
 ): string {
-  let t = message.replace(/\r\n/g, '\n').trim();
+  const t = message.replace(/\r\n/g, '\n').trim();
   if (!t) return t;
 
   const maxLines = opts?.postConfirmationShort
@@ -600,13 +595,15 @@ export function normalizeAskMessage(
     .filter((l) => l.length > 0);
 
   if (ctx.replyLocale === 'ar') {
-    lines = lines.map((line) => {
-      let L = line;
-      for (const r of BANNED_AR_PHRASES) {
-        L = L.replace(r, ' ');
-      }
-      return L.replace(/\s+/g, ' ').trim();
-    }).filter((l) => l.length > 0);
+    lines = lines
+      .map((line) => {
+        let L = line;
+        for (const r of BANNED_AR_PHRASES) {
+          L = L.replace(r, ' ');
+        }
+        return L.replace(/\s+/g, ' ').trim();
+      })
+      .filter((l) => l.length > 0);
   }
 
   lines = lines.slice(0, maxLines);
@@ -620,7 +617,9 @@ export function normalizeAskMessage(
   }
 
   const ctaKey: AskToneIntentBias =
-    opts?.forceProductionCta === true && intent === 'unknown' ? 'brand' : intent;
+    opts?.forceProductionCta === true && intent === 'unknown'
+      ? 'brand'
+      : intent;
   const reply = ctx.replyLocale;
 
   if (opts?.terminalNoQuestions === true) {

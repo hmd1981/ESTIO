@@ -1,5 +1,13 @@
 import { NavigationLocation, SiteLocale } from '@prisma/client';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateNavigationItemDto {
   @IsString()

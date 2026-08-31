@@ -41,7 +41,6 @@ export function ServiceDetailPage({
 }: Props) {
   const ui = getMessages(locale);
   const heroRef = enterpriseVisuals?.hero ?? content.heroVisual;
-  const heroEv = resolveCmsVisual(heroRef, mediaAssets);
   const capEv = resolveCmsVisual(enterpriseVisuals?.capability, mediaAssets);
   const procEv = resolveCmsVisual(enterpriseVisuals?.process, mediaAssets);
   const t = ui.serviceDetail;

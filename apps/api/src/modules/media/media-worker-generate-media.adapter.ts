@@ -102,11 +102,15 @@ export function pickHttpsImageUrlForFetch(
 /**
  * Whether the payload already carries base64 image bytes Estio can map to `source_image_b64`.
  */
-export function hasMappableSourceImageB64(body: Record<string, unknown>): boolean {
+export function hasMappableSourceImageB64(
+  body: Record<string, unknown>,
+): boolean {
   return pickRawSourceImageB64(body) !== undefined;
 }
 
-function pickRawSourceImageB64(body: Record<string, unknown>): string | undefined {
+function pickRawSourceImageB64(
+  body: Record<string, unknown>,
+): string | undefined {
   const candidates = [
     body.source_image_b64,
     body.sourceImageB64,
@@ -171,7 +175,10 @@ export function buildGenerateMediaWireBody(
     out.prompt = body.prompt;
   }
   copyPassthrough(body, out);
-  if (typeof out.source_image_b64 !== 'string' || !out.source_image_b64.trim()) {
+  if (
+    typeof out.source_image_b64 !== 'string' ||
+    !out.source_image_b64.trim()
+  ) {
     throw new BadRequestException(
       'Image-to-video requires source_image_b64 or image_base64 (or a fetchable http(s) image URL).',
     );

@@ -29,10 +29,7 @@ describe('normalizeMediaJobPlayback', () => {
   });
 
   it('returns data_url for data:video base64', () => {
-    const p = normalizeMediaJobPlayback(
-      'video',
-      'data:video/mp4;base64,AAAA',
-    );
+    const p = normalizeMediaJobPlayback('video', 'data:video/mp4;base64,AAAA');
     expect(p).toEqual({
       kind: 'data_url',
       media: 'video',
@@ -45,7 +42,13 @@ describe('normalizeMediaJobPlayback', () => {
     const p = normalizeMediaJobPlayback('image', {
       outputs: {
         '9': {
-          images: [{ type: 'output', filename: 'api_generate_00001_.png', subfolder: '' }],
+          images: [
+            {
+              type: 'output',
+              filename: 'api_generate_00001_.png',
+              subfolder: '',
+            },
+          ],
         },
       },
     });

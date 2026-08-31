@@ -422,14 +422,17 @@ export class AskEstioAiService {
 
     const apiKey = process.env.DEEPSEEK_API_KEY?.trim();
     if (!apiKey) {
-      this.log.error('DEEPSEEK_API_KEY missing while ASK_ESTIO_AI_ENABLED=true');
-      throw new ServiceUnavailableException({ error: 'ask_estio_ai_misconfigured' });
+      this.log.error(
+        'DEEPSEEK_API_KEY missing while ASK_ESTIO_AI_ENABLED=true',
+      );
+      throw new ServiceUnavailableException({
+        error: 'ask_estio_ai_misconfigured',
+      });
     }
 
     const baseUrl =
       process.env.DEEPSEEK_BASE_URL?.trim() || 'https://api.deepseek.com/v1';
-    const model =
-      process.env.DEEPSEEK_MODEL?.trim() || 'deepseek-chat';
+    const model = process.env.DEEPSEEK_MODEL?.trim() || 'deepseek-chat';
 
     const normalizedStage = normalizeClientFlowStage(dto.context?.stage);
     const confirmationDetected = detectUserConfirmation(message);
@@ -451,8 +454,7 @@ export class AskEstioAiService {
         hasPlat ||
         normalizedStage === 'ready' ||
         normalizedStage === 'action');
-    const confirmationAdvance =
-      confirmationDetected && contextRichForConfirm;
+    const confirmationAdvance = confirmationDetected && contextRichForConfirm;
 
     const ctxProd = productionIntentFromContext(dto.context?.intent);
     const useDeterministicConfirm =
@@ -551,7 +553,9 @@ export class AskEstioAiService {
     if (historyBlock) userParts.push(historyBlock);
     if (sessionCtxBlock) userParts.push(sessionCtxBlock);
     userParts.push(`Page locale (site UI only): ${pageLoc}`);
-    userParts.push(`Server detectedLanguage (latest user message): ${serverDetected}`);
+    userParts.push(
+      `Server detectedLanguage (latest user message): ${serverDetected}`,
+    );
     if (dto.detectedLanguage) {
       userParts.push(`Client detectedLanguage hint: ${dto.detectedLanguage}`);
     }
@@ -559,7 +563,9 @@ export class AskEstioAiService {
     userParts.push(
       `confirmationDetected (server): ${confirmationDetected}; confirmationAdvance: ${confirmationAdvance}`,
     );
-    userParts.push(`turnCount (completed user→assistant rounds before this message): ${turnCount}`);
+    userParts.push(
+      `turnCount (completed user→assistant rounds before this message): ${turnCount}`,
+    );
     userParts.push(`Tone context: ${JSON.stringify(toneCtx)}`);
     userParts.push(`Latest user message: ${JSON.stringify(message)}`);
     userParts.push(
@@ -582,7 +588,9 @@ export class AskEstioAiService {
       content = out.content;
       tokensUsed = out.tokensUsed;
     } catch (e) {
-      this.log.warn(`DeepSeek call failed: ${e instanceof Error ? e.message : e}`);
+      this.log.warn(
+        `DeepSeek call failed: ${e instanceof Error ? e.message : e}`,
+      );
       const fallback = deepseekFailureAnswer(replyLocale);
       const row = await this.prisma.aiStudioAskEvent.create({
         data: {
@@ -643,10 +651,7 @@ export class AskEstioAiService {
         : 0;
     let dedupApplied = false;
     if (sim >= 0.72) {
-      if (
-        ctxProd != null &&
-        (intent === 'unknown' || intent === ctxProd)
-      ) {
+      if (ctxProd != null && (intent === 'unknown' || intent === ctxProd)) {
         rawReply = postConfirmationHandoffMessage(
           replyLocale,
           ctxProd,
@@ -725,16 +730,15 @@ export class AskEstioAiService {
 
     if (intent === 'images' || intent === 'video' || intent === 'brand') {
       recommendedCta = {
-        label: (
-          ctaLabelRaw || primaryCtaForIntent(intent, replyLocale)
-        ).slice(0, 120),
+        label: (ctaLabelRaw || primaryCtaForIntent(intent, replyLocale)).slice(
+          0,
+          120,
+        ),
         intent,
       };
     } else if (shouldEscalate || intent === 'unknown') {
       recommendedCta = {
-        label: (
-          ctaLabelRaw || scopedQuoteCta(replyLocale)
-        ).slice(0, 120),
+        label: (ctaLabelRaw || scopedQuoteCta(replyLocale)).slice(0, 120),
         intent: null,
       };
     }
@@ -814,7 +818,8 @@ export class AskEstioAiService {
     let primaryCta = 0;
     let secondaryCta = 0;
     for (const r of rows) {
-      intentCounts[r.normalizedIntent] = (intentCounts[r.normalizedIntent] ?? 0) + 1;
+      intentCounts[r.normalizedIntent] =
+        (intentCounts[r.normalizedIntent] ?? 0) + 1;
       const key = r.userMessage.trim().slice(0, 80).toLowerCase();
       if (key) promptCounts[key] = (promptCounts[key] ?? 0) + 1;
       if (r.outOfScope) outOfScope++;
@@ -894,10 +899,7 @@ export class AskEstioAiService {
       string,
       { count: number; example: string }
     >();
-    const oosBuckets = new Map<
-      string,
-      { count: number; example: string }
-    >();
+    const oosBuckets = new Map<string, { count: number; example: string }>();
     const intentCounts: Record<string, number> = {};
     const intentCta: Record<string, { asks: number; cta: number }> = {};
 
@@ -913,12 +915,20 @@ export class AskEstioAiService {
       const key = normalizeQuestionKey(r.userMessage);
       const q = questionBuckets.get(key);
       if (q) q.count++;
-      else questionBuckets.set(key, { count: 1, example: r.userMessage.trim().slice(0, 280) });
+      else
+        questionBuckets.set(key, {
+          count: 1,
+          example: r.userMessage.trim().slice(0, 280),
+        });
 
       if (r.outOfScope) {
         const o = oosBuckets.get(key);
         if (o) o.count++;
-        else oosBuckets.set(key, { count: 1, example: r.userMessage.trim().slice(0, 280) });
+        else
+          oosBuckets.set(key, {
+            count: 1,
+            example: r.userMessage.trim().slice(0, 280),
+          });
       }
     }
 

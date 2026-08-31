@@ -6,6 +6,7 @@ import {
   contactPlacements,
   fallbackFooterColumns,
 } from "@/lib/content/site";
+import { legalNav } from "@/lib/content/legal";
 import { Container } from "@/components/layout/container";
 import { useSiteBundle } from "@/components/site-bundle-context";
 import { withLocale } from "@/lib/i18n/paths";
@@ -154,10 +155,26 @@ export function SiteFooter() {
             ))}
           </div>
         </div>
-        <p className="mt-14 border-t border-[var(--estio-border)] pt-8 text-xs text-[var(--estio-muted)]">
-          © {new Date().getFullYear()} {displayBrand}.{" "}
-          {locale === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
-        </p>
+        <div className="mt-14 flex flex-col gap-4 border-t border-[var(--estio-border)] pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-[var(--estio-muted)]">
+            © {new Date().getFullYear()} {displayBrand}.{" "}
+            {locale === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
+          </p>
+          <nav
+            aria-label={locale === "ar" ? "صفحات قانونية" : "Legal"}
+            className="flex flex-wrap gap-x-5 gap-y-2 text-xs"
+          >
+            {legalNav[locale === "ar" ? "ar" : "en"].map((item) => (
+              <Link
+                key={item.href}
+                href={withLocale(item.href, locale)}
+                className="text-[var(--estio-muted)] underline-offset-4 hover:text-[var(--estio-ink)] hover:underline"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </Container>
     </footer>
   );

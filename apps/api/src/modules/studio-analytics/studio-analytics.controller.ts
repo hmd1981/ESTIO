@@ -52,7 +52,8 @@ export class StudioAnalyticsController {
     @Query('locale') locale?: string,
     @Req() req?: Request,
   ) {
-    const detectedDevice = device || this.detectDevice(req?.headers['user-agent'] ?? '');
+    const detectedDevice =
+      device || this.detectDevice(req?.headers['user-agent'] ?? '');
     const region = this.detectRegion(req) ?? undefined;
     return this.svc.optimize(detectedDevice, region, locale);
   }

@@ -1,11 +1,7 @@
 import type { AskContextDto } from './dto/ask-context.dto';
 
 export type NormalizedConversationStage =
-  | 'explore'
-  | 'clarify'
-  | 'ready'
-  | 'action'
-  | 'complete';
+  'explore' | 'clarify' | 'ready' | 'action' | 'complete';
 
 /** Map persisted / legacy stage strings to the funnel. */
 export function normalizeConversationStage(
@@ -47,9 +43,9 @@ export function sessionSignalsForConfirmation(
     ctx?.intent === 'brand';
   const hasFitContext = Boolean(
     ctx?.useCase?.trim() ||
-      ctx?.platform?.trim() ||
-      normalizedStage === 'ready' ||
-      normalizedStage === 'action',
+    ctx?.platform?.trim() ||
+    normalizedStage === 'ready' ||
+    normalizedStage === 'action',
   );
   return { hasProdIntent, hasFitContext };
 }

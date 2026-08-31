@@ -35,10 +35,7 @@ function isAxiosError(e: unknown): e is AxiosError {
 }
 
 type WorkerFailureClass =
-  | 'timeout'
-  | 'connection'
-  | 'upstream_http'
-  | 'unknown';
+  'timeout' | 'connection' | 'upstream_http' | 'unknown';
 
 function joinWorkerUrl(baseUrl: string, path: string): string {
   const b = baseUrl.replace(/\/+$/, '');
@@ -81,9 +78,9 @@ export class MediaWorkerService implements OnModuleInit {
       if (mode === 'async') {
         this.logStructured('media_worker.async.phase_c_ready', {
           submitPath:
-            process.env.MEDIA_WORKER_ASYNC_SUBMIT_PATH ?? '/jobs/generate-image',
-          jobBasePath:
-            process.env.MEDIA_WORKER_ASYNC_JOB_BASE_PATH ?? '/jobs',
+            process.env.MEDIA_WORKER_ASYNC_SUBMIT_PATH ??
+            '/jobs/generate-image',
+          jobBasePath: process.env.MEDIA_WORKER_ASYNC_JOB_BASE_PATH ?? '/jobs',
           statusField:
             process.env.MEDIA_WORKER_ASYNC_STATUS_JSON_FIELD ?? 'status',
           jobIdKeys:
@@ -219,7 +216,9 @@ export class MediaWorkerService implements OnModuleInit {
 
     const baseUrl = process.env.MEDIA_WORKER_URL?.trim();
     if (!baseUrl) {
-      throw new ServiceUnavailableException('MEDIA_WORKER_URL is not configured');
+      throw new ServiceUnavailableException(
+        'MEDIA_WORKER_URL is not configured',
+      );
     }
 
     const submitPath = this.resolveAsyncSubmitPath(routing);
@@ -227,7 +226,9 @@ export class MediaWorkerService implements OnModuleInit {
       process.env.MEDIA_WORKER_ASYNC_SUBMIT_TIMEOUT_MS ?? 30_000,
     );
     const safeSubmitTimeout =
-      Number.isFinite(submitTimeout) && submitTimeout > 0 ? submitTimeout : 30_000;
+      Number.isFinite(submitTimeout) && submitTimeout > 0
+        ? submitTimeout
+        : 30_000;
 
     const url = joinWorkerUrl(baseUrl, submitPath);
     try {
@@ -372,8 +373,7 @@ export class MediaWorkerService implements OnModuleInit {
     jsonUtf8Bytes: number;
   } {
     const prompt = wire.prompt;
-    const promptCharLength =
-      typeof prompt === 'string' ? prompt.length : 0;
+    const promptCharLength = typeof prompt === 'string' ? prompt.length : 0;
     const redacted: Record<string, unknown> = { ...wire };
     if (typeof redacted.source_image_b64 === 'string') {
       redacted.source_image_b64 = `<${redacted.source_image_b64.length} chars>`;
@@ -437,7 +437,9 @@ export class MediaWorkerService implements OnModuleInit {
     }
     const baseUrl = process.env.MEDIA_WORKER_URL?.trim();
     if (!baseUrl) {
-      throw new ServiceUnavailableException('MEDIA_WORKER_URL is not configured');
+      throw new ServiceUnavailableException(
+        'MEDIA_WORKER_URL is not configured',
+      );
     }
     const jobBase =
       process.env.MEDIA_WORKER_ASYNC_JOB_BASE_PATH?.trim() || '/jobs';
@@ -514,7 +516,9 @@ export class MediaWorkerService implements OnModuleInit {
     }
     const baseUrl = process.env.MEDIA_WORKER_URL?.trim();
     if (!baseUrl) {
-      throw new ServiceUnavailableException('MEDIA_WORKER_URL is not configured');
+      throw new ServiceUnavailableException(
+        'MEDIA_WORKER_URL is not configured',
+      );
     }
     const jobBase =
       process.env.MEDIA_WORKER_ASYNC_JOB_BASE_PATH?.trim() || '/jobs';
@@ -538,7 +542,10 @@ export class MediaWorkerService implements OnModuleInit {
       if (res.status >= 200 && res.status < 300) {
         return res.data;
       }
-      throw new HttpException(res.data ?? { message: 'Worker result error' }, res.status);
+      throw new HttpException(
+        res.data ?? { message: 'Worker result error' },
+        res.status,
+      );
     } catch (e) {
       if (isAxiosError(e) && !e.response) {
         this.throwFromAxios(e, 'media-job');
@@ -779,8 +786,7 @@ export class MediaWorkerService implements OnModuleInit {
     jsonUtf8Bytes: number;
   } {
     const prompt = body.prompt;
-    const promptCharLength =
-      typeof prompt === 'string' ? prompt.length : 0;
+    const promptCharLength = typeof prompt === 'string' ? prompt.length : 0;
     let jsonUtf8Bytes = 0;
     try {
       jsonUtf8Bytes = Buffer.byteLength(JSON.stringify(body), 'utf8');
@@ -884,7 +890,8 @@ export class MediaWorkerService implements OnModuleInit {
         }
         if (status === 422) {
           throw new UnprocessableEntityException(
-            distilled ?? 'Media worker rejected the request (validation failed)',
+            distilled ??
+              'Media worker rejected the request (validation failed)',
           );
         }
         if (status >= 400) {

@@ -4,6 +4,7 @@ import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Container } from "@/components/layout/container";
 import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { ContactForm } from "@/components/contact/contact-form";
+import { getContactProse } from "@/lib/content/contact-prose";
 import { CmsVisualMedia } from "@/components/cms/cms-visual-media";
 import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
 import {
@@ -112,6 +113,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: seoDesc,
     },
     `/${raw}/contact`,
+    { locale: raw },
   );
 }
 
@@ -176,6 +178,7 @@ export default async function ContactPage({ params, searchParams }: Props) {
   const heroImg = resolveCmsVisual(hero.heroVisual, mediaAssets);
   const trustImg = resolveCmsVisual(contactBlocks.trustVisual, mediaAssets);
   const officeImg = resolveCmsVisual(contactBlocks.officeVisual, mediaAssets);
+  const contactProse = getContactProse(raw);
 
   return (
     <MarketingShell>
@@ -228,6 +231,25 @@ export default async function ContactPage({ params, searchParams }: Props) {
           </div>
         </Container>
       </SectionHighlightFrame>
+
+      <section className="border-b border-[var(--border)] bg-[var(--surface)] py-12 sm:py-14">
+        <Container as="div" className="max-w-3xl">
+          <div className="space-y-10">
+            {contactProse.map((block) => (
+              <div key={block.title}>
+                <h2 className="font-display text-xl font-semibold text-[var(--text)] sm:text-2xl">
+                  {block.title}
+                </h2>
+                <div className="mt-4 space-y-4 text-base leading-[1.75] text-[var(--text-body)]">
+                  {block.paragraphs.map((p) => (
+                    <p key={p.slice(0, 40)}>{p}</p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
 
       <section className="bg-[var(--canvas)] py-14 sm:py-16 lg:py-20">
         <Container as="div">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { FaqPageJsonLd } from "@/components/seo/faq-page-json-ld";
 import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Container } from "@/components/layout/container";
@@ -21,7 +22,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const m = getMessages(raw).faq;
   const title = cms.seoTitle ?? m.seoTitle;
   const description = cms.seoDescription ?? m.seoDescription;
-  return marketingDetailMetadata({ title, description }, `/${raw}/faq`);
+  return marketingDetailMetadata({ title, description }, `/${raw}/faq`, {
+    locale: raw,
+  });
 }
 
 export default async function FaqPage({ params }: Props) {
@@ -53,6 +56,10 @@ export default async function FaqPage({ params }: Props) {
 
   return (
     <MarketingShell>
+      <FaqPageJsonLd
+        items={items.map((it) => ({ title: it.title, body: it.body }))}
+        locale={raw}
+      />
       <SectionHighlightFrame
         as="section"
         sectionId="intro"

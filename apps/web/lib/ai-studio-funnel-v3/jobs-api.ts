@@ -1,7 +1,4 @@
-const API_BASE =
-  (typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL
-    : undefined) ?? "https://api.estio.org";
+const API_BASE = "/api";
 
 export type AiJobType =
   | "text_to_image"

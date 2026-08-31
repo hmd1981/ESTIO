@@ -16,9 +16,11 @@
     "deploy:prod": "docker compose -f docker-compose.prod.yml up -d --build",
     "stack:up": "bash deploy/stack-up.sh",
     "verify:prod": "bash deploy/verify-production.sh",
-    "reset:api": "bash deploy/reset-local-api.sh"
+    "reset:api": "bash deploy/reset-local-api.sh",
+    "cleanup:daily": "npm run cleanup:daily --workspace=api",
+    "cleanup:dry-run": "npm run cleanup:dry-run --workspace=api"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
   }
 }

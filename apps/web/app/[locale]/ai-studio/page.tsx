@@ -24,8 +24,8 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
-/** Avoid serving a stale static shell after deploy (CDN / edge). */
-export const dynamic = "force-dynamic";
+/** ISR: admin publish busts `public-site:{locale}` via /api/revalidate. */
+export const revalidate = 300;
 
 const fallbackSeo = {
   en: {

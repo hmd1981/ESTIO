@@ -6,8 +6,8 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { getPublishedSiteBundle, getSiteBundle } from "@/lib/cms/fetch-site";
 import { mergeAboutVisuals, mergeMarketingHero } from "@/lib/cms/merge-marketing-page";
 import type { MarketingPageSectionsCMS } from "@/lib/cms/types";
+import { getAboutExtended } from "@/lib/content/about-extended";
 import { marketingDetailMetadata } from "@/lib/seo/metadata-builders";
-import { brand } from "@/lib/content/site";
 import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { withLocale } from "@/lib/i18n/paths";
@@ -82,6 +82,7 @@ export default async function AboutPage({ params }: Props) {
   const brandImg = resolveCmsVisual(aboutV.brand, mediaAssets);
   const deliveryImg = resolveCmsVisual(aboutV.delivery, mediaAssets);
   const omanImg = resolveCmsVisual(aboutV.oman, mediaAssets);
+  const extended = getAboutExtended(raw);
 
   return (
     <MarketingShell>
@@ -255,6 +256,42 @@ export default async function AboutPage({ params }: Props) {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section className="border-b border-[var(--border)] bg-[var(--surface)]">
+        <Container as="div" className="py-16 sm:py-20 lg:py-24">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                {extended.publishKicker}
+              </p>
+              <h2 className="font-display mt-3 text-xl font-medium tracking-tight text-[var(--text)] sm:text-2xl">
+                {extended.publishH2}
+              </h2>
+              <div className="mt-6 max-w-2xl space-y-4 text-sm leading-[1.65] text-[var(--muted)] sm:text-base">
+                {extended.publishBody.map((p) => (
+                  <p key={p.slice(0, 40)}>{p}</p>
+                ))}
+              </div>
+              <p className="mt-6">
+                <ButtonLink href={withLocale("/resources/editorial-standards", raw)}>
+                  {extended.publishLinkLabel}
+                </ButtonLink>
+              </p>
+            </div>
+            <div className="lg:col-span-5">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                {extended.hoursKicker}
+              </p>
+              <h2 className="font-display mt-3 text-xl font-medium tracking-tight text-[var(--text)] sm:text-2xl">
+                {extended.hoursH2}
+              </h2>
+              <p className="mt-6 text-sm leading-[1.65] text-[var(--muted)] sm:text-base">
+                {extended.hoursBody}
+              </p>
             </div>
           </div>
         </Container>

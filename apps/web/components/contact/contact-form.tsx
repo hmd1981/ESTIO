@@ -143,12 +143,11 @@ export function ContactForm({
     };
 
     try {
-      const apiBase =
-        process.env.NEXT_PUBLIC_API_URL ?? "https://api.estio.org";
-      const res = await fetch(`${apiBase}/leads`, {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15_000),
       });
       const body = (await res.json().catch(() => null)) as
         | { ok?: boolean; message?: string | string[]; error?: string }

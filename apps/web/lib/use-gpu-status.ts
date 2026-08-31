@@ -108,7 +108,14 @@ export function useGpuStatus(
       const snap: GpuStatusSnapshot | null = parsed.gpu ?? null;
       if (snap) {
         setStatus(snap);
-        backoffRef.current = initialBackoffMs;
+        if (snap.online) {
+          backoffRef.current = initialBackoffMs;
+        } else {
+          backoffRef.current = Math.min(
+            maxBackoffMs,
+            Math.max(intervalMs * 2, backoffRef.current * 2),
+          );
+        }
       } else {
         const reason = `bff_http_${res.status}`;
         setStatus({
@@ -119,11 +126,11 @@ export function useGpuStatus(
         });
         backoffRef.current = Math.min(
           maxBackoffMs,
-          backoffRef.current * 2,
+          Math.max(intervalMs * 2, backoffRef.current * 2),
         );
       }
       setLoading(false);
-      schedule(snap?.online === false ? intervalMs : intervalMs);
+      schedule(snap?.online === false || !snap ? backoffRef.current : intervalMs);
     } catch (e) {
       if (!mountedRef.current) return;
       if ((e as { name?: string })?.name === "AbortError") return;

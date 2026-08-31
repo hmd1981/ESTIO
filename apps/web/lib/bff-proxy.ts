@@ -41,6 +41,10 @@ export async function proxyJson(
     const auth = req.headers.get("authorization");
     if (auth) headers.set("authorization", auth);
   }
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) headers.set("x-forwarded-for", forwarded);
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) headers.set("x-real-ip", realIp);
 
   try {
     const upstream = await fetch(target, {

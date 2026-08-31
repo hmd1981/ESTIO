@@ -63,7 +63,7 @@ export class MessageTemplatesService {
     try {
       return await this.prisma.messageTemplate.update({
         where: { id },
-        data: data as Prisma.MessageTemplateUpdateInput,
+        data: data,
       });
     } catch {
       throw new NotFoundException(`Template not found: ${id}`);

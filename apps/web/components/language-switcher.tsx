@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { AppLocale } from "@/lib/i18n/config";
@@ -30,7 +31,7 @@ export function LanguageSwitcher({ className }: Props) {
       prefetch={false}
       hrefLang={other}
       className={className ? `${base} ${className}` : base}
-      onClick={(e) => {
+      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         if (e.button !== 0) return;
         e.preventDefault();

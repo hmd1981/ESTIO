@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { CrmUsersService } from './crm-users.service';
 import { CreateCrmUserDto } from './dto/create-crm-user.dto';
@@ -24,4 +18,3 @@ export class CrmUsersAdminController {
     return this.users.create(dto);
   }
 }
-

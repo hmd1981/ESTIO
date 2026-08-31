@@ -28,10 +28,7 @@ export class ServicesController {
   }
 
   @Get('by-slug/:slug')
-  findBySlug(
-    @Param('slug') slug: string,
-    @Query('locale') localeRaw?: string,
-  ) {
+  findBySlug(@Param('slug') slug: string, @Query('locale') localeRaw?: string) {
     const locale =
       localeRaw && Object.values(SiteLocale).includes(localeRaw as SiteLocale)
         ? (localeRaw as SiteLocale)

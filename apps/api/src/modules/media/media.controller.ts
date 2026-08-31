@@ -140,7 +140,9 @@ export class MediaController {
       upstream.data.pipe(res);
     } catch (e) {
       if (isAxiosError(e) && !e.response) {
-        throw new BadGatewayException('Could not reach Comfy/worker for image view');
+        throw new BadGatewayException(
+          'Could not reach Comfy/worker for image view',
+        );
       }
       throw e;
     }

@@ -20,10 +20,10 @@ const seedAiStudio: Pick<
   | 'defaultStage'
 > = {
   isActive: true,
-  intentMapping: DEFAULT_INTENT_MAPPING as Prisma.InputJsonValue,
-  priorityMapping: DEFAULT_PRIORITY_MAPPING as Prisma.InputJsonValue,
-  routingMapping: DEFAULT_ROUTING_MAPPING as Prisma.InputJsonValue,
-  pricingHints: DEFAULT_PRICING_HINTS as Prisma.InputJsonValue,
+  intentMapping: DEFAULT_INTENT_MAPPING,
+  priorityMapping: DEFAULT_PRIORITY_MAPPING,
+  routingMapping: DEFAULT_ROUTING_MAPPING,
+  pricingHints: DEFAULT_PRICING_HINTS,
   defaultStage: 'NEW',
 };
 

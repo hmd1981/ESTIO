@@ -162,7 +162,9 @@ export class PaymentsService implements OnModuleInit {
       where: { code: input.packCode },
     });
     if (!pack || !pack.active) {
-      throw new NotFoundException(`Unknown or inactive pack: ${input.packCode}`);
+      throw new NotFoundException(
+        `Unknown or inactive pack: ${input.packCode}`,
+      );
     }
     const baseAmountAtomic = packBaseAmountAtomic(pack);
     const cap = BigInt(Math.floor(this.maxPackUsdc * 1_000_000));
@@ -180,8 +182,10 @@ export class PaymentsService implements OnModuleInit {
     for (let attempt = 0; attempt < 8; attempt++) {
       const seed = randomBytes(8).toString('hex');
       const nudge = BigInt(
-        parseInt(createHash('sha256').update(seed).digest('hex').slice(0, 8), 16) %
-          nudgeMod,
+        parseInt(
+          createHash('sha256').update(seed).digest('hex').slice(0, 8),
+          16,
+        ) % nudgeMod,
       );
       const expectedAmount = baseAmountAtomic + nudge;
       try {
@@ -252,7 +256,9 @@ export class PaymentsService implements OnModuleInit {
 
   private serializeStatus(p: Payment, pack: CreditPack): PaymentStatusResult {
     const terminal =
-      p.status === 'confirmed' || p.status === 'expired' || p.status === 'failed';
+      p.status === 'confirmed' ||
+      p.status === 'expired' ||
+      p.status === 'failed';
     return {
       paymentRef: p.paymentRef,
       status: p.status,
@@ -275,10 +281,14 @@ export class PaymentsService implements OnModuleInit {
  * USDC has 6 decimals; converts a `Decimal` pack price to atomic units. Uses
  * string math to avoid floating-point drift on values like 4.99 → 4990000.
  */
-export function packBaseAmountAtomic(pack: { usdcAmount: { toString(): string } }): bigint {
+export function packBaseAmountAtomic(pack: {
+  usdcAmount: { toString(): string };
+}): bigint {
   const s = pack.usdcAmount.toString();
   if (!/^\d+(?:\.\d{0,6})?$/.test(s)) {
-    throw new BadRequestException(`Pack usdcAmount has invalid precision: ${s}`);
+    throw new BadRequestException(
+      `Pack usdcAmount has invalid precision: ${s}`,
+    );
   }
   const [whole, frac = ''] = s.split('.');
   const padded = (frac + '000000').slice(0, 6);

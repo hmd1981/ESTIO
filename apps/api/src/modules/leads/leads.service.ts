@@ -121,7 +121,9 @@ export class LeadsService {
   }
 
   /** Intake completion + internal qualified creates. */
-  async createQualified(input: CreateLeadCompleteInput): Promise<CreateLeadResponse> {
+  async createQualified(
+    input: CreateLeadCompleteInput,
+  ): Promise<CreateLeadResponse> {
     return this.createInternal(input);
   }
 
@@ -135,7 +137,7 @@ export class LeadsService {
       throw new BadRequestException('AI Studio lead capture is disabled');
     }
 
-    const intent = dto.intent as AiStudioIntent;
+    const intent = dto.intent;
     const intentMap = {
       ...DEFAULT_INTENT_MAPPING,
       ...readStringRecord(settings.intentMapping),
@@ -237,7 +239,7 @@ export class LeadsService {
         crmMetadata,
         score: scored.score,
         priority,
-        scoreBreakdown: scored.breakdown as Prisma.InputJsonValue,
+        scoreBreakdown: scored.breakdown,
         status: intent === 'brand' ? 'QUALIFIED' : 'NEW',
         stage,
         ownerUserId,
@@ -350,7 +352,7 @@ export class LeadsService {
         crmMetadata: input.crmMetadata ?? undefined,
         score: scored.score,
         priority: scored.priority,
-        scoreBreakdown: scored.breakdown as Prisma.InputJsonValue,
+        scoreBreakdown: scored.breakdown,
         status: 'NEW',
         stage: 'INBOX',
       },
@@ -363,7 +365,9 @@ export class LeadsService {
         payload: {
           source: input.source,
           serviceType: input.serviceType,
-          ...(input.crmMetadata != null ? { crmMetadata: input.crmMetadata } : {}),
+          ...(input.crmMetadata != null
+            ? { crmMetadata: input.crmMetadata }
+            : {}),
         },
       },
     });
@@ -427,7 +431,9 @@ export class LeadsService {
     if (dto.ownerUserId !== undefined) {
       const owner = dto.ownerUserId?.trim() || null;
       if (owner) {
-        const u = await this.prisma.crmUser.findUnique({ where: { id: owner } });
+        const u = await this.prisma.crmUser.findUnique({
+          where: { id: owner },
+        });
         if (!u || !u.isActive) {
           throw new BadRequestException('Invalid ownerUserId');
         }
@@ -485,17 +491,18 @@ export class LeadsService {
       const s = this.scoring.compute(merged, settings.scoringRules);
       nextScore = s.score;
       nextPriority = s.priority;
-      nextBreakdown = s.breakdown as object;
+      nextBreakdown = s.breakdown;
       Object.assign(data, {
         score: nextScore,
         priority: nextPriority,
-        scoreBreakdown: nextBreakdown as Prisma.InputJsonValue,
+        scoreBreakdown: nextBreakdown,
       });
     }
 
     try {
       const ownerChanged =
-        dto.ownerUserId !== undefined && dto.ownerUserId !== existing.ownerUserId;
+        dto.ownerUserId !== undefined &&
+        dto.ownerUserId !== existing.ownerUserId;
       const updated = await this.prisma.lead.update({
         where: { id },
         data,
@@ -519,7 +526,7 @@ export class LeadsService {
       if (dto.status === 'LOST') {
         await this.automation.enforceLostReason(
           id,
-          (dto.lostReason ?? updated.lostReason) as string,
+          dto.lostReason ?? updated.lostReason,
           settings.lostReasonWhenLostRequired,
         );
       }
@@ -533,10 +540,7 @@ export class LeadsService {
     const existing = await this.prisma.lead.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException(`Lead not found: ${id}`);
 
-    const gateFailures = validateStageGate(
-      dto.stage,
-      existing as unknown as Record<string, unknown>,
-    );
+    const gateFailures = validateStageGate(dto.stage, existing);
     if (gateFailures.length > 0) {
       const requirements = nextStageRequirements(existing.stage);
       throw new BadRequestException(
@@ -583,7 +587,7 @@ export class LeadsService {
     if (dto.status === 'LOST') {
       await this.automation.enforceLostReason(
         id,
-        (dto.lostReason ?? 'UNSPECIFIED') as string,
+        dto.lostReason ?? 'UNSPECIFIED',
         settings.lostReasonWhenLostRequired,
       );
     }
@@ -649,8 +653,7 @@ export class LeadsService {
     const data: Prisma.LeadUpdateInput = {};
     const assign = <K extends keyof PatchLeadAdminDto>(key: K) => {
       const v = dto[key];
-      if (v !== undefined)
-        (data as Record<string, unknown>)[key as string] = v;
+      if (v !== undefined) (data as Record<string, unknown>)[key as string] = v;
     };
     assign('fullName');
     assign('email');

@@ -35,10 +35,7 @@ export class PublicSiteController {
   }
 
   private assertLocale(localeRaw: string) {
-    if (
-      localeRaw !== SiteLocale.en &&
-      localeRaw !== SiteLocale.ar
-    ) {
+    if (localeRaw !== SiteLocale.en && localeRaw !== SiteLocale.ar) {
       throw new BadRequestException('Invalid locale (use en or ar)');
     }
   }

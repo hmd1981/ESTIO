@@ -1,8 +1,9 @@
 ﻿import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { DM_Sans, Fraunces, Noto_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/content/site";
+import { AdSenseLoader } from "@/components/ads/adsense-loader";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { themeInlineBootstrap } from "@/lib/theme/inline-script";
 
@@ -16,6 +17,14 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+  variable: "--font-noto-sans-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -52,13 +61,22 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${dmSans.variable} ${fraunces.variable} theme-dark min-h-full scroll-smooth antialiased`}
+      className={`${dmSans.variable} ${fraunces.variable} ${notoSansArabic.variable} theme-dark min-h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-712088539"
+        />
+        <script
+          // Google tag (gtag.js) — AW-712088539
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-712088539');`,
+          }}
+        />
+        <script
           // Sync document element before React/CSS using the locale segment in the URL.
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var p=location.pathname.split("/").filter(Boolean)[0];var r=document.documentElement;if(p==="ar"){r.setAttribute("lang","ar");r.setAttribute("dir","rtl");}else if(p==="en"){r.setAttribute("lang","en");r.setAttribute("dir","ltr");}}catch(e){}})();`,
           }}
@@ -67,9 +85,9 @@ export default function RootLayout({
       </head>
       <body className="relative min-h-full flex flex-col font-sans text-[var(--text-body)]">
         <script
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: themeInlineBootstrap }}
         />
+        <AdSenseLoader />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

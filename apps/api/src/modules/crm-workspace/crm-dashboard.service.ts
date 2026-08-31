@@ -16,7 +16,9 @@ export class CrmDashboardService {
         this.prisma.lead.groupBy({
           by: ['stage'],
           _count: { id: true },
-          where: { stage: { notIn: [CrmPipelineStage.LOST, CrmPipelineStage.WON] } },
+          where: {
+            stage: { notIn: [CrmPipelineStage.LOST, CrmPipelineStage.WON] },
+          },
         }),
         this.prisma.leadTask.count({
           where: { status: 'OPEN' },

@@ -10,7 +10,7 @@ const servicePages: Record<string, ServiceDetailContent> = {
     slug: "web-design-development",
     title: "Website Design & Development",
     summary:
-      "Sites and web applications built for institutional credibility: performance, accessibility, bilingual delivery where needed, and CMS ownership so your team is not hostage to ad-hoc updates.",
+      "Corporate and launch websites that improve customer trust and modernize your digital presence — fast, bilingual where needed, with CMS handoff so marketing publishes without waiting on developers.",
     seo: {
       title: "Website Design & Development — Estio",
       description:
@@ -72,10 +72,10 @@ const servicePages: Record<string, ServiceDetailContent> = {
       },
     ],
     cta: {
-      headline: "Define your platform requirements",
-      body: "State the business outcome, audience, and constraints. We respond with a structured scope and effort estimate — not a capabilities deck.",
+      headline: "Get a website that matches your brand standard",
+      body: "Tell us the business outcome, audience, and launch date. We reply with a clear scope, timeline, and project quote — not a generic capabilities deck.",
       href: "/contact",
-      buttonLabel: "Start a scoped engagement",
+      buttonLabel: "Get a project quote",
     },
     secondaryCta: { href: "/services" },
   },
@@ -83,7 +83,7 @@ const servicePages: Record<string, ServiceDetailContent> = {
     slug: "content-campaigns",
     title: "Content & Campaign Execution",
     summary:
-      "Production calendars, campaign bursts, and channel execution aligned to how you sell — so marketing output stays on-brand and tied to outcomes, not to filling a content quota.",
+      "Launch calendars, ad-ready creative, and channel posts that accelerate campaign rollout and keep brand presentation consistent — Arabic and English when you need both.",
     seo: {
       title: "Content Creation & Campaigns — Estio",
       description:
@@ -145,10 +145,10 @@ const servicePages: Record<string, ServiceDetailContent> = {
       },
     ],
     cta: {
-      headline: "Define your content programme scope",
-      body: "State the commercial objective, channels, and cadence. We design the production system and return a structured engagement plan — not a retainer pitch.",
+      headline: "Run campaigns with predictable creative output",
+      body: "Share your commercial goal, channels, and cadence. We propose a production plan with deliverables and pricing — not an open-ended retainer pitch.",
       href: "/contact",
-      buttonLabel: "Start a scoped engagement",
+      buttonLabel: "Get a project quote",
     },
     secondaryCta: { href: "/services" },
   },
@@ -156,7 +156,7 @@ const servicePages: Record<string, ServiceDetailContent> = {
     slug: "ai-creative",
     title: "AI Creative Services",
     summary:
-      "Use AI to increase creative throughput only where your brand, legal, and quality bar allow — with review checkpoints and version control before anything customer-facing ships.",
+      "Campaign imagery and short video at production speed — hero shots, product stills, and social exports reviewed against your brand before anything goes live. Improves presentation quality without multiplying shoot days.",
     seo: {
       title: "AI Creative Services — Estio",
       description:
@@ -218,10 +218,10 @@ const servicePages: Record<string, ServiceDetailContent> = {
       },
     ],
     cta: {
-      headline: "Define what AI may and may not produce for your brand",
-      body: "State the asset types, volume, and governance constraints. We design the production controls and return a pilot scope with review checkpoints — not a demo.",
+      headline: "Scale AI creative without losing brand control",
+      body: "Tell us what you need produced, where it will run, and your review process. We return a governed production plan and quote — built for GCC campaigns.",
       href: "/contact",
-      buttonLabel: "Start a scoped engagement",
+      buttonLabel: "Get a project quote",
     },
     secondaryCta: { href: "/services" },
   },
@@ -230,9 +230,9 @@ const servicePages: Record<string, ServiceDetailContent> = {
 const enterprisePages: Record<string, ServiceDetailContent> = {
   enterprise: {
     slug: "enterprise",
-    title: "Bounded workflow automation and private retrieval on named systems",
+    title: "Workflow automation and governed internal AI for enterprise teams",
     summary:
-      "Built objects: (1) orchestrated workflows across an agreed integration set, (2) assistants that retrieve only from approved corpora under configured identity rules, (3) internal ops tools where scoped. Each engagement ships written scope boundaries, per-phase acceptance tests, integration inventory, access model, and L1 handover package.",
+      "What you get: (1) automated handoffs between the business tools you name in scope, (2) internal Q&A from approved documents with role-based access, (3) operator dashboards where scoped. Every engagement includes a written deliverable list, phased go-live, and runbooks your team can run after handover.",
     seo: {
       title: "Bounded workflow automation & governed retrieval — Estio",
       description:
@@ -331,10 +331,10 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
       },
     ],
     cta: {
-      headline: "Qualification entry — scroll to #enterprise-deal-entry",
+      headline: "Explore enterprise programmes",
       body: "Three intake templates: workflow scope, assistant scope, pilot ROI. One path per submission. Require: named systems, internal owner for access and go-live.",
       href: "/contact",
-      buttonLabel: "Start qualification",
+      buttonLabel: "Book a consultation",
     },
     secondaryCta: { href: "/enterprise" },
   },
@@ -372,10 +372,10 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
       "Operational documentation and team training",
     ],
     cta: {
-      headline: "Scope the assistant — or do not request pricing",
+      headline: "Scope a governed internal assistant",
       body: "We need approved corpora, an access owner, and the channels answers surface in. Without those named, there is no schedule or fee we can stand behind.",
       href: "/contact",
-      buttonLabel: "Start qualification",
+      buttonLabel: "Book a consultation",
     },
     secondaryCta: { href: "/enterprise" },
   },
@@ -435,10 +435,10 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
       },
     ],
     cta: {
-      headline: "Name the workflow, volume, and systems touched",
+      headline: "Automate a workflow you can measure",
       body: "Automation proposals need transaction load, failure paths, and an integration inventory — not a diagram of boxes. If you cannot list systems, pause before you enquire.",
       href: "/contact",
-      buttonLabel: "Start qualification",
+      buttonLabel: "Book a consultation",
     },
     secondaryCta: { href: "/enterprise" },
   },

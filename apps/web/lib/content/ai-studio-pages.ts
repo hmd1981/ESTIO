@@ -115,14 +115,14 @@ export type AiStudioLandingContent = {
 export const aiStudioLanding: AiStudioLandingContent = {
   hero: {
     kicker: "AI Studio",
-    headline: "On-brand images and short video you can publish this week.",
-    lead: "Tell us the output. We produce it, you approve it, we ship final files \u2014 no DIY tools.",
+    headline: "Campaign-ready AI visuals that improve how your brand looks in market.",
+    lead: "Hero stills, product shots, and short promo clips for launches, hospitality, retail, and premium presentation — formatted for ads, Reels, and site heroes. Brief us on look, volume, and deadline; you approve; we deliver named, launch-ready files. No tools to learn on your side.",
     primaryCta: {
-      label: "Start a project",
+      label: "Request a visual concept",
       href: "/contact?interest=AI_STUDIO&streamlined=1",
     },
     secondaryCta: {
-      label: "Get a quick quote",
+      label: "Get a project quote",
       href: "/contact?interest=AI_STUDIO&streamlined=1",
     },
   },
@@ -155,16 +155,16 @@ export const aiStudioLanding: AiStudioLandingContent = {
 
   valueProps: [
     {
-      title: "Agreed before we build",
-      body: "Specs and review steps are set up front \u2014 no surprise scope.",
+      title: "Scope you can picture",
+      body: "Shot list, formats, languages, and revision round agreed in writing before production — no vague \"creative exploration\".",
     },
     {
-      title: "Your brand rules win",
-      body: "We produce to your direction; nothing ships without your OK.",
+      title: "Brand review built in",
+      body: "Samples first, then full batch. Nothing customer-facing ships until your team signs off.",
     },
     {
-      title: "Files, not logins",
-      body: "You receive assets ready to upload \u2014 we run the production side.",
+      title: "Files ready to publish",
+      body: "Named exports for Meta, TikTok, print, and web — we run production; you upload and launch.",
     },
   ],
 
@@ -220,13 +220,13 @@ export const aiStudioLanding: AiStudioLandingContent = {
   ],
 
   deliverablesSnapshot: {
-    title: "What you receive",
+    title: "What lands in your inbox",
     items: [
-      "Production-ready files in formats specified in your scope",
-      "Organised, named, and tagged asset libraries",
-      "Brand usage guidelines for all AI-generated assets",
-      "Style reference documentation for future production",
-      "One structured revision round included in every engagement",
+      "Launch-ready image and video files in the formats your channels need",
+      "Social-ready aspect ratios (vertical, square, landscape) from one production pass where scoped",
+      "Organised folders with clear naming — easy for your team or agency to deploy",
+      "Brand usage notes for AI-generated assets",
+      "One structured revision round on every engagement",
     ],
   },
 
@@ -252,27 +252,27 @@ export const aiStudioLanding: AiStudioLandingContent = {
   },
 
   howDeliveryWorks: {
-    title: "How delivery works",
+    title: "How a project runs",
     steps: [
       {
-        step: "Brief and scope",
+        step: "Brief and quote",
         description:
-          "You define the output type, volume, brand constraints, and delivery timeline.",
+          "You share the campaign, channels, volume, and references. We return a written deliverable list and timeline.",
       },
       {
-        step: "Direction and samples",
+        step: "Samples for approval",
         description:
-          "We produce initial samples against your brief for review and approval.",
+          "Direction locked on sample visuals before the full batch — so the final set matches what you expect.",
       },
       {
-        step: "Production",
+        step: "Production and QC",
         description:
-          "Approved direction scales to the full deliverable set with quality checkpoints.",
+          "Full deliverable set produced with brand and format checks at each checkpoint.",
       },
       {
-        step: "Delivery and revision",
+        step: "Handoff",
         description:
-          "Production-ready files delivered with one structured revision round included.",
+          "Formatted files delivered with one revision round — ready for ads, web, and social the same week when timelines allow.",
       },
     ],
   },
@@ -296,9 +296,9 @@ export const aiStudioLanding: AiStudioLandingContent = {
   },
 
   cta: {
-    headline: "Tell us what you need",
-    body: "We\u2019ll reply fast with a clear next step \u2014 usually within one business day.",
-    buttonLabel: "Start a project",
+    headline: "Improve your next launch presentation",
+    body: "Tell us what you are promoting, where assets will run, and when you need files. We reply within one business day with a scoped quote or sample direction.",
+    buttonLabel: "Get a project quote",
     href: "/contact?interest=AI_STUDIO&streamlined=1",
   },
 
@@ -415,7 +415,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
       headline: "Discuss your image production needs",
       body: "Tell us the visual category, volume, brand direction, and delivery timeline.",
       href: "/contact?interest=AI_STUDIO&streamlined=1",
-      buttonLabel: "Request a studio scope",
+      buttonLabel: "Request a visual concept",
     },
     secondaryCta: { href: "/ai-studio" },
     heroVisual: {
@@ -492,7 +492,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
       headline: "Discuss your video production needs",
       body: "Tell us the video type, format, volume, brand direction, and delivery timeline.",
       href: "/contact?interest=AI_STUDIO&streamlined=1",
-      buttonLabel: "Request a studio scope",
+      buttonLabel: "Request a visual concept",
     },
     secondaryCta: { href: "/ai-studio" },
     heroVisual: {
@@ -569,7 +569,7 @@ const aiStudioPages: Record<string, ServiceDetailContent> = {
       headline: "Discuss your brand pack needs",
       body: "Tell us your brand identity requirements, target channels, and consistency objectives.",
       href: "/contact?interest=AI_STUDIO&streamlined=1",
-      buttonLabel: "Request a studio scope",
+      buttonLabel: "Request a visual concept",
     },
     secondaryCta: { href: "/ai-studio" },
     heroVisual: {

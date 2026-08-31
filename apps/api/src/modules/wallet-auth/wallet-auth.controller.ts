@@ -26,7 +26,9 @@ export class WalletAuthController {
     short: { limit: 5, ttl: 60_000 },
     long: { limit: 50, ttl: 86_400_000 },
   })
-  verify(@Body() body: { address: string; signature: string; message: string }) {
+  verify(
+    @Body() body: { address: string; signature: string; message: string },
+  ) {
     return this.auth.verify(body);
   }
 

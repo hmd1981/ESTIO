@@ -24,22 +24,26 @@ import {
 
 const CTA_LABELS: Record<Intent, { en: string; ar: string }> = {
   images: {
-    en: "Start image production",
-    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0635\u0648\u0631",
+    en: "Request a visual concept",
+    ar: "\u0637\u0644\u0628 \u0645\u0641\u0647\u0648\u0645\u0627\u064B \u0628\u0635\u0631\u064A",
   },
   video: {
-    en: "Start video production",
-    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0641\u064a\u062f\u064a\u0648",
+    en: "Request a visual concept",
+    ar: "\u0637\u0644\u0628 \u0645\u0641\u0647\u0648\u0645\u0627\u064B \u0628\u0635\u0631\u064A",
   },
   brand: {
-    en: "Start brand production",
-    ar: "\u0627\u0628\u062f\u0623 \u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0639\u0644\u0627\u0645\u0629",
+    en: "Request a visual concept",
+    ar: "\u0637\u0644\u0628 \u0645\u0641\u0647\u0648\u0645\u0627\u064B \u0628\u0635\u0631\u064A",
   },
 };
 
 const DEFAULT_TEXTS = new Set([
+  "Request a visual concept",
+  "\u0637\u0644\u0628 \u0645\u0641\u0647\u0648\u0645\u0627\u064B \u0628\u0635\u0631\u064A",
   "Request a studio scope",
   "\u0637\u0644\u0628 \u0646\u0637\u0627\u0642 \u0627\u0633\u062a\u0648\u062f\u064a\u0648",
+  "Get a project quote",
+  "\u0627\u062d\u0635\u0644 \u0639\u0644\u0649 \u0639\u0631\u0636 \u0633\u0639\u0631",
   "Start a project",
   "Get a quick quote",
   "\u0627\u0628\u062f\u0623 \u0645\u0634\u0631\u0648\u0639\u0627\u064B",

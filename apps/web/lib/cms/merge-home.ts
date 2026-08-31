@@ -165,7 +165,6 @@ export function mergeHomeSections(
   const en = cmsEn;
   const skipEnCopy = locale === "ar";
 
-  const defaultHeroImage = "/images/hero-home.png";
   const defaultHeroAlt =
     locale === "ar"
       ? "صورة توضيحية لسياق التسليم الرقمي والأنظمة التشغيلية — إستيو، مسقط (ليست بيئة عميل فعلية)."

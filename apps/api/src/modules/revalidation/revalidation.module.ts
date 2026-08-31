@@ -6,4 +6,3 @@ import { RevalidationService } from './revalidation.service';
   exports: [RevalidationService],
 })
 export class RevalidationModule {}
-

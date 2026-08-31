@@ -28,11 +28,7 @@ export type MediaWorkerGenerateSubmission =
 
 /** Normalized remote lifecycle (workstation may use different labels; we map in MediaWorkerService). */
 export type MediaWorkerRemoteStatus =
-  | 'queued'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'unknown';
+  'queued' | 'running' | 'completed' | 'failed' | 'unknown';
 
 export function resolveMediaWorkerMode(): MediaWorkerMode {
   const raw = process.env.MEDIA_WORKER_MODE?.trim().toLowerCase();

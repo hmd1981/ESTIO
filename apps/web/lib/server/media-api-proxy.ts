@@ -42,20 +42,32 @@ export async function proxyMediaApiRequest(
     headers,
     body: hasBody ? req.body : undefined,
     redirect: "manual",
+    signal: AbortSignal.timeout(60_000),
   };
   if (hasBody && req.body != null) {
     upstreamInit.duplex = "half";
   }
 
-  const upstreamResp = await fetch(upstreamUrl, upstreamInit);
+  try {
+    const upstreamResp = await fetch(upstreamUrl, upstreamInit);
 
-  const outHeaders = new Headers(upstreamResp.headers);
-  outHeaders.delete("content-encoding");
-  outHeaders.delete("transfer-encoding");
+    const outHeaders = new Headers(upstreamResp.headers);
+    outHeaders.delete("content-encoding");
+    outHeaders.delete("transfer-encoding");
 
-  return new Response(upstreamResp.body, {
-    status: upstreamResp.status,
-    statusText: upstreamResp.statusText,
-    headers: outHeaders,
-  });
+    return new Response(upstreamResp.body, {
+      status: upstreamResp.status,
+      statusText: upstreamResp.statusText,
+      headers: outHeaders,
+    });
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : "unreachable";
+    return new Response(
+      JSON.stringify({ error: `media_bff_${reason.slice(0, 80)}` }),
+      {
+        status: 502,
+        headers: { "content-type": "application/json", "cache-control": "no-store" },
+      },
+    );
+  }
 }

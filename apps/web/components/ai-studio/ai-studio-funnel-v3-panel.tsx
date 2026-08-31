@@ -12,7 +12,7 @@ import {
   getAiJob,
   intentToJobType,
 } from "@/lib/ai-studio-funnel-v3/jobs-api";
-import { computeQuote, type FunnelIntent } from "@/lib/ai-studio-funnel-v3/pricing";
+import { computeQuote } from "@/lib/ai-studio-funnel-v3/pricing";
 import {
   defaultFunnelStateV3,
   loadFunnelStateV3,

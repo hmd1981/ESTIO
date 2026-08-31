@@ -24,10 +24,7 @@ export class AutomationService {
   ) {}
 
   /** Run after a lead is persisted — assignment + classification + response orchestration. */
-  async onNewLead(
-    leadId: string,
-    opts?: { skipAutoClassification?: boolean },
-  ) {
+  async onNewLead(leadId: string, opts?: { skipAutoClassification?: boolean }) {
     const settings = await this.settings.get();
     const leadRow = await this.prisma.lead.findUniqueOrThrow({
       where: { id: leadId },
@@ -184,7 +181,7 @@ export class AutomationService {
         type: input.type,
         status: input.status,
         message: input.message?.slice(0, 2000),
-        payload: input.payload as object | undefined,
+        payload: input.payload,
       },
     });
   }
@@ -307,7 +304,7 @@ export class AutomationService {
       data: {
         leadId,
         type,
-        payload: payload as object | undefined,
+        payload: payload,
       },
     });
   }

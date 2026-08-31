@@ -243,7 +243,7 @@ export function buildAskApiContext(
     inferredPlat,
   );
   const persisted = normalizeFlowStage(session.context.stage);
-  let stage: string =
+  const stage: string =
     persisted === "action" || persisted === "complete"
       ? persisted
       : derived;

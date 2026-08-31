@@ -85,10 +85,12 @@ export const fetchPublicSite = cache(async function fetchPublicSite(
 ): Promise<PublicSiteBundle | null> {
   const base = getServerApiBase();
   try {
-    // Always fetch fresh CMS data on the server. `revalidate: 60` caused production
-    // (estio.org) to lag behind local `next dev` and behind admin edits until the
-    // window expired — the site looked "stuck" on an older build. Match dev behavior.
-    const res = await fetch(`${base}/public/site/${locale}`, { cache: "no-store" });
+    // Tagged ISR: admin publish hits /api/revalidate and busts `public-site:{locale}`.
+    // The TTL is only a fallback if on-demand revalidation is unreachable.
+    const res = await fetch(`${base}/public/site/${locale}`, {
+      next: { revalidate: 300, tags: [`public-site:${locale}`] },
+      signal: AbortSignal.timeout(8_000),
+    });
     if (!res.ok) return null;
     const raw = (await res.json()) as PublicSiteBundle;
     const bundle = rewriteBundle(raw);

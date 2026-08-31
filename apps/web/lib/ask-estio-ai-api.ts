@@ -1,5 +1,3 @@
-import { publicApiBaseUrl } from "@/lib/api-config";
-
 export type AskEstioAiResponse = {
   answer: string;
   intent: "images" | "video" | "brand" | "unknown";
@@ -49,7 +47,7 @@ export async function postAskEstioAi(body: {
   turnCount?: number;
   history?: AskEstioAiHistoryItem[];
 }): Promise<AskEstioAiResponse> {
-  const res = await fetch(`${publicApiBaseUrl}/public/ai-studio/ask`, {
+  const res = await fetch("/api/public/ai-studio/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -74,7 +72,7 @@ export async function postAskInteraction(body: {
   kind: "primary_cta" | "secondary_cta";
 }): Promise<void> {
   try {
-    await fetch(`${publicApiBaseUrl}/public/ai-studio/ask-interaction`, {
+    await fetch("/api/public/ai-studio/ask-interaction", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

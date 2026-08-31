@@ -22,15 +22,23 @@ export const fetchPublishedServiceBySlug = cache(
     try {
       const base = getServerApiBase();
       const url = `${base}/services/by-slug/${encodeURIComponent(slug)}?locale=${locale}`;
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, {
+        next: {
+          revalidate: 300,
+          tags: [`public-site:${locale}`, `service:${locale}:${slug}`],
+        },
+        signal: AbortSignal.timeout(8_000),
+      });
       if (!r.ok) return null;
       const service = (await r.json()) as ApiService;
-      console.info("[cms] service detail", {
-        locale,
-        slug,
-        title: service.title,
-        status: service.status,
-      });
+      if (process.env.NODE_ENV === "development") {
+        console.info("[cms] service detail", {
+          locale,
+          slug,
+          title: service.title,
+          status: service.status,
+        });
+      }
       return service;
     } catch {
       return null;

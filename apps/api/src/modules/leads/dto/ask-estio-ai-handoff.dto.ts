@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /** CRM / public lead payloads — optional context from Ask Estio AI. */
 export class AskEstioAiHandoffDto {
@@ -12,13 +18,17 @@ export class AskEstioAiHandoffDto {
   detectedIntent!: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value === null || value === undefined ? undefined : value))
+  @Transform(({ value }) =>
+    value === null || value === undefined ? undefined : value,
+  )
   @IsString()
   @MaxLength(256)
   recommendedOffer?: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value === null || value === undefined ? undefined : value))
+  @Transform(({ value }) =>
+    value === null || value === undefined ? undefined : value,
+  )
   @IsString()
   @MaxLength(600)
   responseSummary?: string;

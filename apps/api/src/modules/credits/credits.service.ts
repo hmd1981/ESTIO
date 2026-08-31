@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
@@ -7,6 +8,22 @@ import {
 } from '@nestjs/common';
 import type { Prisma, PrismaClient, CreditLedgerReason } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+
+export type LedgerEntryDto = {
+  id: string;
+  delta: number;
+  reason: string;
+  refType: string;
+  refId: string;
+  balanceAfter: number;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type LedgerPageDto = {
+  items: LedgerEntryDto[];
+  nextCursor: string | null;
+};
 
 /**
  * Append-only credit ledger.
@@ -33,13 +50,80 @@ export class CreditsService {
 
   /** Sum of all ledger entries for a user. Cheap because of the (userId,
    * createdAt) index. */
-  async getBalance(userId: string, tx?: Prisma.TransactionClient): Promise<number> {
+  async getBalance(
+    userId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
     const db = (tx ?? this.prisma) as PrismaClient;
     const agg = await db.creditLedger.aggregate({
       where: { userId },
       _sum: { delta: true },
     });
     return agg._sum.delta ?? 0;
+  }
+
+  /**
+   * Newest-first ledger page for the authenticated user. `cursor` is the
+   * `id` of the last item from the previous page (validated to belong to
+   * this user so clients cannot page into another account).
+   */
+  async listLedger(
+    userId: string,
+    opts: { limit: number; cursor?: string | null },
+  ): Promise<LedgerPageDto> {
+    const take = Math.min(100, Math.max(1, opts.limit));
+    if (opts.cursor) {
+      const ok = await this.prisma.creditLedger.findFirst({
+        where: { id: opts.cursor, userId },
+        select: { id: true },
+      });
+      if (!ok) {
+        throw new BadRequestException('Invalid or stale pagination cursor');
+      }
+    }
+    const rows = await this.prisma.creditLedger.findMany({
+      where: { userId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: take + 1,
+      ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        delta: true,
+        reason: true,
+        refType: true,
+        refId: true,
+        balanceAfter: true,
+        notes: true,
+        createdAt: true,
+      },
+    });
+    const hasMore = rows.length > take;
+    const page = hasMore ? rows.slice(0, take) : rows;
+    const last = page[page.length - 1];
+    return {
+      items: page.map(
+        (r: {
+          id: string;
+          delta: number;
+          reason: string;
+          refType: string;
+          refId: string;
+          balanceAfter: number;
+          notes: string | null;
+          createdAt: Date;
+        }) => ({
+          id: r.id,
+          delta: r.delta,
+          reason: r.reason,
+          refType: r.refType,
+          refId: r.refId,
+          balanceAfter: r.balanceAfter,
+          notes: r.notes,
+          createdAt: r.createdAt.toISOString(),
+        }),
+      ),
+      nextCursor: hasMore && last ? last.id : null,
+    };
   }
 
   /**
@@ -67,7 +151,11 @@ export class CreditsService {
       select: { id: true, balanceAfter: true },
     });
     if (existing) {
-      return { created: false, balanceAfter: existing.balanceAfter, rowId: existing.id };
+      return {
+        created: false,
+        balanceAfter: existing.balanceAfter,
+        rowId: existing.id,
+      };
     }
 
     // For an atomic balanceAfter we need to read the current balance and
@@ -82,11 +170,18 @@ export class CreditsService {
     const current = await this.getBalance(args.userId, tx);
     const next = current + args.delta;
     if (args.delta < 0 && next < 0) {
+      const requiredCredits = -args.delta;
+      const shortfall = requiredCredits - current;
       throw new HttpException(
         {
+          statusCode: HttpStatus.PAYMENT_REQUIRED,
+          error: 'Payment Required',
+          code: 'INSUFFICIENT_CREDITS',
           message: 'Insufficient credit balance',
           balance: current,
-          attempted: args.delta,
+          requiredCredits,
+          shortfall,
+          attemptedDelta: args.delta,
         },
         HttpStatus.PAYMENT_REQUIRED,
       );
@@ -118,11 +213,19 @@ export class CreditsService {
         // Race: another transaction inserted the same (refType, refId, reason)
         // between our findFirst and our create. Re-read and surface that row.
         const winner = await db.creditLedger.findFirst({
-          where: { refType: args.refType, refId: args.refId, reason: args.reason },
+          where: {
+            refType: args.refType,
+            refId: args.refId,
+            reason: args.reason,
+          },
           select: { id: true, balanceAfter: true },
         });
         if (winner) {
-          return { created: false, balanceAfter: winner.balanceAfter, rowId: winner.id };
+          return {
+            created: false,
+            balanceAfter: winner.balanceAfter,
+            rowId: winner.id,
+          };
         }
         throw new ConflictException('Ledger uniqueness conflict');
       }
@@ -130,7 +233,7 @@ export class CreditsService {
     }
   }
 
-  /** Convenience — debit `amount` (positive) credits for a job submit. */
+  /** Convenience — debit `amount` (positive) credits for a generation job submit. */
   debitForJob(
     args: { userId: string; jobId: string; amount: number },
     tx?: Prisma.TransactionClient,
@@ -142,10 +245,10 @@ export class CreditsService {
       {
         userId: args.userId,
         delta: -args.amount,
-        reason: 'job_debit',
+        reason: 'generation_debit',
         refType: 'job',
         refId: args.jobId,
-        notes: `submit:${args.jobId}`,
+        notes: `generation_submit:${args.jobId}`,
       },
       tx,
     );
@@ -172,22 +275,42 @@ export class CreditsService {
     );
   }
 
-  /** Convenience — refund a previously debited job (terminal failure). */
-  refundJob(
+  /**
+   * Refund a previously debited generation job (terminal failure). Idempotent
+   * via `(refType, refId, reason)` and compatible with legacy `refund` rows.
+   */
+  async refundJob(
     args: { userId: string; jobId: string; amount: number },
     tx?: Prisma.TransactionClient,
-  ) {
+  ): Promise<{ created: boolean; balanceAfter: number; rowId: string }> {
     if (args.amount <= 0) {
       throw new Error('refundJob requires a positive amount');
+    }
+    const db = (tx ?? this.prisma) as PrismaClient;
+    const refId = `${args.jobId}:refund`;
+    const existing = await db.creditLedger.findFirst({
+      where: {
+        refType: 'job',
+        refId,
+        reason: { in: ['refund', 'generation_refund'] },
+      },
+      select: { id: true, balanceAfter: true },
+    });
+    if (existing) {
+      return {
+        created: false,
+        balanceAfter: existing.balanceAfter,
+        rowId: existing.id,
+      };
     }
     return this.append(
       {
         userId: args.userId,
         delta: args.amount,
-        reason: 'refund',
+        reason: 'generation_refund',
         refType: 'job',
-        refId: `${args.jobId}:refund`,
-        notes: `refund:${args.jobId}`,
+        refId,
+        notes: `generation_refund:${args.jobId}`,
       },
       tx,
     );

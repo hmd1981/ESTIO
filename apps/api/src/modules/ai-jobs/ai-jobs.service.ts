@@ -13,11 +13,7 @@ import { bullmqConnectionOptions } from './redis-connection';
 import type { CreateAiJobDto } from './dto/create-ai-job.dto';
 
 export type AiJobPublicStatus =
-  | 'queued'
-  | 'active'
-  | 'completed'
-  | 'failed'
-  | 'unknown';
+  'queued' | 'active' | 'completed' | 'failed' | 'unknown';
 
 @Injectable()
 export class AiJobsService implements OnModuleInit, OnModuleDestroy {
@@ -95,12 +91,11 @@ export class AiJobsService implements OnModuleInit, OnModuleDestroy {
   }
 
   private validateDto(dto: CreateAiJobDto): void {
-    const p =
-      dto.input.prompt?.trim() ||
-      dto.input.description?.trim() ||
-      '';
+    const p = dto.input.prompt?.trim() || dto.input.description?.trim() || '';
     if (!p) {
-      throw new BadRequestException('input.prompt or input.description is required');
+      throw new BadRequestException(
+        'input.prompt or input.description is required',
+      );
     }
   }
 

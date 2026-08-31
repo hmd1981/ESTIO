@@ -34,6 +34,8 @@ async function bootstrap() {
       // Apex + subdomains (e.g. https://estio.org, https://www.estio.org, https://admin.estio.org).
       // A bare /\.estio\.org$/ does NOT match https://estio.org (no dot before "estio" in the host).
       /^https?:\/\/([a-z0-9-]+\.)*estio\.org(:\d+)?$/i,
+      /^https?:\/\/([a-z0-9-]+\.)*estio\.ir(:\d+)?$/i,
+      /^https?:\/\/([a-z0-9-]+\.)*estio\.tech(:\d+)?$/i,
     ],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

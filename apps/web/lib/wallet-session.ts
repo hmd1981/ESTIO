@@ -160,6 +160,29 @@ export function useWalletSession(): WalletSession | null {
       window.removeEventListener("storage", refresh);
     };
   }, []);
+
+  /** Re-validate JWT against `/auth/wallet/me` — clears storage if revoked. */
+  useEffect(() => {
+    const token = session?.token;
+    if (!token) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/auth/wallet/me", {
+          headers: { authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (cancelled) return;
+        if (res.status === 401) clearWalletSession();
+      } catch {
+        /* offline — keep session until next successful call */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.token]);
+
   return session;
 }
 

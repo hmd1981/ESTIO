@@ -242,8 +242,7 @@ export class StudioAnalyticsService {
     topConversion: IntentScore | null,
   ): string | null {
     if (!topInterest || !topConversion) return null;
-    if (topInterest.intent === topConversion.intent)
-      return topInterest.intent;
+    if (topInterest.intent === topConversion.intent) return topInterest.intent;
 
     const interestNorm =
       topInterest.impressions /
@@ -271,7 +270,10 @@ export class StudioAnalyticsService {
   }
 
   async getStatsSummaryV1(days = 30): Promise<StudioStatsSummaryV1> {
-    const periodDays = Math.min(366, Math.max(1, Math.floor(Number(days)) || 30));
+    const periodDays = Math.min(
+      366,
+      Math.max(1, Math.floor(Number(days)) || 30),
+    );
     const to = new Date();
     const since = new Date(to.getTime() - periodDays * 86_400_000);
     const sinceStr = since.toISOString();

@@ -18,9 +18,7 @@ export function isStudioMediaJobMode(s: string): s is StudioMediaJobMode {
 
 /** Maps persisted `type` to worker HTTP routing bucket (sync + async submit paths). */
 export type MediaJobRoutingKind =
-  | 'text_to_image'
-  | 'image_to_video'
-  | 'text_to_video';
+  'text_to_image' | 'image_to_video' | 'text_to_video';
 
 export function routingKindFromStoredJobType(
   storedType: string,

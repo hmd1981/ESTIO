@@ -7,12 +7,12 @@ import { TieredVideoGenerationPanel } from "@/components/ai-studio/tiered-video-
 import { getAiStudioPage } from "@/lib/content/ai-studio-pages";
 import { resolvePublishedServiceDetail } from "@/lib/cms/resolve-service-detail";
 import { getSiteBundle } from "@/lib/cms/fetch-site";
-import { marketingDetailMetadata } from "@/lib/seo/metadata-builders";
+import { noindexMetadata } from "@/lib/seo/metadata-builders";
 import { isLocale } from "@/lib/i18n/config";
 
 const slug = "video-production";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const fallback = getAiStudioPage(slug, raw);
   if (!fallback) return { title: "Not found" };
   const content = await resolvePublishedServiceDetail(slug, raw, fallback);
-  return marketingDetailMetadata(content.seo, `/${raw}/ai-studio/${slug}`);
+  return noindexMetadata(content.seo, `/${raw}/ai-studio/${slug}`);
 }
 
 export default async function VideoProductionPage({ params }: Props) {

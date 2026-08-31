@@ -13,6 +13,7 @@ import { withLocale } from "@/lib/i18n/paths";
 import type { AppLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
 import { normalizeHeaderNavHref } from "@/lib/nav/normalize-header-nav";
+import { mergeHeaderNav } from "@/lib/nav/merge-header-nav";
 
 function bundleNavToItems(
   rows: Array<Record<string, unknown>>,
@@ -36,13 +37,14 @@ export function SiteHeader() {
     | Record<string, unknown>
     | null;
   const headerRows = bundle.navigation.header;
+  const fallback = fallbackPrimaryNav(locale).map((i) => ({
+    ...i,
+    href: normalizeHeaderNavHref(i.label, i.href, locale),
+  }));
   const navItems: NavItem[] =
     headerRows.length > 0
-      ? bundleNavToItems(headerRows, locale)
-      : fallbackPrimaryNav(locale).map((i) => ({
-          ...i,
-          href: normalizeHeaderNavHref(i.label, i.href, locale),
-        }));
+      ? mergeHeaderNav(bundleNavToItems(headerRows, locale), fallback)
+      : fallback;
 
   const displayName =
     locale === "ar" && bundle.settings && bundle.settings.brandNameAr
@@ -61,7 +63,7 @@ export function SiteHeader() {
   const ctaText = typeof rawCta === "string" ? rawCta.trim() : "";
   const talkLabel =
     (ctaText && ctaText !== "Start qualification" ? ctaText : null) ??
-    (locale === "ar" ? "ابدأ مشروعاً" : "Start a project");
+    (locale === "ar" ? "عرض سعر" : "Get a quote");
   const aiStudioLabel = locale === "ar" ? "\u0634\u0627\u0647\u062f \u0627\u0644\u0625\u0646\u062a\u0627\u062c" : "See studio output";
   const isOnAiStudio = pathname.startsWith(aiStudioHref);
 

@@ -12,5 +12,6 @@ export async function GET(
     req,
     `/payments/${encodeURIComponent(paymentRef)}/status`,
     { method: "GET" },
+    { forwardAuth: true },
   );
 }

@@ -28,6 +28,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { StatusModule } from './modules/status/status.module';
 import { StudioAnalyticsModule } from './modules/studio-analytics/studio-analytics.module';
 import { WalletAuthModule } from './modules/wallet-auth/wallet-auth.module';
+import { CleanupModule } from './modules/cleanup/cleanup.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -74,11 +75,9 @@ import { AppService } from './app.service';
     WalletAuthModule,
     CreditsModule,
     PaymentsModule,
+    CleanupModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

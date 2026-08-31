@@ -7,11 +7,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { IsObject, IsString, IsIn } from 'class-validator';
-import { WorkstationRunService, type WorkstationJobType } from './workstation-run.service';
+import {
+  WorkstationRunService,
+  type WorkstationJobType,
+} from './workstation-run.service';
 
 class WorkerRunDto {
   @IsString()
-  @IsIn(['text_to_image', 'text_to_video', 'text_to_brand', 'brand_visual_system'])
+  @IsIn([
+    'text_to_image',
+    'text_to_video',
+    'text_to_brand',
+    'brand_visual_system',
+  ])
   type!: WorkstationJobType;
 
   @IsObject()

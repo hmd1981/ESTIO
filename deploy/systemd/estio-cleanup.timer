@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Estio daily cleanup every 24 hours
+
+[Timer]
+OnCalendar=*-*-* 04:15:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -24,7 +24,9 @@ export class AskEstioAiRateLimitService {
     }
     this.pushTimestamp(this.burstWindows, ipKey, now, 10_000);
 
-    if (this.countInWindow(this.sessionWindows, sessionKey, now, 600_000) >= 8) {
+    if (
+      this.countInWindow(this.sessionWindows, sessionKey, now, 600_000) >= 8
+    ) {
       return 'session_quota';
     }
     this.pushTimestamp(this.sessionWindows, sessionKey, now, 600_000);

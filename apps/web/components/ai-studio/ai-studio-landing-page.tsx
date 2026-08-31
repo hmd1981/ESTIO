@@ -452,8 +452,8 @@ export function AiStudioLandingPage({ content, locale, media }: Props) {
                   className="font-medium text-[var(--accent)] underline decoration-[var(--accent)]/30 underline-offset-4 transition-colors duration-200 hover:decoration-[var(--accent)]"
                 >
                   {locale === "ar"
-                    ? "\u0627\u0637\u0644\u0628\u0648\u0627 \u0639\u0631\u0636 \u0633\u0631\u064a\u0639 \u2014 \u0646\u0631\u062f \u0628\u062e\u0637\u0648\u0629 \u062a\u0627\u0644\u064a\u0629"
-                    : "Get a quick quote \u2014 we\u2019ll reply with next steps"}
+                    ? "\u0627\u062d\u0635\u0644\u0648\u0627 \u0639\u0644\u0649 \u0639\u0631\u0636 \u0633\u0639\u0631 \u2014 \u0646\u0631\u062f \u0628\u062e\u0637\u0648\u0629 \u062a\u0627\u0644\u064a\u0629"
+                    : "Get a project quote \u2014 we\u2019ll reply with next steps"}
                 </a>
               </p>
             </Container>

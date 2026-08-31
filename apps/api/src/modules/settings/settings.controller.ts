@@ -18,7 +18,10 @@ export class SettingsController {
   @Put()
   async upsert(@Body() dto: UpsertSettingsDto) {
     const row = await this.settingsService.upsert(dto);
-    await this.revalidation.revalidateTags(['public-site:en', 'public-site:ar']);
+    await this.revalidation.revalidateTags([
+      'public-site:en',
+      'public-site:ar',
+    ]);
     return row;
   }
 }

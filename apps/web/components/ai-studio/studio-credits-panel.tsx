@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Container } from "@/components/layout/container";
-import { GpuOfflineBanner } from "@/components/ai-studio/gpu-offline-banner";
 import type { AppLocale } from "@/lib/i18n/config";
-import { useGpuStatus } from "@/lib/use-gpu-status";
+import { useCreditLedger } from "@/lib/use-credit-ledger";
 import {
   clearWalletSession,
+  getWalletSession,
   loginWithWallet,
   useCreditBalance,
   useWalletSession,
@@ -108,6 +108,23 @@ const COPY = {
     signOut: "Sign out",
     balance: "Balance",
     creditsUnit: "credits",
+    balanceLoading: "…",
+    ledgerTitle: "Credit activity",
+    ledgerToggleShow: "Show activity",
+    ledgerToggleHide: "Hide activity",
+    ledgerEmpty: "No ledger entries yet — purchases and generations appear here.",
+    ledgerLoadMore: "Load more",
+    ledgerColWhen: "When",
+    ledgerColChange: "Change",
+    ledgerColBalance: "Balance",
+    ledgerColReason: "Reason",
+    packsUnavailable:
+      "Credit packs are not available right now. Please try again later.",
+    packsRetry: "Retry",
+    reasonPayment: "Purchase",
+    reasonJob: "Generation",
+    reasonRefund: "Refund",
+    reasonOther: "Adjustment",
   },
   ar: {
     kicker: "رصيد الاستوديو",
@@ -146,6 +163,22 @@ const COPY = {
     signOut: "تسجيل الخروج",
     balance: "الرصيد",
     creditsUnit: "رصيد",
+    balanceLoading: "…",
+    ledgerTitle: "نشاط الرصيد",
+    ledgerToggleShow: "عرض النشاط",
+    ledgerToggleHide: "إخفاء النشاط",
+    ledgerEmpty: "لا توجد حركات بعد — تظهر هنا المشتريات والتوليد.",
+    ledgerLoadMore: "تحميل المزيد",
+    ledgerColWhen: "الوقت",
+    ledgerColChange: "التغيير",
+    ledgerColBalance: "الرصيد",
+    ledgerColReason: "السبب",
+    packsUnavailable: "باقات الرصيد غير متاحة حاليًا. حاول لاحقًا.",
+    packsRetry: "إعادة المحاولة",
+    reasonPayment: "شراء",
+    reasonJob: "توليد",
+    reasonRefund: "استرداد",
+    reasonOther: "تعديل",
   },
 } as const;
 
@@ -264,34 +297,30 @@ function shortenAddr(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-/* ─── Fallback packs (shown only if /api/payments/packs is unavailable) ─── */
+function formatLedgerReason(reason: string, str: Str): string {
+  switch (reason) {
+    case "payment_credit":
+      return str.reasonPayment;
+    case "job_debit":
+      return str.reasonJob;
+    case "refund":
+      return str.reasonRefund;
+    default:
+      return str.reasonOther;
+  }
+}
 
-const FALLBACK_PACKS: CreditPack[] = [
-  {
-    id: "fallback-starter",
-    code: "starter",
-    credits: 50,
-    usdcAmount: "5",
-    nameEn: "Starter",
-    nameAr: "بداية",
-  },
-  {
-    id: "fallback-standard",
-    code: "standard",
-    credits: 250,
-    usdcAmount: "20",
-    nameEn: "Standard",
-    nameAr: "قياسي",
-  },
-  {
-    id: "fallback-pro",
-    code: "pro",
-    credits: 750,
-    usdcAmount: "50",
-    nameEn: "Pro",
-    nameAr: "احترافي",
-  },
-];
+function formatLedgerWhen(iso: string, locale: AppLocale): string {
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar" : "en-GB", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(d);
+  } catch {
+    return iso;
+  }
+}
 
 /* ═══════════════════════════════════════════════════
    Main panel
@@ -312,13 +341,16 @@ export function StudioCreditsPanel({
 }) {
   const str: Str = COPY[locale === "ar" ? "ar" : "en"];
   const focus = layout === "focus";
-  const gpu = useGpuStatus();
-  const gpuOffline = gpu.online === false;
   const session = useWalletSession();
-  const { balance, refresh: refreshBalance } = useCreditBalance();
+  const { balance, loading: balanceLoading, refresh: refreshBalance } =
+    useCreditBalance();
+  const ledger = useCreditLedger(session);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
 
-  const [packs, setPacks] = useState<CreditPack[]>(FALLBACK_PACKS);
-  const [selectedCode, setSelectedCode] = useState<string>("standard");
+  const [packs, setPacks] = useState<CreditPack[]>([]);
+  const [packsLoadError, setPacksLoadError] = useState(false);
+  const [packsLoading, setPacksLoading] = useState(true);
+  const [selectedCode, setSelectedCode] = useState<string>("starter");
   const [phase, setPhase] = useState<UiPhase>("loading");
   const [payment, setPayment] = useState<CreatePaymentResponse | null>(null);
   const [chainLabel, setChainLabel] = useState<string>("Base");
@@ -342,57 +374,75 @@ export function StudioCreditsPanel({
     };
   }, []);
 
-  /* ── Fetch packs on mount ── */
+  /* ── Fetch packs (no silent fallback — avoids wrong USDC amounts) ── */
+
+  const fetchPacks = useCallback(async () => {
+    setPacksLoading(true);
+    setPacksLoadError(false);
+    try {
+      const res = await fetch("/api/payments/packs");
+      if (!res.ok) throw new Error(`${res.status}`);
+      const payload: unknown = await res.json();
+      const items: unknown[] = Array.isArray(payload)
+        ? payload
+        : (payload as { data?: unknown[]; packs?: unknown[] })?.data ??
+          (payload as { packs?: unknown[] })?.packs ??
+          [];
+      const parsed: CreditPack[] = items
+        .map((raw) => {
+          const r = raw as Record<string, unknown>;
+          const id = String(r.id ?? "");
+          const code = String(r.code ?? r.id ?? "");
+          const credits = Number(r.credits ?? 0);
+          const usdcAmount = String(r.usdcAmount ?? r.priceUsd ?? "");
+          if (!id || !code || !credits || !usdcAmount) return null;
+          return {
+            id,
+            code,
+            credits,
+            usdcAmount,
+            nameEn: String(r.nameEn ?? r.label ?? code),
+            nameAr: String(r.nameAr ?? r.labelAr ?? code),
+          } as CreditPack;
+        })
+        .filter((p): p is CreditPack => p !== null);
+      setPacks(parsed);
+      if (parsed.length > 0) {
+        const std = parsed.find((p) => p.code === "standard");
+        setSelectedCode(std?.code ?? parsed[0].code);
+      }
+    } catch {
+      setPacksLoadError(true);
+      setPacks([]);
+    } finally {
+      setPacksLoading(false);
+      if (mounted.current) {
+        setPhase(getWalletSession() ? "browse" : "connect");
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/payments/packs");
-        if (!res.ok) throw new Error(`${res.status}`);
-        const payload: unknown = await res.json();
-        if (cancelled) return;
-        const items: unknown[] = Array.isArray(payload)
-          ? payload
-          : (payload as { data?: unknown[]; packs?: unknown[] })?.data ??
-            (payload as { packs?: unknown[] })?.packs ??
-            [];
-        const parsed: CreditPack[] = items
-          .map((raw) => {
-            const r = raw as Record<string, unknown>;
-            const id = String(r.id ?? "");
-            const code = String(r.code ?? r.id ?? "");
-            const credits = Number(r.credits ?? 0);
-            const usdcAmount = String(r.usdcAmount ?? r.priceUsd ?? "");
-            if (!id || !code || !credits || !usdcAmount) return null;
-            return {
-              id,
-              code,
-              credits,
-              usdcAmount,
-              nameEn: String(r.nameEn ?? r.label ?? code),
-              nameAr: String(r.nameAr ?? r.labelAr ?? code),
-            } as CreditPack;
-          })
-          .filter((p): p is CreditPack => p !== null);
-        if (parsed.length > 0) {
-          setPacks(parsed);
-          if (!parsed.find((p) => p.code === "standard")) {
-            setSelectedCode(parsed[0].code);
-          }
-        }
-      } catch {
-        /* fallback packs already set */
-      }
-      if (!cancelled) {
-        setPhase(session ? "browse" : "connect");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void fetchPacks();
+  }, [fetchPacks]);
+
+  useEffect(() => {
+    if (!session) {
+      ledger.reset();
+      setLedgerOpen(false);
+      return;
+    }
+    function onCredits() {
+      if (ledgerOpen) void ledger.load();
+    }
+    window.addEventListener("estio:credits-changed", onCredits);
+    return () => window.removeEventListener("estio:credits-changed", onCredits);
+  }, [session, ledgerOpen, ledger.load, ledger.reset]);
+
+  useEffect(() => {
+    if (!ledgerOpen || !session) return;
+    void ledger.load();
+  }, [ledgerOpen, session?.token, ledger.load]);
 
   // Re-evaluate browse vs connect when session changes.
   useEffect(() => {
@@ -432,6 +482,8 @@ export function StudioCreditsPanel({
       setSecondsLeft(remaining);
       if (remaining <= 0 && countdownRef.current) {
         clearInterval(countdownRef.current);
+        countdownRef.current = null;
+        setPhase("expired");
       }
     }, 1000);
   }, []);
@@ -442,8 +494,14 @@ export function StudioCreditsPanel({
       pollRef.current = setInterval(async () => {
         if (!mounted.current) return;
         try {
+          const wallet = getWalletSession();
           const res = await fetch(
             `/api/payments/${encodeURIComponent(paymentRef)}/status`,
+            {
+              headers: wallet
+                ? { authorization: `Bearer ${wallet.token}` }
+                : undefined,
+            },
           );
           if (!res.ok) return;
           const payload = (await res.json()) as StatusResponse;
@@ -487,6 +545,8 @@ export function StudioCreditsPanel({
   }
 
   function handleSignOut() {
+    ledger.reset();
+    setLedgerOpen(false);
     clearWalletSession();
     setPayment(null);
     setPhase("connect");
@@ -610,7 +670,11 @@ export function StudioCreditsPanel({
               <span className="h-3 w-px bg-[var(--border)]" aria-hidden />
               <span className="text-[var(--muted)]">{str.balance}:</span>
               <span className="font-semibold tabular-nums text-[var(--text)]">
-                {balance == null ? "—" : balance}{" "}
+                {balanceLoading
+                  ? str.balanceLoading
+                  : balance == null
+                    ? "—"
+                    : balance}{" "}
                 <span className="text-[10px] font-normal text-[var(--muted)]">
                   {str.creditsUnit}
                 </span>
@@ -625,16 +689,110 @@ export function StudioCreditsPanel({
             </div>
           ) : null}
 
-          {gpuOffline ? (
+          {/* Ledger (authenticated) */}
+          {session ? (
             <div
-              className={focus ? "mx-auto mt-6 max-w-2xl text-start" : "mt-6"}
+              className={`mt-4 w-full max-w-3xl ${focus ? "mx-auto text-start" : ""}`}
             >
-              <GpuOfflineBanner locale={locale} snapshot={gpu.status} />
+              <button
+                type="button"
+                onClick={() => setLedgerOpen((o) => !o)}
+                className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)] hover:underline"
+              >
+                {ledgerOpen ? str.ledgerToggleHide : str.ledgerToggleShow}
+              </button>
+              {ledgerOpen ? (
+                <div className="mt-3 overflow-hidden rounded-sm border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_96%,#000_4%)]">
+                  {ledger.loading && ledger.items.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-[var(--muted)]">
+                      {str.loading}
+                    </p>
+                  ) : null}
+                  {ledger.error ? (
+                    <div className="flex flex-wrap items-center gap-3 border-b border-[var(--border)] px-4 py-3 text-xs text-red-300">
+                      <span>{ledger.error}</span>
+                      <button
+                        type="button"
+                        onClick={() => void ledger.load()}
+                        className="rounded-sm border border-[var(--border)] px-2 py-1 font-semibold text-[var(--accent)] hover:border-[var(--accent)]/40"
+                      >
+                        {str.packsRetry}
+                      </button>
+                    </div>
+                  ) : null}
+                  {!ledger.loading &&
+                  !ledger.error &&
+                  ledger.items.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-[var(--muted)]">
+                      {str.ledgerEmpty}
+                    </p>
+                  ) : null}
+                  {ledger.items.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[280px] text-left text-[11px]">
+                        <thead>
+                          <tr className="border-b border-[var(--border)] text-[var(--muted)]">
+                            <th className="px-3 py-2 font-medium">
+                              {str.ledgerColWhen}
+                            </th>
+                            <th className="px-3 py-2 font-medium">
+                              {str.ledgerColReason}
+                            </th>
+                            <th className="px-3 py-2 font-medium tabular-nums">
+                              {str.ledgerColChange}
+                            </th>
+                            <th className="px-3 py-2 font-medium tabular-nums">
+                              {str.ledgerColBalance}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ledger.items.map((row) => (
+                            <tr
+                              key={row.id}
+                              className="border-b border-[var(--border)]/60 text-[var(--text-body)] last:border-0"
+                            >
+                              <td className="px-3 py-2 whitespace-nowrap text-[var(--muted)]">
+                                {formatLedgerWhen(row.createdAt, locale)}
+                              </td>
+                              <td className="px-3 py-2">
+                                {formatLedgerReason(row.reason, str)}
+                              </td>
+                              <td
+                                className={`px-3 py-2 tabular-nums ${row.delta >= 0 ? "text-emerald-400" : "text-amber-200"}`}
+                              >
+                                {row.delta >= 0 ? "+" : ""}
+                                {row.delta}
+                              </td>
+                              <td className="px-3 py-2 tabular-nums text-[var(--text)]">
+                                {row.balanceAfter}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+                  {ledger.nextCursor ? (
+                    <div className="border-t border-[var(--border)] px-3 py-2">
+                      <button
+                        type="button"
+                        disabled={ledger.loading}
+                        onClick={() => void ledger.load(ledger.nextCursor)}
+                        className="text-xs font-semibold text-[var(--accent)] hover:underline disabled:opacity-50"
+                      >
+                        {str.ledgerLoadMore}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : null}
 
           {/* ── Loading packs ── */}
-          {phase === "loading" ? (
+          {phase === "loading" ||
+          (packsLoading && packs.length === 0 && !packsLoadError) ? (
             <p
               className={`text-sm text-[var(--muted)] ${focus ? "mt-6 text-center" : "mt-10"}`}
             >
@@ -674,6 +832,38 @@ export function StudioCreditsPanel({
           phase === "creating" ||
           phase === "error" ? (
             <div className={focus ? "mt-6 sm:mt-8" : "mt-10"}>
+              {packsLoading && packs.length === 0 && !packsLoadError ? (
+                <p
+                  className={`mb-4 text-sm text-[var(--muted)] ${focus ? "text-center" : ""}`}
+                >
+                  {str.loading}
+                </p>
+              ) : null}
+
+              {packsLoadError ? (
+                <div
+                  className={`rounded-sm border border-red-500/20 bg-red-950/15 px-4 py-4 text-sm text-red-200 ${focus ? "mx-auto max-w-xl text-center" : ""}`}
+                >
+                  <p>{str.packsUnavailable}</p>
+                  <button
+                    type="button"
+                    onClick={() => void fetchPacks()}
+                    className="mt-4 rounded-sm border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--accent)] hover:border-[var(--accent)]/40"
+                  >
+                    {str.packsRetry}
+                  </button>
+                </div>
+              ) : null}
+
+              {!packsLoadError && !packsLoading && packs.length === 0 ? (
+                <p
+                  className={`text-sm text-[var(--muted)] ${focus ? "text-center" : ""}`}
+                >
+                  {str.packsUnavailable}
+                </p>
+              ) : null}
+
+              {packs.length > 0 && !packsLoadError ? (
               <div
                 className={`grid gap-4 sm:grid-cols-3 ${focus ? "mx-auto max-w-3xl" : ""}`}
               >
@@ -728,6 +918,7 @@ export function StudioCreditsPanel({
                   );
                 })}
               </div>
+              ) : null}
 
               {uiError ? (
                 <div
@@ -743,12 +934,17 @@ export function StudioCreditsPanel({
                 <button
                   type="button"
                   onClick={() => session && void handleBuy(session)}
-                  disabled={phase === "creating" || gpuOffline || !session}
-                  title={
-                    gpuOffline ? str.gpuOfflineDisabledTooltip : undefined
+                  disabled={
+                    phase === "creating" ||
+                    !session ||
+                    packs.length === 0 ||
+                    packsLoadError
                   }
                   aria-disabled={
-                    phase === "creating" || gpuOffline || !session
+                    phase === "creating" ||
+                    !session ||
+                    packs.length === 0 ||
+                    packsLoadError
                   }
                   className="rounded-sm bg-[var(--accent)] px-8 py-3 text-sm font-semibold text-[#0a0a0a] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >

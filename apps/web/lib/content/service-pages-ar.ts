@@ -7,7 +7,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
     slug: "web-design-development",
     title: "تصميم وتطوير المواقع والمنصّات",
     summary:
-      "مواقع وتطبيقات ويب للمصداقية المؤسسية: أداء وإتاحة وثنائية لغوية عند الحاجة، ونظام إدارة محتوى يمنعكم من الاعتماد على «تحديثات عشوائية» كلما احتجتم تغييراً.",
+      "مواقع مؤسسات وإطلاق ترفع ثقة العملاء وتحدّث حضوركم الرقمي — سريعة، ثنائية اللغة عند الحاجة، مع تسليم إدارة محتوى لينشر التسويق دون انتظار المطور.",
     seo: {
       title: "تصميم وتطوير المواقع — إستيو",
       description:
@@ -62,7 +62,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
       headline: "حدّدوا نطاق المنصّة والمخرجات",
       body: "الهدف التجاري، الجمهور، القيود التقنية، ومن يعتمد المحتوى والإطلاق. نرد بإطار نطاق وجهد ومراحل — لا عرض قدرات عام.",
       href: "/contact",
-      buttonLabel: "بدء تعاقد محدد النطاق",
+      buttonLabel: "احصل على عرض سعر",
     },
     secondaryCta: { href: "/services" },
   },
@@ -70,7 +70,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
     slug: "content-campaigns",
     title: "تنفيذ المحتوى والحملات",
     summary:
-      "تقويم إنتاج، وحملات مرتبطة ببيعكم الفعلي — فيبقى المخرج على هوية العلامة ومربوطاً بنتائج، لا بكمٍّ لملء الجدول فقط.",
+      "تقويم إطلاق وإبداع جاهز للإعلان ومنشورات قنوات تسرّع الحملة وتوحّد عرض العلامة — عربي وإنجليزي عند الحاجة.",
     seo: {
       title: "المحتوى والحملات — إستيو",
       description:
@@ -122,7 +122,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
       headline: "نطاق برنامج المحتوى والحملات",
       body: "الهدف التجاري، القنوات، الإيقاع، ومسار الاعتماد الداخلي. نعيد إطار إنتاج قابل للقياس — لا اشتراك ساعات مبهمة.",
       href: "/contact",
-      buttonLabel: "بدء تعاقد محدد النطاق",
+      buttonLabel: "احصل على عرض سعر",
     },
     secondaryCta: { href: "/services" },
   },
@@ -130,7 +130,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
     slug: "ai-creative",
     title: "إبداع معزّز بالذكاء الاصطناعي",
     summary:
-      "استخدام الذكاء لرفع معدل الإنتاج حيث تسمح العلامة والالتزام القانوني والجودة — مع نقاط مراجعة وتحكم بالنسخ قبل أي شيء يصل للعميل.",
+      "صور حملات وفيديو قصير بسرعة إنتاج — بطل ومنتجات وتصدير سوشيال بمراجعة العلامة قبل النشر. جودة عرض أعلى دون مضاعفة أيام التصوير.",
     seo: {
       title: "الإبداع بالذكاء الاصطناعي — إستيو",
       description:
@@ -182,7 +182,7 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
       headline: "ضوابط الإبداع المساعد بالذكاء",
       body: "أنواع الأصول، الحجم، الحدود القانونية لعلامتكم، ونقاط الاعتماد الإلزامية قبل النشر. المرحلة الأولى تجريب ضيق ثم التوسع.",
       href: "/contact",
-      buttonLabel: "بدء تعاقد محدد النطاق",
+      buttonLabel: "احصل على عرض سعر",
     },
     secondaryCta: { href: "/services" },
   },
@@ -191,9 +191,9 @@ export const servicePagesAr: Record<string, ServiceDetailContent> = {
 export const enterprisePagesAr: Record<string, ServiceDetailContent> = {
   enterprise: {
     slug: "enterprise",
-    title: "أتمتة محكومة وذكاء خاص فوق أنظمتكم",
+    title: "أتمتة سير العمل وذكاء داخلي محكوم للمؤسسات",
     summary:
-      "ما يُبنى: تدفقات بين أنظمة، أو مساعد استرجاع بحدود معرفة، أو أدوات داخلية — مع جرد تكامل كتابي، ونموذج وصول، واختبارات قبول مرحلية، وملكية تشغيل لـ IT والتشغيل.",
+      "ما تستلمونه: (١) تمرير تلقائي بين أدوات العمل التي تسمّونها في النطاق، (٢) إجابات داخلية من وثائق معتمدة بصلاحيات حسب الدور، (٣) لوحات تشغيل عند الطلب. كل تعاقد يتضمن قائمة مخرجات وإطلاقاً مرحلياً وأدلة تشغيل يملكها فريقكم بعد التسليم.",
     seo: {
       title: "أتمتة محكومة واسترجاع داخلي — إستيو",
       description:
@@ -294,7 +294,7 @@ export const enterprisePagesAr: Record<string, ServiceDetailContent> = {
       headline: "مدخل التأهيل — مسار واحد لكل إرسال",
       body: "ثلاثة قوالب: نطاق سير عمل يدوي، أو تأهيل مسار المعرفة الداخلية المحكوم، أو موجز عائد مرحلة أولى. اختاروا مساراً واحداً وأكملوا قائمته. بلا أسماء للأنظمة ومالك داخلي للوصول — لا نتابع.",
       href: "/contact",
-      buttonLabel: "بدء التأهيل",
+      buttonLabel: "احجز استشارة",
     },
     secondaryCta: { href: "/enterprise" },
   },
@@ -335,7 +335,7 @@ export const enterprisePagesAr: Record<string, ServiceDetailContent> = {
       headline: "نطاق مسار المعرفة الداخلية — أو لا تسعير",
       body: "مصادر معتمدة صراحةً، ومالك الهوية والوصول، والقنوات التي تُعرض فيها الإجابات. من دون ذلك لا نلتزم بجدول ولا برسم.",
       href: "/contact",
-      buttonLabel: "بدء التأهيل",
+      buttonLabel: "احجز استشارة",
     },
     secondaryCta: { href: "/enterprise" },
   },
@@ -398,7 +398,7 @@ export const enterprisePagesAr: Record<string, ServiceDetailContent> = {
       headline: "اسم السير، الحجم، والأنظمة المشمولة",
       body: "الأتمتة تحتاج حمولة معاملات، وتصنيف الاستثناءات، وجرد تكامل كتابي — لا مخططاً عاماً. إن لم تسردوا التطبيقات، أجّلوا الطلب.",
       href: "/contact",
-      buttonLabel: "بدء التأهيل",
+      buttonLabel: "احجز استشارة",
     },
     secondaryCta: { href: "/enterprise" },
   },

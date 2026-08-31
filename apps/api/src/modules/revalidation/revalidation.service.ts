@@ -9,7 +9,9 @@ export class RevalidationService {
     const secret = process.env.REVALIDATE_SECRET?.trim();
     if (!base || !secret) {
       // Optional in environments that don't run the web app.
-      this.logger.debug('Revalidation skipped (missing WEB_REVALIDATE_URL or REVALIDATE_SECRET).');
+      this.logger.debug(
+        'Revalidation skipped (missing WEB_REVALIDATE_URL or REVALIDATE_SECRET).',
+      );
       return;
     }
     const url = base.replace(/\/$/, '') + '/api/revalidate';
@@ -30,4 +32,3 @@ export class RevalidationService {
     }
   }
 }
-

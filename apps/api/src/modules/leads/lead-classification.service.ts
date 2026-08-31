@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { CrmServiceType, CrmPipelineStage, CrmLeadStatus } from '@prisma/client';
+import type {
+  CrmServiceType,
+  CrmPipelineStage,
+  CrmLeadStatus,
+} from '@prisma/client';
 
 export type LeadClassification = 'READY' | 'CLARIFY' | 'REJECT';
 
@@ -95,8 +99,7 @@ export class LeadClassificationService {
 
     const isEnterprise = ENTERPRISE_TYPES.includes(input.serviceType);
     if (isEnterprise) {
-      const hasNoScope =
-        !input.projectScope?.trim() && !input.message?.trim();
+      const hasNoScope = !input.projectScope?.trim() && !input.message?.trim();
       const hasNoCompany = !input.company?.trim();
       if (hasNoScope && hasNoCompany) return true;
     }
@@ -111,10 +114,7 @@ export class LeadClassificationService {
     return 'Enterprise path requires named systems, internal owner, and scope definition. None provided.';
   }
 
-  private isReady(
-    input: ClassificationInput,
-    missing: string[],
-  ): boolean {
+  private isReady(input: ClassificationInput, missing: string[]): boolean {
     if (missing.length > 1) return false;
     if (input.score < 25) return false;
     if (!this.hasSufficientScope(input)) return false;

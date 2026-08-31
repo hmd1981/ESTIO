@@ -245,7 +245,7 @@ export function nextStepId(
   const steps = stepsForBranch(branch);
   const idx = steps.findIndex((x) => x.id === currentStepId);
   if (idx < 0 || idx >= steps.length - 1) return null;
-  return steps[idx + 1]!.id;
+  return steps[idx + 1].id;
 }
 
 export function questionsForStep(

@@ -20,14 +20,18 @@ export const STUDIO_ALLOWED_EVENT_TYPES = [
   'offer_card_view',
 ] as const;
 
-export type StudioAllowedEventType = (typeof STUDIO_ALLOWED_EVENT_TYPES)[number];
+export type StudioAllowedEventType =
+  (typeof STUDIO_ALLOWED_EVENT_TYPES)[number];
 
 export function isAllowedEventType(t: string): t is StudioAllowedEventType {
   return (STUDIO_ALLOWED_EVENT_TYPES as readonly string[]).includes(t);
 }
 
 /** Browser `bufferEvent` uses `studio_*` names; DB + rollups use canonical types. */
-export const STUDIO_CLIENT_TO_CANONICAL_EVENT: Record<string, StudioAllowedEventType> = {
+export const STUDIO_CLIENT_TO_CANONICAL_EVENT: Record<
+  string,
+  StudioAllowedEventType
+> = {
   studio_page_view: 'page_view',
   studio_intent_selected: 'intent_selected',
   studio_cta_clicked: 'cta_clicked',

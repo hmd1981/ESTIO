@@ -23,7 +23,11 @@ import {
   stepsForBranch,
 } from './intake.flow';
 
-function pickEnum<T extends string>(allowed: readonly T[], v: string, fallback: T): T {
+function pickEnum<T extends string>(
+  allowed: readonly T[],
+  v: string,
+  fallback: T,
+): T {
   return allowed.includes(v as T) ? (v as T) : fallback;
 }
 
@@ -183,7 +187,7 @@ export class IntakeService {
       timeline,
       projectScope: answers.projectScope?.trim() || null,
       message: null,
-      source: 'INTAKE' as CrmLeadSource,
+      source: 'INTAKE',
       locale: dto.locale ?? null,
       referrer: undefined,
       landingPage: undefined,

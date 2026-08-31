@@ -82,7 +82,9 @@ export class WalletAuthService {
     }
     const chain = resolveChainConfig();
     const issuedAt = new Date();
-    const expiresAt = new Date(issuedAt.getTime() + this.nonceTtlSeconds * 1000);
+    const expiresAt = new Date(
+      issuedAt.getTime() + this.nonceTtlSeconds * 1000,
+    );
     const nonce = randomBytes(16).toString('hex');
 
     await this.prisma.siweNonce.create({
@@ -113,11 +115,19 @@ export class WalletAuthService {
     if (!address) {
       throw new BadRequestException('address must be a 0x… hex address');
     }
-    if (typeof input.signature !== 'string' || !/^0x[0-9a-fA-F]+$/.test(input.signature)) {
+    if (
+      typeof input.signature !== 'string' ||
+      !/^0x[0-9a-fA-F]+$/.test(input.signature)
+    ) {
       throw new BadRequestException('signature must be a 0x… hex string');
     }
-    if (typeof input.message !== 'string' || !input.message.includes(`Nonce: `)) {
-      throw new BadRequestException('message must be the SIWE message returned by /auth/wallet/nonce');
+    if (
+      typeof input.message !== 'string' ||
+      !input.message.includes(`Nonce: `)
+    ) {
+      throw new BadRequestException(
+        'message must be the SIWE message returned by /auth/wallet/nonce',
+      );
     }
 
     // Cheap structural check before we hit the DB or do any crypto.
@@ -135,7 +145,9 @@ export class WalletAuthService {
       throw new UnauthorizedException('Nonce has expired; request a fresh one');
     }
     if (row.walletAddress && row.walletAddress.toLowerCase() !== address) {
-      throw new UnauthorizedException('Nonce was issued for a different address');
+      throw new UnauthorizedException(
+        'Nonce was issued for a different address',
+      );
     }
 
     let recoveredOk = false;
@@ -162,7 +174,9 @@ export class WalletAuthService {
       data: { consumedAt: now },
     });
     if (consumed.count !== 1) {
-      throw new UnauthorizedException('Nonce was just consumed by another request');
+      throw new UnauthorizedException(
+        'Nonce was just consumed by another request',
+      );
     }
 
     const user = await this.prisma.user.upsert({

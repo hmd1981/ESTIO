@@ -124,7 +124,7 @@ export const enterpriseCmsGoldenFixture: MarketingPageSectionsCMS = {
         title: "Scope one manual workflow",
         body: "When friction is between CRM, finance, ticketing, or spreadsheets.",
         intent: "AUTOMATION",
-        ctaLabel: "Start qualification",
+        ctaLabel: "Book a consultation",
         messageTemplate: "We want to scope one workflow.\nProcess:\nOwner:\nVolume:\nSystems:",
         checklist: ["Process name", "Owner", "Monthly volume"],
         qualification: {
@@ -136,7 +136,7 @@ export const enterpriseCmsGoldenFixture: MarketingPageSectionsCMS = {
         title: "Assess private assistant fit",
         body: "When answers must stay inside approved corpora and channels.",
         intent: "ENTERPRISE_AI",
-        ctaLabel: "Start qualification",
+        ctaLabel: "Book a consultation",
         messageTemplate: "We want to assess a private assistant.\nSources:\nChannels:\nConstraints:",
         checklist: ["Knowledge sources", "Access owner", "Channels"],
         qualification: {

@@ -18,12 +18,18 @@ import { WalletAuthService } from './wallet-auth.service';
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'development-only-secret',
       signOptions: {
-        expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`,
+        expiresIn: (process.env.JWT_EXPIRES_IN ??
+          '7d') as `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`,
       },
     }),
   ],
   controllers: [WalletAuthController],
   providers: [WalletAuthService, WalletAuthGuard, MaybeWalletAuthGuard],
-  exports: [WalletAuthService, WalletAuthGuard, MaybeWalletAuthGuard, JwtModule],
+  exports: [
+    WalletAuthService,
+    WalletAuthGuard,
+    MaybeWalletAuthGuard,
+    JwtModule,
+  ],
 })
 export class WalletAuthModule {}

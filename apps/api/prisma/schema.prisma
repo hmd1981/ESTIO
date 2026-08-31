@@ -710,6 +710,13 @@ enum CreditLedgerReason {
   job_debit
   refund
   manual_adjust
+  /// Phase 4: media generation charge (replaces job_debit for new jobs).
+  generation_debit
+  /// Phase 4: refund when a generation job fails terminally (replaces refund for new jobs).
+  generation_refund
+  /// Reserved for future reservation-first accounting (not used in Phase 4 debit path).
+  generation_reservation
+  generation_reservation_release
 }
 
 /// End-user identity. The wallet address (lowercased, with 0x prefix) is the

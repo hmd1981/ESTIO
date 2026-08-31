@@ -306,10 +306,7 @@ export function getPreNavIntent(): Intent | null {
    6. Centralized Learning Layer — API client
    ──────────────────────────────────────────────────────────────────── */
 
-const API_BASE =
-  (typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL
-    : undefined) ?? "https://api.estio.org";
+const API_BASE = "/api";
 const SESSION_KEY = "estio-studio-sid";
 
 function getSessionId(): string {

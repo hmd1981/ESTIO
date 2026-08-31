@@ -46,8 +46,12 @@ describe('MediaJobsService', () => {
 
     const mediaJobApi = {
       create: jest.fn(async () => ({ ...rowSnapshot })),
-      findUnique: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
-      findUniqueOrThrow: jest.fn(async () => ({ ...rowSnapshot } as MediaGenerationJob)),
+      findUnique: jest.fn(
+        async () => ({ ...rowSnapshot }) as MediaGenerationJob,
+      ),
+      findUniqueOrThrow: jest.fn(
+        async () => ({ ...rowSnapshot }) as MediaGenerationJob,
+      ),
       update: jest.fn(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(rowSnapshot, data);
         return { ...rowSnapshot } as MediaGenerationJob;
@@ -59,8 +63,12 @@ describe('MediaJobsService', () => {
       creditLedger: {
         findFirst: jest.fn(async () => null),
       },
-      $transaction: jest.fn(async (fn: (tx: { mediaGenerationJob: typeof mediaJobApi }) => Promise<unknown>) =>
-        fn({ mediaGenerationJob: mediaJobApi }),
+      $transaction: jest.fn(
+        async (
+          fn: (tx: {
+            mediaGenerationJob: typeof mediaJobApi;
+          }) => Promise<unknown>,
+        ) => fn({ mediaGenerationJob: mediaJobApi }),
       ),
     } as unknown as typeof prisma;
 
@@ -81,8 +89,16 @@ describe('MediaJobsService', () => {
       // Anonymous-job tests only ever look at the refund path, which returns
       // early because creditLedger.findFirst is stubbed null. Provide stubs
       // for the debit/refund methods so the type check is happy.
-      debitForJob: jest.fn(async () => ({ created: true, balanceAfter: 0, rowId: 'x' })),
-      refundJob: jest.fn(async () => ({ created: true, balanceAfter: 0, rowId: 'y' })),
+      debitForJob: jest.fn(async () => ({
+        created: true,
+        balanceAfter: 0,
+        rowId: 'x',
+      })),
+      refundJob: jest.fn(async () => ({
+        created: true,
+        balanceAfter: 0,
+        rowId: 'y',
+      })),
       creditForPayment: jest.fn(),
       append: jest.fn(),
       getBalance: jest.fn(async () => 0),
@@ -131,7 +147,7 @@ describe('MediaJobsService', () => {
     };
     prisma.mediaGenerationJob.create.mockResolvedValue({
       ...rowSnapshot,
-    } as MediaGenerationJob);
+    });
 
     await service.createStudioMediaJob(
       {

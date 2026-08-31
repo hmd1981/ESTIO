@@ -17,13 +17,13 @@ const COPY = {
   en: {
     title: "GPU services are temporarily offline",
     body:
-      "Image and video generation, plus credit top-ups, are paused while the GPU worker is unreachable. Please try again in a few minutes.",
+      "Image and video generation are paused while the GPU worker is unreachable. Credit purchases still work. Please try again in a few minutes.",
     reasonLabel: "reason",
   },
   ar: {
     title: "خدمات GPU غير متاحة مؤقتًا",
     body:
-      "إنشاء الصور والفيديو وشحن الرصيد متوقف حاليًا لأن عامل GPU غير متاح. يُرجى المحاولة مجددًا بعد بضع دقائق.",
+      "إنشاء الصور والفيديو متوقف حاليًا لأن عامل GPU غير متاح. شراء الرصيد ما زال متاحًا. يُرجى المحاولة مجددًا بعد بضع دقائق.",
     reasonLabel: "السبب",
   },
 } as const;

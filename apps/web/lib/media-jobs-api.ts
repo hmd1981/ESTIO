@@ -21,7 +21,7 @@ function jsonHeaders(): Record<string, string> {
 /** Keep in sync with `apps/api/src/modules/media/generate-image-payload.ts`. */
 export const MEDIA_GENERATE_IMAGE_PROMPT_MAX_LENGTH = 8000;
 
-const JOBS_BASE = `${publicApiBaseUrl.replace(/\/$/, "")}/media/jobs`;
+const JOBS_BASE = "/api/media/jobs";
 
 /** Studio modes for `POST /media/jobs` (unified). */
 export type MediaStudioJobMode =
@@ -388,6 +388,7 @@ const IMAGE_PATH_EXT = /\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i;
 /** Browser can load Estio API–hosted paths (e.g. `/uploads/...`) when the worker stores a site-relative path. */
 function absolutizePublicApiPath(path: string): string {
   const p = path.trim();
+  if (p.startsWith("/uploads/")) return `/api${p}`;
   const base = publicApiBaseUrl.replace(/\/$/, "");
   return p.startsWith("/") ? `${base}${p}` : `${base}/${p}`;
 }

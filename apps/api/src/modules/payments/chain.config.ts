@@ -26,13 +26,16 @@ export interface ChainConfig {
 }
 
 const BASE_USDC: `0x${string}` = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
-const BASE_SEPOLIA_USDC: `0x${string}` = '0x036cbd53842c5426634e7929541ec2318f3dcf7e';
+const BASE_SEPOLIA_USDC: `0x${string}` =
+  '0x036cbd53842c5426634e7929541ec2318f3dcf7e';
 
 let cached: ChainConfig | null = null;
 
 export function resolveChainConfig(): ChainConfig {
   if (cached) return cached;
-  const raw = (process.env.PHASE2_CHAIN ?? 'baseSepolia').trim() as Phase2ChainName;
+  const raw = (
+    process.env.PHASE2_CHAIN ?? 'baseSepolia'
+  ).trim() as Phase2ChainName;
   const isMainnet = raw === 'base';
   const chain = isMainnet ? base : baseSepolia;
   const rpcUrl =

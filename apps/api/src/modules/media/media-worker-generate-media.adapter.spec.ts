@@ -9,9 +9,7 @@ import {
 describe('media-worker-generate-media.adapter', () => {
   describe('stripDataUrlBase64', () => {
     it('strips data:image prefix', () => {
-      expect(
-        stripDataUrlBase64('data:image/png;base64,QUJD'),
-      ).toBe('QUJD');
+      expect(stripDataUrlBase64('data:image/png;base64,QUJD')).toBe('QUJD');
     });
     it('returns raw when no prefix', () => {
       expect(stripDataUrlBase64('  QUJD  ')).toBe('QUJD');

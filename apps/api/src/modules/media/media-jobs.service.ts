@@ -18,7 +18,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreditsService } from '../credits/credits.service';
 import { assertGenerateImagePayload } from './generate-image-payload';
 import { mediaJobCreditCost } from './media-job-cost';
-import { assertUnifiedStudioMediaJobBody, buildMediaJobInputMeta } from './media-job-payload';
+import {
+  assertUnifiedStudioMediaJobBody,
+  buildMediaJobInputMeta,
+} from './media-job-payload';
 import { assertGenerateMediaPayload } from './generate-media-payload';
 import type { MediaWorkerRemoteStatus } from './media-worker.contract';
 import { MediaWorkerService } from './media-worker.service';
@@ -89,23 +92,47 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     data: Prisma.MediaGenerationJobCreateInput,
     mode: string,
     userId: string | null,
-  ): Promise<{ id: string; debitedAmount: number }> {
+  ): Promise<{
+    id: string;
+    debitedAmount: number;
+    balanceAfter: number | null;
+  }> {
     if (!userId) {
       const row = await this.prisma.mediaGenerationJob.create({ data });
-      return { id: row.id, debitedAmount: 0 };
+      return { id: row.id, debitedAmount: 0, balanceAfter: null };
     }
     const cost = mediaJobCreditCost(mode);
     return this.prisma.$transaction(async (tx) => {
       const row = await tx.mediaGenerationJob.create({ data });
-      // CreditsService.debitForJob throws PaymentRequiredException(402) if
-      // balance < cost — Nest serializes that into a clean JSON error the UI
-      // already knows how to render ("Top up to continue").
-      await this.credits.debitForJob(
+      const debit = await this.credits.debitForJob(
         { userId, jobId: row.id, amount: cost },
         tx,
       );
-      return { id: row.id, debitedAmount: cost };
+      return {
+        id: row.id,
+        debitedAmount: cost,
+        balanceAfter: debit.balanceAfter,
+      };
     });
+  }
+
+  /**
+   * Phase 4: quote for UI — same cost rules as submit; read-only balance check.
+   */
+  async getPreflightQuote(mode: string, userId: string) {
+    const normalized =
+      typeof mode === 'string' && mode.trim() ? mode.trim() : 'text_to_image';
+    const cost = mediaJobCreditCost(normalized);
+    const balance = await this.credits.getBalance(userId);
+    const sufficient = balance >= cost;
+    return {
+      mode: normalized,
+      costCredits: cost,
+      balance,
+      sufficient,
+      shortfall: sufficient ? 0 : cost - balance,
+      currency: 'credits' as const,
+    };
   }
 
   /** Refund a previously-debited job. Idempotent via the ledger unique index. */
@@ -113,14 +140,18 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     // Find the original debit row to know the user + amount. If there was no
     // debit (anonymous job), this is a clean no-op.
     const debit = await this.prisma.creditLedger.findFirst({
-      where: { refType: 'job', refId: jobId, reason: 'job_debit' },
+      where: {
+        refType: 'job',
+        refId: jobId,
+        reason: { in: ['job_debit', 'generation_debit'] },
+      },
     });
     if (!debit) return;
     try {
       await this.credits.refundJob({
         userId: debit.userId,
         jobId,
-        amount: -debit.delta, // delta was negative; flip back to positive
+        amount: -debit.delta,
       });
     } catch (e) {
       this.logger.warn(
@@ -166,7 +197,7 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
         QUEUE_NAME,
         async (job) => {
           const data = job.data as { id: string };
-          const maxAttempts = (job.opts?.attempts ?? 1) as number;
+          const maxAttempts = job.opts?.attempts ?? 1;
           const isLastAttempt = job.attemptsMade + 1 >= maxAttempts;
           await this.runProcessor(data.id, { isLastAttempt });
         },
@@ -198,30 +229,35 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     await this.queue?.close();
   }
 
-  async createGenerateImageJob(body: unknown, userId: string | null = null) {
+  async createGenerateImageJob(body: unknown, userId: string) {
     this.assertWorkerOnlineForSubmit();
     const payload = assertGenerateImagePayload(body);
     const inputMeta = buildMediaJobInputMeta('generate_image', payload);
     const workerTargetHost = parseMediaWorkerHost();
 
-    const { id } = await this.createJobRowWithDebit(
-      {
-        type: 'generate_image',
-        status: 'queued',
-        workerTargetHost,
-        inputPayload: payload as Prisma.InputJsonValue,
-        inputMeta: inputMeta as Prisma.InputJsonValue,
-      },
-      'generate_image',
-      userId,
-    );
-    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({ where: { id } });
+    const { id, debitedAmount, balanceAfter } =
+      await this.createJobRowWithDebit(
+        {
+          type: 'generate_image',
+          status: 'queued',
+          workerTargetHost,
+          inputPayload: payload as Prisma.InputJsonValue,
+          inputMeta: inputMeta,
+        },
+        'generate_image',
+        userId,
+      );
+    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({
+      where: { id },
+    });
 
     try {
       await this.enqueueMediaJob(row.id);
     } catch (e) {
       await this.refundJobIfDebited(row.id);
-      await this.prisma.mediaGenerationJob.delete({ where: { id: row.id } }).catch(() => {});
+      await this.prisma.mediaGenerationJob
+        .delete({ where: { id: row.id } })
+        .catch(() => {});
       throw new ServiceUnavailableException(
         `Failed to enqueue media job: ${e instanceof Error ? e.message : String(e)}`,
       );
@@ -230,6 +266,10 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     return buildMediaJobSubmitResponse(
       row,
       this.mediaWorker.getMediaWorkerMode(),
+      {
+        debited: debitedAmount,
+        balanceAfter,
+      },
     );
   }
 
@@ -237,7 +277,7 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
    * Async jobs for video-oriented modes (`text_to_video`, `image_to_video`).
    * Same poll/result contract as {@link createGenerateImageJob}. Worker must understand the payload.
    */
-  async createGenerateMediaJob(body: unknown, userId: string | null = null) {
+  async createGenerateMediaJob(body: unknown, userId: string) {
     this.assertWorkerOnlineForSubmit();
     const payload = assertGenerateMediaPayload(body);
     const workerTargetHost = parseMediaWorkerHost();
@@ -247,24 +287,29 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
         : 'text_to_video';
     const inputMeta = buildMediaJobInputMeta(mode, payload);
 
-    const { id } = await this.createJobRowWithDebit(
-      {
-        type: mode,
-        status: 'queued',
-        workerTargetHost,
-        inputPayload: payload as Prisma.InputJsonValue,
-        inputMeta: inputMeta as Prisma.InputJsonValue,
-      },
-      mode,
-      userId,
-    );
-    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({ where: { id } });
+    const { id, debitedAmount, balanceAfter } =
+      await this.createJobRowWithDebit(
+        {
+          type: mode,
+          status: 'queued',
+          workerTargetHost,
+          inputPayload: payload as Prisma.InputJsonValue,
+          inputMeta: inputMeta,
+        },
+        mode,
+        userId,
+      );
+    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({
+      where: { id },
+    });
 
     try {
       await this.enqueueMediaJob(row.id);
     } catch (e) {
       await this.refundJobIfDebited(row.id);
-      await this.prisma.mediaGenerationJob.delete({ where: { id: row.id } }).catch(() => {});
+      await this.prisma.mediaGenerationJob
+        .delete({ where: { id: row.id } })
+        .catch(() => {});
       throw new ServiceUnavailableException(
         `Failed to enqueue media job: ${e instanceof Error ? e.message : String(e)}`,
       );
@@ -273,6 +318,10 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     return buildMediaJobSubmitResponse(
       row,
       this.mediaWorker.getMediaWorkerMode(),
+      {
+        debited: debitedAmount,
+        balanceAfter,
+      },
     );
   }
 
@@ -280,30 +329,35 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
    * Studio unified entry: `POST /media/jobs` with `{ mode, ... }`.
    * Persists canonical `type` = `text_to_image` | `image_to_video` | `text_to_video`.
    */
-  async createStudioMediaJob(body: unknown, userId: string | null = null) {
+  async createStudioMediaJob(body: unknown, userId: string) {
     this.assertWorkerOnlineForSubmit();
     const { mode, payload } = assertUnifiedStudioMediaJobBody(body);
     const inputMeta = buildMediaJobInputMeta(mode, payload);
     const workerTargetHost = parseMediaWorkerHost();
 
-    const { id } = await this.createJobRowWithDebit(
-      {
-        type: mode,
-        status: 'queued',
-        workerTargetHost,
-        inputPayload: payload as Prisma.InputJsonValue,
-        inputMeta: inputMeta as Prisma.InputJsonValue,
-      },
-      mode,
-      userId,
-    );
-    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({ where: { id } });
+    const { id, debitedAmount, balanceAfter } =
+      await this.createJobRowWithDebit(
+        {
+          type: mode,
+          status: 'queued',
+          workerTargetHost,
+          inputPayload: payload as Prisma.InputJsonValue,
+          inputMeta: inputMeta,
+        },
+        mode,
+        userId,
+      );
+    const row = await this.prisma.mediaGenerationJob.findUniqueOrThrow({
+      where: { id },
+    });
 
     try {
       await this.enqueueMediaJob(row.id);
     } catch (e) {
       await this.refundJobIfDebited(row.id);
-      await this.prisma.mediaGenerationJob.delete({ where: { id: row.id } }).catch(() => {});
+      await this.prisma.mediaGenerationJob
+        .delete({ where: { id: row.id } })
+        .catch(() => {});
       throw new ServiceUnavailableException(
         `Failed to enqueue media job: ${e instanceof Error ? e.message : String(e)}`,
       );
@@ -312,6 +366,10 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     return buildMediaJobSubmitResponse(
       row,
       this.mediaWorker.getMediaWorkerMode(),
+      {
+        debited: debitedAmount,
+        balanceAfter,
+      },
     );
   }
 
@@ -375,7 +433,9 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
       return buildMediaJobResultSuccess(row);
     }
     if (row.status === 'failed') {
-      throw new UnprocessableEntityException(buildMediaJobResultFailedBody(row));
+      throw new UnprocessableEntityException(
+        buildMediaJobResultFailedBody(row),
+      );
     }
     throw new ConflictException(buildMediaJobResultNotReadyBody(row));
   }
@@ -540,7 +600,9 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
       }
 
       const ser = this.serializeJobError(
-        new GatewayTimeoutException('Workstation async job poll exceeded deadline'),
+        new GatewayTimeoutException(
+          'Workstation async job poll exceeded deadline',
+        ),
       );
       await this.markJobFailed(id, ser);
     } catch (e) {
@@ -562,7 +624,11 @@ export class MediaJobsService implements OnModuleInit, OnModuleDestroy {
     if (e instanceof GatewayTimeoutException) return true;
     if (e instanceof BadGatewayException) {
       const msg = (e.message || '').toLowerCase();
-      if (msg.includes('cannot reach') || msg.includes('econnrefused') || msg.includes('econnreset')) {
+      if (
+        msg.includes('cannot reach') ||
+        msg.includes('econnrefused') ||
+        msg.includes('econnreset')
+      ) {
         return true;
       }
     }

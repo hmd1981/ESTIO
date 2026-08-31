@@ -54,7 +54,7 @@ export function pickWorkerBaseUrlForNewJob(): string {
   }
   const idx = roundRobin % urls.length;
   roundRobin += 1;
-  return urls[idx]!;
+  return urls[idx];
 }
 
 export function hostnameFromWorkerBaseUrl(baseUrl: string): string | null {

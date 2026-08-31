@@ -4,10 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { createHash } from 'node:crypto';
 
 export type WorkstationJobType =
-  | 'text_to_image'
-  | 'text_to_video'
-  | 'text_to_brand'
-  | 'brand_visual_system';
+  'text_to_image' | 'text_to_video' | 'text_to_brand' | 'brand_visual_system';
 
 /**
  * Executes AI generation for queued jobs (HTTP to WORKSTATION_URL when set).
@@ -41,7 +38,9 @@ export class WorkstationRunService {
         );
         const out = res.data?.outputs;
         if (Array.isArray(out) && out.length > 0) return out;
-        this.logger.warn('Workstation returned empty outputs; using placeholders');
+        this.logger.warn(
+          'Workstation returned empty outputs; using placeholders',
+        );
       } catch (e) {
         this.logger.error(
           `Workstation call failed: ${e instanceof Error ? e.message : e}`,
@@ -71,7 +70,10 @@ export class WorkstationRunService {
         : typeof input.description === 'string'
           ? input.description
           : 'estio-studio';
-    const seed = createHash('sha256').update(`${type}:${prompt}`).digest('hex').slice(0, 16);
+    const seed = createHash('sha256')
+      .update(`${type}:${prompt}`)
+      .digest('hex')
+      .slice(0, 16);
     const w = type === 'text_to_video' ? 640 : 800;
     const h = type === 'text_to_video' ? 360 : 600;
     const n = 4;

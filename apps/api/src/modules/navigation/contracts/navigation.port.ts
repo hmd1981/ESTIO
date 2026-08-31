@@ -1,4 +1,7 @@
-import type { NavigationItem, NavigationLocation } from '../../../contracts/entities';
+import type {
+  NavigationItem,
+  NavigationLocation,
+} from '../../../contracts/entities';
 import type { CreateNavigationItemDto } from '../dto/create-navigation-item.dto';
 import type { UpdateNavigationItemDto } from '../dto/update-navigation-item.dto';
 

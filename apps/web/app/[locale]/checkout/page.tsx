@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { isLocale } from "@/lib/i18n/config";
+import { noindexMetadata } from "@/lib/seo/metadata-builders";
 import { withLocale } from "@/lib/i18n/paths";
 
 type Props = {
@@ -14,9 +15,16 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw } = await params;
   if (!isLocale(raw)) return {};
-  return {
-    title: raw === "ar" ? "الدفع — Estio" : "Checkout — Estio",
-  };
+  return noindexMetadata(
+    {
+      title: raw === "ar" ? "الدفع — Estio" : "Checkout — Estio",
+      description:
+        raw === "ar"
+          ? "إكمال الطلب عبر التواصل — الدفع الآمن قريباً."
+          : "Complete your order via contact — secure checkout coming soon.",
+    },
+    `/${raw}/checkout`,
+  );
 }
 
 function q(
@@ -50,12 +58,22 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
               <span className="font-medium text-[var(--text)]">{intent}</span>
             </p>
           ) : null}
-          <Link
-            href={withLocale("/contact?interest=AI_STUDIO&streamlined=1", raw)}
-            className="mt-8 inline-flex rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-contrast,#0a0a0a)]"
-          >
-            {raw === "ar" ? "انتقل إلى التواصل" : "Go to contact"}
-          </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href={withLocale("/ai-studio#studio-credits", raw)}
+              className="inline-flex rounded-md border border-[var(--border)] bg-[var(--surface)] px-5 py-3 text-sm font-semibold text-[var(--text)] hover:border-[var(--accent)]/40"
+            >
+              {raw === "ar"
+                ? "شراء الرصيد بـ USDC (الاستوديو)"
+                : "Buy credits with USDC (AI Studio)"}
+            </Link>
+            <Link
+              href={withLocale("/contact?interest=AI_STUDIO&streamlined=1", raw)}
+              className="inline-flex rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-contrast,#0a0a0a)]"
+            >
+              {raw === "ar" ? "انتقل إلى التواصل" : "Go to contact"}
+            </Link>
+          </div>
         </Container>
       </section>
     </MarketingShell>

@@ -53,7 +53,7 @@ export class WalletAuthGuard implements CanActivate {
     const token = m[1];
     let payload: WalletJwtPayload;
     try {
-      payload = (await this.jwt.verifyAsync(token)) as WalletJwtPayload;
+      payload = await this.jwt.verifyAsync<WalletJwtPayload>(token);
     } catch {
       throw new UnauthorizedException('Token is invalid or expired');
     }

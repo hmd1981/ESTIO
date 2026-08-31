@@ -4,7 +4,12 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { createPublicClient, http, parseAbiItem, type PublicClient } from 'viem';
+import {
+  createPublicClient,
+  http,
+  parseAbiItem,
+  type PublicClient,
+} from 'viem';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreditsService } from '../credits/credits.service';
 import { resolveChainConfig } from './chain.config';
@@ -82,7 +87,9 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
   }
 
   private get allowlist(): Set<string> {
-    const recv = (process.env.PHASE2_RECEIVING_ADDRESS ?? '').trim().toLowerCase();
+    const recv = (process.env.PHASE2_RECEIVING_ADDRESS ?? '')
+      .trim()
+      .toLowerCase();
     const extra = (process.env.PHASE2_RECEIVING_ADDRESS_ALLOWLIST ?? '')
       .split(',')
       .map((s) => s.trim().toLowerCase())
@@ -148,6 +155,21 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
     if (!this.client) return;
     const chain = resolveChainConfig();
 
+    // Flip stale intents without requiring a status poll — keeps pending rows
+    // from matching on-chain after the TTL and aligns DB state with UX.
+    const expired = await this.prisma.payment.updateMany({
+      where: {
+        status: 'pending',
+        expiresAt: { lt: new Date() },
+      },
+      data: { status: 'expired' },
+    });
+    if (expired.count > 0) {
+      this.logger.log(
+        `Marked ${expired.count} payment(s) as expired (past expiresAt)`,
+      );
+    }
+
     const tip = await this.client.getBlockNumber();
     const safeTip = tip - this.minConfirmations;
     if (safeTip < 0n) return;
@@ -177,7 +199,8 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
     // Cap each pass to a manageable window so a backlog can't OOM us by
     // pulling thousands of logs at once.
     const MAX_RANGE = 500n;
-    const toBlock = fromBlock + MAX_RANGE > safeTip ? safeTip : fromBlock + MAX_RANGE;
+    const toBlock =
+      fromBlock + MAX_RANGE > safeTip ? safeTip : fromBlock + MAX_RANGE;
 
     const recipients = [...this.allowlist].map((s) => s as `0x${string}`);
     const logs = await this.client.getLogs({
@@ -201,6 +224,7 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
           receivingAddress: to,
           expectedAmountAtomic: value,
           status: 'pending',
+          expiresAt: { gt: new Date() },
         },
       });
       if (!candidate) {
@@ -216,7 +240,9 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
         where: { id: candidate.packId },
       });
       if (!pack) {
-        this.logger.error(`Payment ${candidate.id} references missing pack ${candidate.packId}`);
+        this.logger.error(
+          `Payment ${candidate.id} references missing pack ${candidate.packId}`,
+        );
         continue;
       }
 
@@ -241,7 +267,11 @@ export class PaymentWatcherService implements OnModuleInit, OnModuleDestroy {
             return;
           }
           await this.credits.creditForPayment(
-            { userId: candidate.userId, paymentId: candidate.id, amount: pack.credits },
+            {
+              userId: candidate.userId,
+              paymentId: candidate.id,
+              amount: pack.credits,
+            },
             tx,
           );
         });

@@ -159,7 +159,8 @@ export class StatusService {
     if (isAxiosError(e)) {
       if (
         e.code === 'ECONNABORTED' ||
-        (typeof e.message === 'string' && e.message.toLowerCase().includes('timeout'))
+        (typeof e.message === 'string' &&
+          e.message.toLowerCase().includes('timeout'))
       ) {
         return 'timeout';
       }
