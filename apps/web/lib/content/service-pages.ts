@@ -26,6 +26,32 @@ const servicePages: Record<string, ServiceDetailContent> = {
           "Structured landing experiences for campaigns, launches, and business units that need a focused path to action.",
         ],
       },
+      {
+        title: "What a build includes — and what it does not",
+        paragraphs: [
+          "Every proposal names the page list, the languages, the integrations, and the approval points. Anything absent from that list is out of scope by default: it is priced as a change and dated, not absorbed silently. That protects both sides. You are not funding an open-ended discovery exercise, and we are not carrying work nobody approved.",
+          "The exclusions are worth stating plainly, because they are the usual source of friction on GCC web projects. Unless contracted, a build does not include photography or video shoots, paid media management, catalogue copy beyond an agreed item count, third-party licence fees for fonts, stock, or plugins, or an ongoing SEO retainer after launch.",
+        ],
+        bullets: [
+          "Content migration is scoped by volume and format — not “move everything”.",
+          "Design rounds are counted; additional rounds are a change order, not a quiet extension.",
+          "Integrations are named individually: CRM, payments, booking, analytics. “Connect our systems” is not a line item.",
+          "Arabic is budgeted as its own workstream rather than a translation add-on.",
+        ],
+      },
+      {
+        title: "Working across Oman and the GCC",
+        paragraphs: [
+          "We work Gulf hours, Sunday to Thursday, and answer enquiries within one business day. Decisions here often need a same-day conversation; a supplier in a distant time zone cannot resolve a Thursday afternoon question on Sunday morning. Most delivery is remote with written checkpoints, and on-site workshops are scheduled when the statement of work calls for them.",
+          "Regional launch calendars matter more than they appear in a project plan. Ramadan, Eid, and National Day compress review windows and shift media spend. We place content freezes, approval handoffs, and go-live dates around those periods deliberately instead of discovering them two weeks before launch.",
+        ],
+        bullets: [
+          "Bilingual review with a named Arabic approver and a named English approver per section.",
+          "Right-to-left QA on real devices, not only in a desktop browser.",
+          "Hosting and domain decisions reviewed against where your customers actually are.",
+          "Handover documentation written in the language your team operates in.",
+        ],
+      },
     ],
     capabilities: [
       "Corporate and institutional websites",
@@ -126,6 +152,32 @@ const servicePages: Record<string, ServiceDetailContent> = {
           "Social content systems: repeatable workflows that keep brand output consistent over time instead of relying on ad-hoc posting.",
         ],
       },
+      {
+        title: "What the engagement covers",
+        paragraphs: [
+          "A campaign engagement is a production plan, not an infinite hours bank. It names the channels, the posting cadence, the asset counts per format, and who approves each piece. When the plan holds, output is predictable; when the brief changes materially, that becomes a scope decision with cost attached rather than a quiet slide.",
+          "Media spend, influencer contracts, studio shoots, and third-party photography licences sit outside the plan unless we write them in. We also decline work that cannot be executed honestly — buying followers, engagement pods, or reviews are not services we offer at any price.",
+        ],
+        bullets: [
+          "Channels named explicitly, including which ones we will not run.",
+          "Asset counts per format and per month, stated in the plan.",
+          "Arabic and English copy budgeted separately, with a named reviewer for each.",
+          "Reporting tied to the commercial goal, not to vanity metrics.",
+        ],
+      },
+      {
+        title: "How approval actually runs",
+        paragraphs: [
+          "Approval is where most content programmes fail, not production. A calendar exists, the creative is ready, and a post waits three days for someone to reply in a group chat. We build the approval matrix into the plan: who reviews, in what order, within what window, and what happens when nobody answers.",
+          "In practice, GCC teams run approvals across WhatsApp, email, and a marketing meeting. We work with that rather than pretending a ticketing system will replace it — but every decision lands in a written record with a date, version, and owner, so nobody rebuilds an approved asset from memory.",
+        ],
+        bullets: [
+          "A named approver per channel, with a deputy when they travel.",
+          "Versioned files with a clear naming convention in Arabic and English.",
+          "Feedback windows agreed in advance, not assumed.",
+          "A written escalation path when a deadline is at risk.",
+        ],
+      },
     ],
     capabilities: [
       "Social media content calendars and production",
@@ -224,6 +276,32 @@ const servicePages: Record<string, ServiceDetailContent> = {
           "AI image production for campaign, product, and brand-supporting visuals where traditional production is too slow or expensive.",
           "AI-assisted video production for short-form content, concept variants, and faster iteration cycles.",
           "Brand creative systems: reusable visual logic, templates, and asset structures that keep output consistent as volume grows.",
+        ],
+      },
+      {
+        title: "Where AI is used — and where we refuse it",
+        paragraphs: [
+          "AI is a production method, not a default. It earns its place where speed and exploration carry real value: campaign concepts, background variants, lifestyle scenes, social formats, and styling options that would otherwise need a second shoot day. In those cases the constraint is review capacity, not generation capacity, which is why guardrails and approval gates come before volume.",
+          "We refuse AI in a short, specific list of situations. Product packaging that carries regulated claims, SKU-accurate colour, named individuals requiring consent, documentary or press imagery, and any asset a customer could reasonably claim misrepresents what they will receive. Photography leads there, and we say so in the proposal rather than after the media buy.",
+        ],
+        bullets: [
+          "No synthetic depiction of real named people without documented consent.",
+          "No generated imagery presented as photographic evidence.",
+          "No AI copy published without a human read for factual claims.",
+          "No model output used to settle a compliance question.",
+        ],
+      },
+      {
+        title: "What the first production cycle looks like",
+        paragraphs: [
+          "We start narrow on purpose. The first cycle is a bounded batch — a defined set of assets for one campaign or one product family — reviewed against your brand standards and the guardrails we agreed. Nothing scales until that batch passes review, because scaling a wrong look is an expensive way to learn it was wrong.",
+          "Acceptance is written rather than felt. The batch is judged on brand fidelity, usability at the intended format and size, accuracy of the depicted product or scene, and whether it survives the channel it was made for. If it fails, we adjust the reference pack and the workflow before producing more.",
+        ],
+        bullets: [
+          "A brand reference pack agreed before generation begins.",
+          "A named reviewer on your side for each asset class.",
+          "Format and channel testing at real export sizes.",
+          "Documentation of what produced an approved asset, so it can be repeated.",
         ],
       },
     ],
@@ -430,6 +508,41 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
         "Internal AI assistants grounded on approved knowledge, with role-based access policies for your organisation — Estio, Muscat.",
     },
     breadcrumbParents: [{ href: "/enterprise", label: "Enterprise" }],
+    additionalSections: [
+      {
+        title: "What sits inside the boundary",
+        paragraphs: [
+          "The assistant answers from a corpus you approve and we allow-list — internal wikis, PDFs, product documentation, policies. That corpus is versioned and updated deliberately, so an answer cannot drift because a file was replaced in a shared drive on a Friday afternoon. Each response cites the source it used, which is what makes the answer reviewable rather than merely plausible.",
+          "Access is a matrix you own: role, then permitted corpora, then permitted channels. Logging retention follows your record-keeping rule rather than our convenience. All of this lives in configuration and policy, not in prompt wording, which is precisely why your IT and compliance functions can inspect and sign it off.",
+        ],
+        bullets: [
+          "Sources outside the allow-list are not reachable, including the open web.",
+          "High-risk intents route to a human instead of generating an answer.",
+          "Every answer carries its source, so a wrong answer can be traced.",
+          "Corpus changes are recorded with who changed what and when.",
+        ],
+      },
+      {
+        title: "How a pilot is judged",
+        paragraphs: [
+          "A pilot is not a demo. We agree a fixed question set before anything is built — questions your team actually receives, including the awkward ones — and measure the assistant against it. Citation coverage, correct refusal on out-of-scope questions, escalation accuracy, and latency under realistic load all have to pass.",
+          "Arabic parity is part of the test, not a later phase. If an Arabic answer cites a different source or refuses what the English answer handles, the governance model is not working, however fluent the output reads.",
+        ],
+        bullets: [
+          "A written question set, agreed before the build starts.",
+          "Refusal behaviour tested as deliberately as answering.",
+          "Arabic and English evaluated against the same criteria.",
+          "A recorded go/no-go decision at the end of the pilot.",
+        ],
+      },
+      {
+        title: "What this is not",
+        paragraphs: [
+          "It is not a general chatbot with a company logo, and it is not a search engine over a file server. It does not replace document ownership: if a policy is wrong, the assistant will state the wrong policy accurately and with a citation. Someone inside your organisation still has to own the source.",
+          "It is also not a reason to defer the access conversation. Teams that cannot name who may read which corpus are not ready for a private assistant, and we will say so before quoting.",
+        ],
+      },
+    ],
     capabilities: [
       "Knowledge grounding on internal wikis, PDFs, and product documentation",
       "Role-based access and response policies",
@@ -498,6 +611,34 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
         "Process automation across CRMs, operations tools, and business systems with clear documentation — Estio enterprise delivery.",
     },
     breadcrumbParents: [{ href: "/enterprise", label: "Enterprise" }],
+    additionalSections: [
+      {
+        title: "What we will not automate",
+        paragraphs: [
+          "Automation amplifies whatever process it touches. Point it at an undefined workflow and you get faster confusion with a cleaner audit trail. So the first deliverable is often documentation: what the step is, who owns it, what the exception looks like, and what happens today when it fails.",
+          "We also decline work where the decision needs judgement that nobody has written down, where no owner exists for the automated path, or where there is no honest rollback. Those are not technical limits; they are the conditions under which automation quietly becomes a risk your team cannot see.",
+        ],
+        bullets: [
+          "No automation of a process nobody can describe step by step.",
+          "No automated path without a named owner and an escalation route.",
+          "No irreversible step without an exercised rollback.",
+          "No commit to a build before interfaces, auth, and failure surfaces are inventoried.",
+        ],
+      },
+      {
+        title: "How go-live is decided",
+        paragraphs: [
+          "We measure a baseline before touching the process, because “it feels faster” is not evidence. Transaction volume, handling time, exception rate, and manual touch count are recorded first, then compared after rollout. If the numbers do not move, the automation is not delivering, whatever the diagram looks like.",
+          "Release is staged: a narrow path with monitoring and a rollback that has actually been run, not merely documented. Only after the monitoring window passes without surprises does scope widen to the remaining paths.",
+        ],
+        bullets: [
+          "Baseline metrics captured before implementation.",
+          "Rollback exercised, not assumed, before release.",
+          "A monitoring window with named people watching it.",
+          "Written acceptance evidence handed over at the end.",
+        ],
+      },
+    ],
     capabilities: [
       "Process mapping with IT and business stakeholders",
       "API-led integrations with human-in-the-loop checkpoints",
