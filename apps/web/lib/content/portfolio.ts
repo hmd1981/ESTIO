@@ -161,8 +161,8 @@ export const portfolioProjectsEn: PortfolioProject[] = [
   {
     slug: "otofix-services",
     title: "Otofix — verified vehicle history",
-    domain: "otofix.services",
-    url: "https://www.otofix.services",
+    domain: "otofix.om",
+    url: "https://www.otofix.om",
     category: "services",
     year: "2024",
     description:
@@ -197,6 +197,25 @@ export const portfolioProjectsEn: PortfolioProject[] = [
     imageUrl: "/portfolio/omanlaw-om.png",
     imageAlt: "Oman Legal Assistant — scales of justice with Omani national emblem",
     imageFit: "contain",
+  },
+  {
+    slug: "omandoctors-com",
+    title: "Oman Doctors — find doctors, clinics & care",
+    domain: "omandoctors.com",
+    url: "https://www.omandoctors.com",
+    category: "services",
+    year: "2025",
+    description:
+      "Healthcare directory for Oman covering doctors, clinics, hospitals, pharmacies, labs, and beauty clinics — searchable by specialty and city, with a structured online consultation intake.",
+    deliverables: [
+      "Directory architecture with specialty and city search",
+      "Doctor, clinic, and pharmacy profile templates",
+      "Online consultation intake flow",
+      "Oman-wide local discovery and content structure",
+    ],
+    tags: ["Healthcare", "Directory", "Oman", "Web"],
+    imageUrl: "https://omandoctors.com/images/nearby-care-warm.webp",
+    imageAlt: "Oman Doctors — directory of doctors, clinics, and care across Oman",
   },
 ];
 

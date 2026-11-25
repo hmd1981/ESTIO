@@ -15,6 +15,7 @@ export type MarketingMessages = {
     howWeWork: string;
     howWeWorkIntro: string;
     definitionOfDoneLabel: string;
+    faqs: string;
   };
   guidedSectionKicker: string;
   homeMetadataTitleSuffix: string;
@@ -297,6 +298,16 @@ export type MarketingMessages = {
     phone: string;
     email: string;
   };
+  companyDetails: {
+    heading: string;
+    registration: string;
+    taxId: string;
+    legalForm: string;
+    registeredAddress: string;
+    visitingAddress: string;
+    incorporated: string;
+    properties: string;
+  };
   navPrimaryAria: string;
   /** Logo link aria-label; include literal `{name}` for brand display name */
   brandHomeAria: string;
@@ -328,6 +339,7 @@ const en: MarketingMessages = {
     howWeWorkIntro:
       "Phased delivery with defined gates, written acceptance criteria, and rollback paths at each stage.",
     definitionOfDoneLabel: "Definition of done",
+    faqs: "Frequently asked questions",
   },
   guidedSectionKicker: "What are you launching?",
   homeMetadataTitleSuffix:
@@ -387,7 +399,7 @@ const en: MarketingMessages = {
     positionKicker: "Operating position",
     positionH2: "Designed for GCC procurement and operating reality",
     positionBody:
-      "We work from Qurum with GCC time zones, business culture, and bilingual stakeholder communication in mind. Proximity matters when decisions need a same-day conversation or an on-site session with your IT and compliance teams.",
+      "We work from Muscat with GCC time zones, business culture, and bilingual stakeholder communication in mind. Proximity matters when decisions need a same-day conversation or an on-site session with your IT and compliance teams.",
     sidebar: [
       {
         title: "Decision-maker fluency",
@@ -607,6 +619,16 @@ const en: MarketingMessages = {
     web: "Web",
     phone: "Phone",
     email: "Email",
+  },
+  companyDetails: {
+    heading: "Registered company",
+    registration: "Commercial Registration",
+    taxId: "Tax ID",
+    legalForm: "Legal form",
+    registeredAddress: "Registered address",
+    visitingAddress: "Studio",
+    incorporated: "Established",
+    properties: "Also operated by the same team",
   },
   navPrimaryAria: "Primary",
   brandHomeAria: "{name} home",
@@ -1125,6 +1147,7 @@ const ar: MarketingMessages = {
     howWeWorkIntro:
       "مراحل واضحة، ومسؤوليات معلنة، وتسليم يمكن قياسه — لا عمل مفتوح النهاية.",
     definitionOfDoneLabel: "تعريف الإنجاز",
+    faqs: "الأسئلة الشائعة",
   },
   guidedSectionKicker: "ماذا تطلقون؟",
   homeMetadataTitleSuffix:
@@ -1403,6 +1426,16 @@ const ar: MarketingMessages = {
     web: "الموقع الإلكتروني",
     phone: "الهاتف",
     email: "البريد الإلكتروني",
+  },
+  companyDetails: {
+    heading: "الشركة المسجّلة",
+    registration: "السجل التجاري",
+    taxId: "الرقم الضريبي",
+    legalForm: "الشكل القانوني",
+    registeredAddress: "العنوان المسجّل",
+    visitingAddress: "الاستوديو",
+    incorporated: "تاريخ التأسيس",
+    properties: "مشاريع أخرى يديرها الفريق نفسه",
   },
   navPrimaryAria: "التنقل الرئيسي",
   brandHomeAria: "{name} — الصفحة الرئيسية",

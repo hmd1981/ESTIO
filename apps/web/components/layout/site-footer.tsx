@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   brand,
+  companyProfile,
   contactPlacements,
   fallbackFooterColumns,
 } from "@/lib/content/site";
@@ -23,7 +24,9 @@ export function SiteFooter() {
   const legalName =
     (locale === "ar" && s?.businessNameAr?.trim()) ||
     s?.businessName?.trim() ||
-    brand.legalName;
+    (locale === "ar" ? brand.legalNameAr : brand.legalName);
+  const formatDigits = (value: string) =>
+    locale === "ar" ? toArabicUiNumerals(value) : value;
 
   const displayBrand =
     (locale === "ar" && s?.brandNameAr?.trim()) ||
@@ -38,7 +41,9 @@ export function SiteFooter() {
   const cityLine =
     s?.address || s?.city || s?.country
       ? [s?.address, s?.city, s?.country].filter(Boolean).join(", ")
-      : contactPlacements.cityLine;
+      : locale === "ar"
+        ? contactPlacements.cityLineAr
+        : contactPlacements.cityLine;
   const phoneDisplay = s?.phone ?? contactPlacements.phoneDisplay;
   const phoneDisplayUi =
     locale === "ar"
@@ -132,6 +137,20 @@ export function SiteFooter() {
                 </li>
               </ul>
             </address>
+            <dl className="mt-8 space-y-2 border-t border-[var(--estio-border)] pt-6 text-xs text-[var(--estio-muted)]">
+              <div className="flex flex-wrap gap-x-2">
+                <dt>{ui.companyDetails.registration}</dt>
+                <dd className="font-medium text-[var(--estio-body)]">
+                  {formatDigits(companyProfile.crNumber)}
+                </dd>
+              </div>
+              <div className="flex flex-wrap gap-x-2">
+                <dt>{ui.companyDetails.taxId}</dt>
+                <dd className="font-medium text-[var(--estio-body)]">
+                  {formatDigits(companyProfile.taxId)}
+                </dd>
+              </div>
+            </dl>
           </div>
           <div className="grid gap-10 sm:grid-cols-2 lg:col-span-6 lg:col-start-8">
             {columns.map((col) => (

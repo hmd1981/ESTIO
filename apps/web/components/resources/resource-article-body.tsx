@@ -3,6 +3,7 @@ import { Container } from "@/components/layout/container";
 import { ButtonLink } from "@/components/ui/button-link";
 import type { ResourceArticle } from "@/lib/content/resources-types";
 import { relatedResourceArticles } from "@/lib/content/resources-index";
+import { estimateReadMinutes } from "@/lib/content/reading-time";
 import type { AppLocale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/paths";
 
@@ -21,6 +22,7 @@ function sectionId(heading: string) {
 
 export function ResourceArticleBody({ article, locale }: Props) {
   const related = relatedResourceArticles(article, locale, 3);
+  const readMinutes = estimateReadMinutes(article, locale);
   const published = new Date(article.publishedAt).toLocaleDateString(
     locale === "ar" ? "ar-OM" : "en-GB",
     { year: "numeric", month: "long", day: "numeric" },
@@ -72,8 +74,8 @@ export function ResourceArticleBody({ article, locale }: Props) {
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--muted)]">
             <span>
               {locale === "ar"
-                ? "فريق تحرير إستيو · القرم، مسقط"
-                : "Estio editorial team · Qurum, Muscat"}
+                ? "فريق تحرير إستيو · مسقط، عُمان"
+                : "Estio editorial team · Muscat, Oman"}
             </span>
             <span aria-hidden>·</span>
             <time dateTime={article.publishedAt}>
@@ -92,8 +94,8 @@ export function ResourceArticleBody({ article, locale }: Props) {
             <span aria-hidden>·</span>
             <span>
               {locale === "ar"
-                ? `${article.readMinutes} د قراءة`
-                : `${article.readMinutes} min read`}
+                ? `${readMinutes} د قراءة`
+                : `${readMinutes} min read`}
             </span>
           </div>
         </Container>

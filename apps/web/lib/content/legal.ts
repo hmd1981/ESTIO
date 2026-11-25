@@ -208,7 +208,7 @@ const privacyAr: LegalDocument = {
   kicker: "قانوني",
   h1: "سياسة الخصوصية",
   lastUpdated: LAST_UPDATED,
-  intro: `تصف هذه السياسة كيف تتعامل ${brand.legalName} («إستيو») مع المعلومات الشخصية عند زيارة https://${brand.domain} أو التواصل معنا. مقرنا في ${contactPlacements.cityLine}. للاستفسار: ${contactPlacements.email}.`,
+  intro: `تصف هذه السياسة كيف تتعامل ${brand.legalNameAr} («إستيو») مع المعلومات الشخصية عند زيارة https://${brand.domain} أو التواصل معنا. مقرنا في ${contactPlacements.cityLineAr}. للاستفسار: ${contactPlacements.email}.`,
   sections: [
     {
       heading: "من نحن",
@@ -278,7 +278,7 @@ const privacyAr: LegalDocument = {
     {
       heading: "الاتصال",
       paragraphs: [
-        `إستيو، ${contactPlacements.cityLine}. البريد ${contactPlacements.email}. الهاتف ${contactPlacements.phoneDisplay}.`,
+        `إستيو، ${contactPlacements.cityLineAr}. البريد ${contactPlacements.email}. الهاتف ${contactPlacements.phoneDisplay}.`,
       ],
     },
   ],
@@ -292,7 +292,7 @@ const termsAr: LegalDocument = {
   kicker: "قانوني",
   h1: "شروط الاستخدام",
   lastUpdated: LAST_UPDATED,
-  intro: `تحكم هذه الشروط استخدامكم لـ https://${brand.domain} والصفحات العامة التي تشغّلها ${brand.legalName}. العمل المدفوع يحكمه العرض أو نطاق العمل الموقع، وهو الذي يسود إن تعارض مع هذه الصفحة.`,
+  intro: `تحكم هذه الشروط استخدامكم لـ https://${brand.domain} والصفحات العامة التي تشغّلها ${brand.legalNameAr}. العمل المدفوع يحكمه العرض أو نطاق العمل الموقع، وهو الذي يسود إن تعارض مع هذه الصفحة.`,
   sections: [
     {
       heading: "استخدام الموقع",
@@ -335,7 +335,7 @@ const termsAr: LegalDocument = {
     {
       heading: "الاتصال",
       paragraphs: [
-        `للأسئلة: ${contactPlacements.email}. ${contactPlacements.cityLine}.`,
+        `للأسئلة: ${contactPlacements.email}. ${contactPlacements.cityLineAr}.`,
       ],
     },
   ],

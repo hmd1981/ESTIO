@@ -24,7 +24,7 @@ const contactProseEn: ContactProseBlock[] = [
     title: "How to reach us",
     paragraphs: [
       "Use the form for structured intake — it creates a tracked lead in our CRM so nothing is lost in email threads. For urgent seasonal campaign questions, WhatsApp is listed in the sidebar once you have a reference number from the form or an existing engagement.",
-      "Our office is in Qurum, Muscat. We work with clients across Oman, the UAE, Saudi Arabia, and the wider GCC — most delivery is remote with structured checkpoints; on-site workshops are scheduled when the SOW requires them.",
+      "Our office is in Muscat. We work with clients across Oman, the UAE, Saudi Arabia, and the wider GCC — most delivery is remote with structured checkpoints; on-site workshops are scheduled when the SOW requires them.",
     ],
   },
   {
@@ -48,7 +48,7 @@ const contactProseAr: ContactProseBlock[] = [
     title: "كيف تتواصلون معنا",
     paragraphs: [
       "النموذج ينشئ lead متتبعاً في CRM. لأسئلة الحملات العاجلة، WhatsApp في الشريط الجانبي بعد رقم مرجعي من النموذج أو engagement قائم.",
-      "مكتبنا في Qurum، مسقط. نعمل مع عملاء في عُمان والإمارات والسعودية والخليج — أغلب التسليم عن بُعد مع checkpoints؛ workshops في الموقع حسب SOW.",
+      "مكتبنا في مسقط. نعمل مع عملاء في عُمان والإمارات والسعودية والخليج — أغلب التسليم عن بُعد مع checkpoints؛ workshops في الموقع حسب SOW.",
     ],
   },
   {

@@ -161,8 +161,8 @@ export const portfolioProjectsAr: PortfolioProject[] = [
   {
     slug: "otofix-services",
     title: "Otofix — تاريخ مركبة موثّق",
-    domain: "otofix.services",
-    url: "https://www.otofix.services",
+    domain: "otofix.om",
+    url: "https://www.otofix.om",
     category: "services",
     year: "2024",
     description:
@@ -196,6 +196,25 @@ export const portfolioProjectsAr: PortfolioProject[] = [
     imageUrl: "/portfolio/omanlaw-om.png",
     imageAlt: "Oman Legal Assistant — ميزان العدالة مع شعار عُمان",
     imageFit: "contain",
+  },
+  {
+    slug: "omandoctors-com",
+    title: "Oman Doctors — البحث عن أطباء وعيادات ورعاية",
+    domain: "omandoctors.com",
+    url: "https://www.omandoctors.com",
+    category: "services",
+    year: "2025",
+    description:
+      "دليل رعاية صحية في عُمان يغطي الأطباء والعيادات والمستشفيات والصيدليات والمختبرات وعيادات التجميل — بحث حسب التخصص والمدينة مع مسار استشارة إلكترونية منظّم.",
+    deliverables: [
+      "هيكلة دليل مع بحث بالتخصص والمدينة",
+      "قوالب ملفات الأطباء والعيادات والصيدليات",
+      "مسار استشارة إلكترونية",
+      "هيكلة اكتشاف ومحتوى على مستوى عُمان",
+    ],
+    tags: ["صحة", "دليل", "عُمان", "ويب"],
+    imageUrl: "https://omandoctors.com/images/nearby-care-warm.webp",
+    imageAlt: "Oman Doctors — دليل أطباء وعيادات ورعاية في عُمان",
   },
 ];
 

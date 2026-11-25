@@ -49,6 +49,14 @@ export type ServiceDetailContent = {
     /** Definition of done for the step (optional). */
     definitionOfDone?: string;
   }>;
+  /**
+   * Long-form FAQ entries. Rendered after the process section and emitted as
+   * FAQPage structured data. Use real buyer questions with substantive answers.
+   */
+  faqs?: Array<{
+    question: string;
+    answer: string;
+  }>;
   /** Extra narrative blocks after the hero summary (e.g. enterprise positioning). */
   additionalSections?: Array<{
     title: string;

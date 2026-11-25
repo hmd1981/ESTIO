@@ -7,9 +7,11 @@ type FaqItem = { title: string; body: string };
 type Props = {
   items: FaqItem[];
   locale: string;
+  /** Page the FAQ belongs to. Defaults to the standalone FAQ page. */
+  path?: string;
 };
 
-export function FaqPageJsonLd({ items, locale }: Props) {
+export function FaqPageJsonLd({ items, locale, path }: Props) {
   return (
     <JsonLd
       data={{
@@ -23,7 +25,7 @@ export function FaqPageJsonLd({ items, locale }: Props) {
             text: item.body,
           },
         })),
-        url: absoluteSiteUrl(`/${locale}/faq`),
+        url: absoluteSiteUrl(path ?? `/${locale}/faq`),
         isPartOf: {
           "@type": "WebSite",
           name: brand.name,

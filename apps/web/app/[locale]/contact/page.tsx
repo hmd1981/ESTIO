@@ -26,7 +26,10 @@ type Props = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function placementsFromSettings(settings: Record<string, unknown> | null) {
+function placementsFromSettings(
+  settings: Record<string, unknown> | null,
+  locale: string,
+) {
   const phoneDisplay = settings?.phone
     ? String(settings.phone)
     : contactPlacements.phoneDisplay;
@@ -43,10 +46,18 @@ function placementsFromSettings(settings: Record<string, unknown> | null) {
   const whatsappHref = settings?.whatsapp
     ? String(settings.whatsapp)
     : contactPlacements.whatsappHref;
+  const addressParts = [settings?.address, settings?.city, settings?.country].filter(Boolean);
   const cityLine =
-    [settings?.address, settings?.city, settings?.country]
-      .filter(Boolean)
-      .join(", ") || contactPlacements.cityLine;
+    addressParts.join(", ") ||
+    (locale === "ar" ? contactPlacements.cityLineAr : contactPlacements.cityLine);
+  // When no address is configured in the CMS we show both the licensed address
+  // and where the team actually works, so the two never contradict each other.
+  const visitingLine =
+    addressParts.length > 0
+      ? null
+      : locale === "ar"
+        ? contactPlacements.visitingAddressAr
+        : contactPlacements.visitingAddress;
   return {
     phoneDisplay,
     phoneHref,
@@ -54,6 +65,7 @@ function placementsFromSettings(settings: Record<string, unknown> | null) {
     emailHref,
     whatsappHref,
     cityLine,
+    visitingLine,
   };
 }
 
@@ -161,7 +173,7 @@ export default async function ContactPage({ params, searchParams }: Props) {
   };
   const ui = getMessages(raw);
   const c = ui.contact;
-  const cp = placementsFromSettings(bundle.settings);
+  const cp = placementsFromSettings(bundle.settings, raw);
   const phoneDisplayUi =
     raw === "ar" ? toArabicUiNumerals(cp.phoneDisplay) : cp.phoneDisplay;
   const hero = mergeMarketingHero(
@@ -378,6 +390,11 @@ export default async function ContactPage({ params, searchParams }: Props) {
                       {brand.name}
                     </p>
                     <p className="mt-1">{cp.cityLine}</p>
+                    {cp.visitingLine ? (
+                      <p className="mt-1 text-[var(--muted)]">
+                        {ui.companyDetails.visitingAddress}: {cp.visitingLine}
+                      </p>
+                    ) : null}
                     {contactBlocks.mapLinkUrl ? (
                       <p className="mt-3">
                         <a

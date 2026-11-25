@@ -11,6 +11,10 @@ export type ResourceArticle = {
   kicker: string;
   publishedAt: string;
   updatedAt: string;
+  /**
+   * @deprecated Display uses `estimateReadMinutes()` from
+   * `lib/content/reading-time.ts`. Kept for CMS/back-office compatibility.
+   */
   readMinutes: number;
   tags: string[];
   sections: ResourceArticleSection[];

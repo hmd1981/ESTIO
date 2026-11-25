@@ -71,6 +71,33 @@ const servicePages: Record<string, ServiceDetailContent> = {
           "Testing, deployment, training, and documentation — with a defined stabilisation period after go-live.",
       },
     ],
+    faqs: [
+      {
+        question: "How long does a website project take?",
+        answer:
+          "We state the timeline in the written proposal, after discovery — not on a first call. A defined corporate site in one language has a short path; a bilingual build with content migration, CMS handoff, and Arabic review adds distinct stages. The plan names phase dates and who approves each gate.",
+      },
+      {
+        question: "Do you write the content, or do we supply it?",
+        answer:
+          "Either. English and Arabic copywriting is a listed deliverable, and we can also work from your existing copy, product sheets, and approvals. What we will not do is publish placeholder text: an empty page in a good layout is exactly what search and ad reviewers penalise.",
+      },
+      {
+        question: "Can you take over an existing site instead of rebuilding?",
+        answer:
+          "Yes. Redesigns with structured content migration are routine. We migrate what ranks and converts, set redirects deliberately, and retire what adds no value. We propose a rebuild only when the platform itself limits performance, governance, or content operations.",
+      },
+      {
+        question: "How is Arabic handled?",
+        answer:
+          "As a first-class build, not a translation pass. Layout, typography, navigation, and forms are designed for right-to-left; copy is written or reviewed by an Arabic speaker. The failures we still see on GCC hospitality sites are documented in our RTL guide.",
+      },
+      {
+        question: "What happens after launch?",
+        answer:
+          "A defined stabilisation period, CMS training, and documentation, so marketing can publish without waiting on developers. Ongoing retainers are optional and scoped separately rather than bundled into the build.",
+      },
+    ],
     cta: {
       headline: "Get a website that matches your brand standard",
       body: "Tell us the business outcome, audience, and launch date. We reply with a clear scope, timeline, and project quote — not a generic capabilities deck.",
@@ -144,6 +171,33 @@ const servicePages: Record<string, ServiceDetailContent> = {
           "Regular performance reviews with data-driven adjustments to maximise impact.",
       },
     ],
+    faqs: [
+      {
+        question: "Can you work alongside our in-house marketing team?",
+        answer:
+          "That is the usual arrangement. We take the production load — calendar, creative, publishing — while your team keeps brand ownership and final approval. Roles and approval owners are written into the plan, so nothing waits in an unnamed queue.",
+      },
+      {
+        question: "Who approves content before it is published?",
+        answer:
+          "A named approver on your side, per channel. The approval workflow is built into production, so scheduled posts do not depend on someone remembering a message thread.",
+      },
+      {
+        question: "Do you produce Arabic and English content?",
+        answer:
+          "Both, with the Arabic written for its audience rather than translated line by line. Mixed-language posts — Arabic headline, English body — are common in the GCC and we plan for them deliberately.",
+      },
+      {
+        question: "What does the monthly report contain?",
+        answer:
+          "What ran, what it produced, and what changes next. Campaign performance reporting with actionable insights, plus quarterly strategy reviews when the engagement includes them. We do not send dashboard screenshots without interpretation.",
+      },
+      {
+        question: "Is this a fixed deliverable or an open retainer?",
+        answer:
+          "We quote a production plan with named deliverables and a defined cadence. If the plan changes materially, that is a scope decision with cost stated in writing — not silent drift.",
+      },
+    ],
     cta: {
       headline: "Run campaigns with predictable creative output",
       body: "Share your commercial goal, channels, and cadence. We propose a production plan with deliverables and pricing — not an open-ended retainer pitch.",
@@ -215,6 +269,33 @@ const servicePages: Record<string, ServiceDetailContent> = {
         step: "Handover & governance",
         description:
           "Documentation, training, and ongoing guidelines for your team to maintain quality independently.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Who reviews AI output before it is used publicly?",
+        answer:
+          "A human does, every time. Brand compliance review and quality assurance sit on all AI output, and anything customer-facing passes an approval gate before release. Guardrails are defined at the start: what AI may produce for your brand, and what it may not.",
+      },
+      {
+        question: "Will the results look artificial?",
+        answer:
+          "That is a production decision, not a limit of the model. We keep AI where it is strongest — concepting, variants, backgrounds, campaign styling — and use photography where literal truth is required: SKU-accurate packaging, named individuals, regulated labels. The split is written up in our AI versus photography guide.",
+      },
+      {
+        question: "What do you need from us to start?",
+        answer:
+          "A brand reference pack: logo usage, palette, typography, existing approved imagery, and examples you consider off-brand. Without it, output drifts. We also need the channels and formats the assets must fit.",
+      },
+      {
+        question: "Do we receive the working files and the workflow?",
+        answer:
+          "Yes. Assets are delivered organised, tagged, and versioned, with workflow documentation and training so your team can continue without us reviewing every individual asset.",
+      },
+      {
+        question: "Can this be used for product images that must be accurate?",
+        answer:
+          "Only where the asset is clearly stylised and non-literal. For product accuracy, packaging, and regulated claims we recommend photography — AI is the wrong lane if a customer could reasonably say 'that is not what I received'.",
       },
     ],
     cta: {
@@ -371,6 +452,33 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
       "Performance monitoring and quality metrics dashboard",
       "Operational documentation and team training",
     ],
+    faqs: [
+      {
+        question: "Where do the answers come from?",
+        answer:
+          "Only from corpora you approve and we allow-list — internal wikis, PDFs, product documentation, policies. Answers cite their source. The assistant is not permitted to answer from the open internet, and high-risk intents route to a human instead.",
+      },
+      {
+        question: "Who controls which people can ask what?",
+        answer:
+          "An access matrix you own: role → permitted corpora → permitted channels. Log retention follows your record-keeping rule. These are configuration and policy rather than prompt wording, which is why your IT team can review them.",
+      },
+      {
+        question: "What must exist before you can quote?",
+        answer:
+          "Approved corpora, a named internal owner for access and go-live, and the channels where answers surface. Without those three there is no schedule or fee we can stand behind — which is why the enquiry form asks for exactly that.",
+      },
+      {
+        question: "Does it work in Arabic and English?",
+        answer:
+          "Yes, under one governance model. Content change, approval, and citation behave the same in both languages, so an Arabic answer is not a second, unmanaged knowledge base.",
+      },
+      {
+        question: "What happens after go-live?",
+        answer:
+          "Runbooks, escalation paths, and owner contacts so your IT or operations team can run day two. Estio remains available under an agreed support model where that is written into scope.",
+      },
+    ],
     cta: {
       headline: "Scope a governed internal assistant",
       body: "We need approved corpora, an access owner, and the channels answers surface in. Without those named, there is no schedule or fee we can stand behind.",
@@ -432,6 +540,33 @@ const enterprisePages: Record<string, ServiceDetailContent> = {
         step: "Handover & optimisation",
         description:
           "Documentation, training, and ongoing refinement as your processes evolve.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Which systems can you integrate?",
+        answer:
+          "The ones named in scope, through documented APIs, queues, or database interfaces. We inventory interfaces, auth modes, and failure surfaces before committing to a build. 'Connect everything' is not a scope we will sign.",
+      },
+      {
+        question: "What if the process is not documented yet?",
+        answer:
+          "Then the first deliverable is the documentation. Automation replaces steps you have already agreed and can describe — it does not fix an undefined process, it only makes the confusion run faster.",
+      },
+      {
+        question: "How are failures handled?",
+        answer:
+          "Retry logic, idempotency notes, alert routes, and exception classes mapped to a named owner or queue. A runbook and escalation path are part of delivery, not an optional extra.",
+      },
+      {
+        question: "How do you decide what to automate first?",
+        answer:
+          "Ranked by return, complexity, and risk. We map current workflows with business and IT stakeholders, then propose a narrow first automation that can be measured against a baseline before scaling.",
+      },
+      {
+        question: "Will our team be able to maintain it?",
+        answer:
+          "That is the acceptance test. Documentation suitable for IT handover, training for administrators and end users, and performance metrics so you can see whether it is still delivering.",
       },
     ],
     cta: {

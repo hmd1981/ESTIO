@@ -318,7 +318,7 @@ export const resourceArticlesMoreEn: Record<
       {
         heading: "Talk to the studio",
         paragraphs: [
-          "Office hours are Sunday to Thursday, Gulf time, from Qurum, Muscat. Write to info@estio.org or use the contact form with the outcome, languages, and deadline. We reply within one business day with fit, a scoped next step, or a clear no.",
+          "Office hours are Sunday to Thursday, Gulf time, from Muscat. Write to info@estio.org or use the contact form with the outcome, languages, and deadline. We reply within one business day with fit, a scoped next step, or a clear no.",
           "The same standard applies to the guides we publish: if a recommendation is how we actually work, we say so. If it is a general industry pattern, we label it. That is the editorial rule behind this article.",
         ],
       },
@@ -348,7 +348,7 @@ export const resourceArticlesMoreEn: Record<
         heading: "Who writes, who reviews",
         paragraphs: [
           "Drafts start with the people who run the work: web delivery, campaign production, AI Studio operations, or enterprise scoping. A second person at Estio reads for accuracy and for claims we cannot stand behind. We do not invent client names, metrics, or case results. When we describe a pattern from engagements, we keep it general enough to protect confidentiality unless a client has approved a named story.",
-          "Byline on these pages: Estio editorial team, Qurum, Muscat, Oman. There is no anonymous “admin” author and no guest network. Contact for corrections: info@estio.org with the article URL and the factual issue.",
+          "Byline on these pages: Estio editorial team, Muscat, Oman. There is no anonymous “admin” author and no guest network. Contact for corrections: info@estio.org with the article URL and the factual issue.",
         ],
       },
       {

@@ -10,6 +10,8 @@ import { getAboutExtended } from "@/lib/content/about-extended";
 import { marketingDetailMetadata } from "@/lib/seo/metadata-builders";
 import { isLocale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
+import { toArabicUiNumerals } from "@/lib/i18n/numerals";
+import { companyProfile, contactPlacements } from "@/lib/content/site";
 import { withLocale } from "@/lib/i18n/paths";
 import { SectionHighlightFrame } from "@/components/section-highlight/section-highlight-frame";
 import { CmsVisualMedia } from "@/components/cms/cms-visual-media";
@@ -65,7 +67,8 @@ export default async function AboutPage({ params }: Props) {
       ? ((enPublished?.marketingPages?.about?.sections ??
           {}) as MarketingPageSectionsCMS)
       : undefined;
-  const a = getMessages(raw).about;
+  const ui = getMessages(raw);
+  const a = ui.about;
   const hero = mergeMarketingHero(
     cms,
     {
@@ -83,6 +86,8 @@ export default async function AboutPage({ params }: Props) {
   const deliveryImg = resolveCmsVisual(aboutV.delivery, mediaAssets);
   const omanImg = resolveCmsVisual(aboutV.oman, mediaAssets);
   const extended = getAboutExtended(raw);
+  const formatRegistryDigits = (value: string) =>
+    raw === "ar" ? toArabicUiNumerals(value) : value;
 
   return (
     <MarketingShell>
@@ -292,6 +297,75 @@ export default async function AboutPage({ params }: Props) {
               <p className="mt-6 text-sm leading-[1.65] text-[var(--muted)] sm:text-base">
                 {extended.hoursBody}
               </p>
+
+              <div className="mt-8 border-t border-[var(--border)] pt-6">
+                <p className="text-sm font-semibold text-[var(--text)]">
+                  {ui.companyDetails.heading}
+                </p>
+                <dl className="mt-4 space-y-3 text-sm leading-[1.6] text-[var(--muted)]">
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">{ui.companyDetails.legalForm}</dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {raw === "ar" ? companyProfile.legalFormAr : companyProfile.legalForm}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">{ui.companyDetails.registration}</dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {formatRegistryDigits(companyProfile.crNumber)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">{ui.companyDetails.taxId}</dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {formatRegistryDigits(companyProfile.taxId)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">{ui.companyDetails.incorporated}</dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {new Date(companyProfile.incorporated).toLocaleDateString(
+                        raw === "ar" ? "ar-OM" : "en-GB",
+                        { year: "numeric", month: "long", day: "numeric" },
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">
+                      {ui.companyDetails.registeredAddress}
+                    </dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {raw === "ar" ? companyProfile.addressAr : companyProfile.addressEn}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide">
+                      {ui.companyDetails.visitingAddress}
+                    </dt>
+                    <dd className="mt-0.5 text-[var(--text-body)]">
+                      {raw === "ar"
+                        ? contactPlacements.visitingAddressAr
+                        : contactPlacements.visitingAddress}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-6 text-xs uppercase tracking-wide text-[var(--muted)]">
+                  {ui.companyDetails.properties}
+                </p>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {companyProfile.properties.map((property) => (
+                    <li key={property.href}>
+                      <a
+                        href={property.href}
+                        rel="noopener"
+                        className="text-[var(--accent)] underline-offset-4 hover:underline"
+                      >
+                        {property.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </Container>

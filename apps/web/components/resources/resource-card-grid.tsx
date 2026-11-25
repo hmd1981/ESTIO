@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ResourceArticle } from "@/lib/content/resources-types";
+import { estimateReadMinutes } from "@/lib/content/reading-time";
 import type { AppLocale } from "@/lib/i18n/config";
 import { withLocale } from "@/lib/i18n/paths";
 
@@ -30,7 +31,9 @@ export function ResourceCardGrid({ articles, locale }: Props) {
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
               <span>
-                {locale === "ar" ? `${article.readMinutes} د قراءة` : `${article.readMinutes} min read`}
+                {locale === "ar"
+                  ? `${estimateReadMinutes(article, locale)} د قراءة`
+                  : `${estimateReadMinutes(article, locale)} min read`}
               </span>
               <span aria-hidden>·</span>
               <time dateTime={article.publishedAt}>

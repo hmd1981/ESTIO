@@ -21,7 +21,7 @@ const en: AboutExtended = {
   hoursKicker: "Studio",
   hoursH2: "Where and when we work",
   hoursBody:
-    "Estio works Sunday–Thursday, Gulf time, from Qurum, Muscat. We reply to enquiries within one business day in Arabic, English, or both. Most delivery is remote with written checkpoints; on-site workshops are scheduled when the statement of work requires them. Phone, WhatsApp, and email are on the Contact page — not a ticket maze.",
+    "Estio works Sunday–Thursday, Gulf time, from Muscat. We reply to enquiries within one business day in Arabic, English, or both. Most delivery is remote with written checkpoints; on-site workshops are scheduled when the statement of work requires them. Phone, WhatsApp, and email are on the Contact page — not a ticket maze.",
 };
 
 const ar: AboutExtended = {
@@ -35,7 +35,7 @@ const ar: AboutExtended = {
   hoursKicker: "الاستوديو",
   hoursH2: "أين ومتى نعمل",
   hoursBody:
-    "تعمل إستيو الأحد–الخميس بتوقيت الخليج من القرم في مسقط. نرد على الاستفسارات خلال يوم عمل بالعربية أو الإنجليزية أو كلتيهما. أغلب التسليم عن بُعد مع نقاط تفتيش مكتوبة؛ وتُجدول الورش في الموقع عندما يطلب نطاق العمل ذلك. الهاتف وواتساب والبريد في صفحة الاتصال — لا متاهة تذاكر.",
+    "تعمل إستيو الأحد–الخميس بتوقيت الخليج من مسقط. نرد على الاستفسارات خلال يوم عمل بالعربية أو الإنجليزية أو كلتيهما. أغلب التسليم عن بُعد مع نقاط تفتيش مكتوبة؛ وتُجدول الورش في الموقع عندما يطلب نطاق العمل ذلك. الهاتف وواتساب والبريد في صفحة الاتصال — لا متاهة تذاكر.",
 };
 
 export function getAboutExtended(locale: AppLocale): AboutExtended {

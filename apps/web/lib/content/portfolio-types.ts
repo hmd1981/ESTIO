@@ -43,6 +43,7 @@ export const portfolioProjectSlugs = [
   "omanphoto-com",
   "otofix-services",
   "omanlaw-om",
+  "omandoctors-com",
 ] as const;
 
 export type PortfolioProjectSlug = (typeof portfolioProjectSlugs)[number];

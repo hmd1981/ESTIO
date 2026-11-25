@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { PremiumMediaFrame } from "@/components/cms/premium-media-frame";
 import type { ServiceDetailContent } from "@/lib/content/types";
+import { FaqPageJsonLd } from "@/components/seo/faq-page-json-ld";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Container } from "@/components/layout/container";
 import { PageBreadcrumbs } from "@/components/nav/page-breadcrumbs";
@@ -50,6 +51,8 @@ export function ServiceDetailPage({
     ...p,
     href: withLocale(p.href, locale),
   }));
+  const faqParent = content.breadcrumbParents.at(-1)?.href ?? "/services";
+  const faqPath = `${withLocale(faqParent, locale)}/${content.slug}`;
 
   const ent = enterpriseTone;
   const sectionCard = ent
@@ -58,6 +61,16 @@ export function ServiceDetailPage({
 
   return (
     <MarketingShell>
+      {content.faqs && content.faqs.length > 0 ? (
+        <FaqPageJsonLd
+          items={content.faqs.map((faq) => ({
+            title: faq.question,
+            body: faq.answer,
+          }))}
+          locale={locale}
+          path={faqPath}
+        />
+      ) : null}
       {/* Hero */}
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
         <Container as="div" className="py-16 sm:py-20 lg:py-28">
@@ -315,6 +328,28 @@ export function ServiceDetailPage({
           </Container>
         </section>
       )}
+
+      {content.faqs && content.faqs.length > 0 ? (
+        <section className="border-b border-[var(--border)] bg-[var(--surface)] py-14 sm:py-16 lg:py-20">
+          <Container as="div">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
+              {t.faqs}
+            </h2>
+            <dl className="mt-8 max-w-3xl divide-y divide-[var(--border)]">
+              {content.faqs.map((faq) => (
+                <div key={faq.question} className="py-6 first:pt-0 last:pb-0">
+                  <dt className="text-sm font-semibold text-[var(--text)] sm:text-base">
+                    {faq.question}
+                  </dt>
+                  <dd className="mt-2 text-sm leading-[1.75] text-[var(--text-body)] sm:text-base">
+                    {faq.answer}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Container>
+        </section>
+      ) : null}
 
       {/* CTA */}
       <section className="bg-[var(--surface)] py-14 sm:py-16 lg:py-20">
