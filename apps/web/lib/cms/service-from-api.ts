@@ -159,6 +159,9 @@ export function mapApiServiceToDetailContent(
     deliverables: del,
     process: proc,
     additionalSections: fallback.additionalSections,
+    // FAQ copy is code-owned: CMS rows predate the field and would otherwise
+    // silently drop the FAQ block and its structured data on published pages.
+    faqs: fallback.faqs,
     cta,
     secondaryCta: fallback.secondaryCta,
     heroVisual,

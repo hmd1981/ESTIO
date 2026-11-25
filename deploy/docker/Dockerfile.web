@@ -16,7 +16,10 @@ ENV NEXT_PUBLIC_SHOW_ASK_ESTIO_AI=$NEXT_PUBLIC_SHOW_ASK_ESTIO_AI
 ENV NEXT_PUBLIC_MEDIA_JOB_VIEW_BASE_URL=$NEXT_PUBLIC_MEDIA_JOB_VIEW_BASE_URL
 ENV NEXT_PUBLIC_MEDIA_JOB_VIEW_PATH=$NEXT_PUBLIC_MEDIA_JOB_VIEW_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build --workspace=web
+# Webpack builder: Turbopack fails to resolve next/font/google's internal
+# import map when node_modules is hoisted at the workspace root (Turbopack
+# reports "queries have exactly one entry" and fails the image build).
+RUN npm run build --workspace=web -- --webpack
 
 FROM node:20.20-bookworm-slim AS runner
 WORKDIR /app
